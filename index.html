@@ -683,13 +683,32 @@ header .title{font-weight:700;white-space:nowrap}
 #stats span{background:rgba(255,255,255,.14);border-radius:12px;padding:2px 7px;white-space:nowrap}
 #stats i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;font-style:normal}
 #map{flex:1 1 auto;min-height:240px}
-.toolbar{flex:0 0 auto;display:flex;gap:6px;overflow-x:auto;padding:8px;background:#fff;-webkit-overflow-scrolling:touch}
-button{border:0;border-radius:9px;background:#176957;color:#fff;font:inherit;font-size:14px;font-weight:650;padding:11px 12px;white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.toolbar{flex:0 0 auto;display:flex;gap:7px;overflow-x:auto;padding:8px;background:#fff;border-top:1px solid #c9d3cf;-webkit-overflow-scrolling:touch}
+button{border:0;border-radius:10px;background:#0f5e4d;color:#fff;font:inherit;font-size:15px;font-weight:700;padding:13px 14px;min-height:48px;white-space:nowrap;cursor:pointer;touch-action:manipulation}
 button:disabled{opacity:.55}
 button.secondary{background:#e4ebe8;color:#173a34}
 button.on{outline:3px solid #ffb347;outline-offset:-3px}
-#layerButton{background:#37657c}
-#message{flex:0 0 auto;min-height:36px;background:#f4f7f5;padding:8px 12px;padding-bottom:max(8px,env(safe-area-inset-bottom));font-size:13px;line-height:19px}
+#layerButton{background:#285569}
+#backupBar{display:none;flex:0 0 auto;align-items:center;gap:8px;padding:8px 10px;background:#fff6d6;border-top:2px solid #e0b200;font-size:14px;font-weight:600;color:#3d3000}
+#backupBar.show{display:flex}
+#backupBar span{flex:1}
+#backupBar button{padding:10px 12px;min-height:42px}
+.snap{display:flex;align-items:center;gap:6px;font-size:14px;padding:5px 0;border-bottom:1px solid #e3e8e6}
+.snap span{flex:1}
+.snap button{padding:8px 10px;min-height:38px;font-size:13px}
+/* Sonnenmodus: maximaler Kontrast für draußen */
+body.sun{background:#fff;color:#000}
+body.sun header{background:#000}
+body.sun button{background:#000;font-size:16px;padding:15px 16px;min-height:54px}
+body.sun button.secondary{background:#fff;color:#000;border:2px solid #000}
+body.sun #layerButton{background:#003a57}
+body.sun #filter{background:#2a145e;font-size:16px;min-height:54px}
+body.sun #message{background:#fff;color:#000;font-size:15px;font-weight:700;border-top:2px solid #000}
+body.sun #message.error{background:#ffe1d6;color:#7a0000}
+body.sun .hn-icon span{font-size:15px;line-height:19px;border:2px solid #000;padding:0 5px}
+body.sun .leaflet-tile-pane{filter:contrast(1.25) saturate(.75)}
+body.sun #stats span{background:#fff;color:#000;font-size:13px}
+#message{flex:0 0 auto;min-height:38px;background:#f4f7f5;color:#0d241e;padding:8px 12px;padding-bottom:max(8px,env(safe-area-inset-bottom));font-size:14px;line-height:20px;font-weight:500}
 #message.error{background:#fff0e9;color:#8c260d}
 .leaflet-container{background:#d8e0db;font:inherit}
 .leaflet-popup-content{margin:12px 14px;min-width:230px}
@@ -709,10 +728,10 @@ button.on{outline:3px solid #ffb347;outline-offset:-3px}
 .unit .u-note{grid-column:1/-1}
 button.mini{padding:6px 10px;font-size:13px}
 .units-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:650;margin-top:8px}
-#filter{border:0;border-radius:9px;background:#5b4a8a;color:#fff;font:inherit;font-size:14px;font-weight:650;padding:10px 8px;max-width:200px}
+#filter{border:0;border-radius:10px;background:#4c3a7d;color:#fff;font:inherit;font-size:15px;font-weight:700;padding:12px 8px;min-height:48px;max-width:210px}
 #filter.on{outline:3px solid #ffb347;outline-offset:-3px}
 .hn-icon{width:0!important;height:0!important}
-.hn-icon span{position:absolute;transform:translate(-50%,-50%);background:rgba(255,255,255,.93);border:1px solid #555;border-radius:4px;color:#111;font-weight:800;font-size:12px;line-height:15px;padding:0 4px;white-space:nowrap;pointer-events:none}
+.hn-icon span{position:absolute;transform:translate(-50%,-50%);background:#fff;border:1.5px solid #222;border-radius:4px;color:#000;font-weight:800;font-size:13px;line-height:16px;padding:0 4px;white-space:nowrap;pointer-events:none}
 dialog{border:0;border-radius:14px;padding:0;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 40px);color:#18342d}
 dialog::backdrop{background:rgba(10,30,25,.45)}
 .dlg{padding:16px}
@@ -749,9 +768,11 @@ button.danger{background:#a33}
   <button id="layerButton">Luftbild</button>
   <button id="drawButton">✎ Skizzieren</button>
   <button id="eraseButton">⌫ Radierer</button>
+  <button class="secondary" id="sunBtn" title="Sonnenmodus">☀</button>
   <button class="secondary" id="menuButton">☰ Mehr</button>
   <input id="file" type="file" accept="application/json,.json" hidden>
 </nav>
+<div id="backupBar"><span>💾 Heute noch keine Sicherungsdatei gespeichert.</span><button id="barSave">Speichern</button><button class="secondary" id="barLater">Später</button></div>
 <div id="message" role="status" aria-live="polite">Karte bewegen, nah heranzoomen und „Häuser laden“ tippen.</div>
 
 <dialog id="menu"><div class="dlg">
@@ -769,6 +790,11 @@ button.danger{background:#a33}
     <button id="xlsxMarked">📊 Excel-Liste (alle markierten Häuser)</button>
     <button class="secondary" id="xlsxView">📊 Excel-Liste inkl. offene im Ausschnitt</button>
   </div>
+  <h3>Anzeige</h3>
+  <label class="check"><input type="checkbox" id="sunCheck"> ☀ Sonnenmodus: größere Knöpfe, maximaler Kontrast</label>
+  <h3>Automatische Sicherungen auf diesem Gerät</h3>
+  <p>Die App legt jeden Tag automatisch eine Kopie aller Daten an (die letzten 30 Tage). Damit lässt sich ein Fehler rückgängig machen. Gegen Handyverlust hilft nur die Sicherungsdatei.</p>
+  <div id="snapList"></div>
   <h3>Sichern &amp; Team</h3>
   <div class="stack">
     <button id="backup">💾 Sicherung speichern</button>
@@ -813,7 +839,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 21;
+const VERSION = 22;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -853,9 +879,10 @@ if (!records || typeof records !== 'object' || Array.isArray(records)) records =
 const settings = Object.assign({ revisitDays: 3 }, readJSON(SETKEY, {}));
 delete settings.retentionDays; // automatisches Löschen abgeschaltet
 function persist() {
-  try { localStorage.setItem(KEY, JSON.stringify(records)); return true; }
+  try { localStorage.setItem(KEY, JSON.stringify(records)); settings.lastChange = Date.now(); saveSettings(); dirty = true; setTimeout(checkBackupBar, 0); return true; }
   catch (e) { say('Speichern fehlgeschlagen. Bitte Browser-Speicher prüfen.', true); return false; }
 }
+let dirty = false;
 function saveSettings() { try { localStorage.setItem(SETKEY, JSON.stringify(settings)); } catch (e) {} }
 try { navigator.storage?.persist?.(); } catch (e) {}
 
@@ -866,18 +893,22 @@ const idb = (() => {
     if (dbp) return dbp;
     dbp = new Promise((res, rej) => {
       if (!window.indexedDB) return rej(Error('IndexedDB fehlt'));
-      const r = indexedDB.open('hauskarte-bw', 1);
-      r.onupgradeneeded = () => r.result.createObjectStore('buildings', { keyPath: 'id' });
+      const r = indexedDB.open('hauskarte-bw', 2);
+      r.onupgradeneeded = () => {
+        const db = r.result;
+        if (!db.objectStoreNames.contains('buildings')) db.createObjectStore('buildings', { keyPath: 'id' });
+        if (!db.objectStoreNames.contains('backups')) db.createObjectStore('backups', { keyPath: 'day' });
+      };
       r.onsuccess = () => res(r.result);
       r.onerror = () => rej(r.error);
     });
     return dbp;
   }
-  async function run(mode, fn) {
+  async function run(mode, fn, store = 'buildings') {
     const db = await open();
     return new Promise((res, rej) => {
-      const t = db.transaction('buildings', mode);
-      const req = fn(t.objectStore('buildings'));
+      const t = db.transaction(store, mode);
+      const req = fn(t.objectStore(store));
       t.oncomplete = () => res(req ? req.result : undefined);
       t.onerror = () => rej(t.error);
       t.onabort = () => rej(t.error);
@@ -887,7 +918,10 @@ const idb = (() => {
     all: () => run('readonly', s => s.getAll()),
     put: list => run('readwrite', s => { for (const f of list) s.put(f); }),
     del: ids => run('readwrite', s => { for (const id of ids) s.delete(id); }),
-    clear: () => run('readwrite', s => { s.clear(); })
+    clear: () => run('readwrite', s => { s.clear(); }),
+    backups: () => run('readonly', s => s.getAll(), 'backups'),
+    putBackup: b => run('readwrite', s => { s.put(b); }, 'backups'),
+    delBackups: days => run('readwrite', s => { for (const d of days) s.delete(d); }, 'backups')
   };
 })();
 
@@ -920,11 +954,16 @@ const polygons = L.featureGroup().addTo(map);
 const labels = L.layerGroup().addTo(map);
 
 function style(id) {
+  const o = baseStyle(id);
+  if (!settings.sun) return o;
+  return { ...o, weight: o.weight + 1.5, color: o.dashArray ? o.color : '#000', fillOpacity: Math.min(0.9, o.fillOpacity + 0.2) };
+}
+function baseStyle(id) {
   const st = records[id]?.status;
   const s = st === 'teil' ? PART : STATUS[st];
   if (isDue(records[id])) return { color: '#4a0d0d', weight: 4, dashArray: '7 5', fillColor: s ? s.fill : STATUS.red.fill, fillOpacity: 0.75 };
-  return s ? { color: s.line, weight: 2.5, dashArray: null, fillColor: s.fill, fillOpacity: 0.62 }
-           : { color: OPEN.line, weight: 1.5, dashArray: null, fillColor: OPEN.fill, fillOpacity: 0.35 };
+  return s ? { color: s.line, weight: 3, dashArray: null, fillColor: s.fill, fillOpacity: 0.62 }
+           : { color: '#3d4850', weight: 2, dashArray: null, fillColor: OPEN.fill, fillOpacity: 0.4 };
 }
 function addFeature(f) {
   features.set(f.id, f);
@@ -1559,9 +1598,65 @@ function download(file) {
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
-$('backup').onclick = () => {
+/* ---------- Automatische Tagessicherung ---------- */
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+async function snapshot() {
+  if (!Object.keys(records).length) return;
+  try {
+    await idb.putBackup({ day: today(), at: new Date().toISOString(), count: Object.keys(records).length, data: buildBackup(true) });
+    dirty = false;
+    const all = (await idb.backups()).map(b => b.day).sort();
+    if (all.length > 30) await idb.delBackups(all.slice(0, all.length - 30));
+  } catch (e) { /* ohne IndexedDB keine automatische Sicherung */ }
+}
+async function renderSnapshots() {
+  const box = $('snapList');
+  let list = [];
+  try { list = (await idb.backups()).sort((a, b) => b.day.localeCompare(a.day)); } catch (e) {}
+  if (!list.length) { box.replaceChildren(el('p', { textContent: 'Noch keine automatische Sicherung vorhanden.' })); return; }
+  box.replaceChildren(...list.map(b => {
+    const dl = el('button', { type: 'button', className: 'secondary', textContent: '⬇ Datei' });
+    const rs = el('button', { type: 'button', textContent: '↺ Öffnen' });
+    dl.onclick = () => download(new File([JSON.stringify(b.data)], 'hauskarte-bw-auto-' + b.day + '.json', { type: 'application/json' }));
+    rs.onclick = () => {
+      pendingImport = b.data;
+      $('menu').close();
+      $('importInfo').textContent = `Automatische Sicherung vom ${new Date(b.at).toLocaleString('de-DE')} mit ${b.count} Markierungen. „Zusammenführen“ holt fehlende oder ältere Einträge zurück, ohne etwas zu löschen.`;
+      $('importDlg').showModal();
+    };
+    return el('div', { className: 'snap' }, el('span', { textContent: `${b.day.split('-').reverse().join('.')} · ${b.count} Markierungen` }), dl, rs);
+  }));
+}
+// Hinweisleiste: einmal am Tag eine Sicherungsdatei speichern
+function checkBackupBar() {
+  const changed = (settings.lastChange || 0) > (settings.lastBackup || 0);
+  const savedToday = settings.lastBackup && new Date(settings.lastBackup).toDateString() === new Date().toDateString();
+  const show = Object.keys(records).length > 0 && changed && !savedToday && settings.barLater !== today();
+  $('backupBar').classList.toggle('show', show);
+}
+function saveBackupFile() {
   download(backupFile(true));
-  settings.lastBackup = Date.now(); saveSettings();
+  settings.lastBackup = Date.now(); saveSettings(); checkBackupBar();
+}
+$('barSave').onclick = () => { saveBackupFile(); say('Sicherungsdatei gespeichert (Ordner „Downloads“). Morgen erinnert die App wieder.'); };
+$('barLater').onclick = () => { settings.barLater = today(); saveSettings(); checkBackupBar(); say('Erinnerung für heute ausgeblendet.'); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && dirty) snapshot(); });
+setInterval(() => { if (dirty) snapshot(); }, 15 * 60000);
+
+/* ---------- Sonnenmodus ---------- */
+function applySun() {
+  document.body.classList.toggle('sun', !!settings.sun);
+  $('sunBtn').classList.toggle('on', !!settings.sun);
+  $('sunCheck').checked = !!settings.sun;
+  for (const id of layers.keys()) restyle(id);
+}
+function toggleSun(on) { settings.sun = on; saveSettings(); applySun(); say(on ? '☀ Sonnenmodus an: große Knöpfe, starker Kontrast.' : 'Sonnenmodus aus.'); }
+$('sunBtn').onclick = () => toggleSun(!settings.sun);
+$('sunCheck').onchange = e => toggleSun(e.target.checked);
+applySun();
+
+$('backup').onclick = () => {
+  saveBackupFile();
   $('menu').close(); say('Sicherung wurde zum Download angeboten (inkl. Skizzen und Gebäudeumrisse).');
 };
 $('share').onclick = () => { $('menu').close(); $('shareNames').checked = false; $('shareDlg').showModal(); };
@@ -1628,7 +1723,7 @@ $('impMerge').onclick = () => applyImport(false);
 $('impReplace').onclick = () => { if (confirm('Wirklich alle Markierungen auf diesem Gerät durch die Datei ersetzen?')) applyImport(true); };
 
 /* ================= Menü ================= */
-$('menuButton').onclick = () => { statsTable(); $('revisit').value = String(settings.revisitDays); $('menu').showModal(); };
+$('menuButton').onclick = () => { statsTable(); renderSnapshots(); $('revisit').value = String(settings.revisitDays); $('menu').showModal(); };
 $('revisit').onchange = e => {
   settings.revisitDays = +e.target.value; saveSettings();
   for (const id of layers.keys()) restyle(id);
@@ -1670,8 +1765,8 @@ window.addEventListener('online', () => say('Wieder online.'));
   } catch (e) {
     if (Object.keys(records).length) say('Markierungen erscheinen, sobald die Häuser im Ausschnitt geladen sind.');
   }
-  if (Object.keys(records).length >= 20 && (!settings.lastBackup || Date.now() - settings.lastBackup > 7 * 864e5))
-    setTimeout(() => say('Erinnerung: Letzte Sicherung ist über eine Woche her. „☰ Mehr → Sicherung speichern“.'), 6000);
+  snapshot();
+  checkBackupBar();
 })();
 updateStats();
 
