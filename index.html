@@ -755,7 +755,7 @@ button.danger{background:#a33}
 <div id="map"></div>
 <nav class="toolbar">
   <button id="loc">◎ Mein Standort</button>
-  <button id="load">▣ Häuser laden</button>
+  <button id="load">▣ Häuser finden</button>
   <select id="filter" aria-label="Filter">
     <option value="all">⚲ Alle Häuser</option>
     <option value="open">Nur offene</option>
@@ -773,7 +773,7 @@ button.danger{background:#a33}
   <input id="file" type="file" accept=".json,.txt,application/json,text/plain" hidden>
 </nav>
 <div id="backupBar"><span>💾 Heute noch keine Sicherungsdatei gespeichert.</span><button id="barSave">Speichern</button><button class="secondary" id="barLater">Später</button></div>
-<div id="message" role="status" aria-live="polite">Karte bewegen, nah heranzoomen und „Häuser laden“ tippen.</div>
+<div id="message" role="status" aria-live="polite">Nah heranzoomen und „Häuser finden“ tippen – danach werden Häuser beim Verschieben automatisch gesucht.</div>
 
 <dialog id="menu"><div class="dlg">
   <h2>Mehr</h2>
@@ -845,7 +845,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 27;
+const VERSION = 28;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1191,30 +1191,78 @@ function overpass(q) {
 }
 
 let busy = false;
-const loaded = []; // [{b: LatLngBounds, at}]
-async function load() {
-  if (busy) return;
-  if (map.getZoom() < 16) { say('Bitte näher heranzoomen (mindestens Zoomstufe 16), dann erneut „Häuser laden“ tippen.', true); return; }
-  const b = map.getBounds();
-  if (!bw.intersects(b)) { say('Die App ist nur für Baden-Württemberg gedacht.', true); return; }
-  if (loaded.some(x => x.b.contains(b) && Date.now() - x.at < 15 * 60000)) { say('Dieser Ausschnitt ist schon geladen. Tippe auf ein Gebäude, um es zu markieren.'); return; }
-  if (navigator.onLine === false) { say('Kein Internet. Bereits geladene Häuser bleiben sichtbar.', true); return; }
-  busy = true; loadBtn.disabled = true;
-  say('Gebäude werden geladen …');
-  const bb = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].map(v => v.toFixed(6)).join(',');
+/* ---------- Häuser finden: automatische Suche ----------
+   Die Karte ist in ein festes Raster (ca. 450 × 450 m) eingeteilt. Jede Kachel wird nur einmal
+   abgefragt; danach werden beim Verschieben nur noch die neu sichtbaren, noch nicht durchsuchten
+   Kacheln geladen. Die Erkennung selbst (parseOverpass) bleibt unverändert. */
+const MIN_ZOOM = 16, TILE_LAT = 0.004, TILE_LNG = 0.006, TILE_TTL = 30 * 864e5, TILEKEY = 'hauskarte-bw-kacheln-v1';
+let scanned = readJSON(TILEKEY, {});            // Kachel -> Zeitpunkt der Suche
+for (const [k, t] of Object.entries(scanned)) if (Date.now() - t > TILE_TTL) delete scanned[k];  // nach 30 Tagen neu suchen (neue Häuser)
+function saveTiles() { try { localStorage.setItem(TILEKEY, JSON.stringify(scanned)); } catch (e) {} }
+const tileKey = (i, j) => i + ':' + j;
+function tilesInView() {
+  const b = map.getBounds(), out = [];
+  const i0 = Math.floor(b.getSouth() / TILE_LAT), i1 = Math.floor(b.getNorth() / TILE_LAT);
+  const j0 = Math.floor(b.getWest() / TILE_LNG), j1 = Math.floor(b.getEast() / TILE_LNG);
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+    const box = [i * TILE_LAT, j * TILE_LNG, (i + 1) * TILE_LAT, (j + 1) * TILE_LNG];
+    if (bw.pad(0.05).intersects([[box[0], box[1]], [box[2], box[3]]])) out.push({ k: tileKey(i, j), i, j, box });
+  }
+  return out;
+}
+let autoMode = !!settings.autoFind, scanTimer = 0, retryAt = 0, rescan = false;
+function autoUi() {
+  loadBtn.classList.toggle('on', autoMode);
+  loadBtn.textContent = !autoMode ? '▣ Häuser finden' : busy ? '⏳ Suche läuft …' : map.getZoom() < MIN_ZOOM ? '⏸ Auto-Suche pausiert' : '▣ Auto-Suche an';
+}
+// Nach Ende der Kartenbewegung kurz warten, dann nur fehlende Kacheln laden
+function scheduleScan(delay = 700) {
+  clearTimeout(scanTimer);
+  if (!autoMode) return;
+  scanTimer = setTimeout(scanView, delay);
+}
+async function scanView() {
+  if (!autoMode) return;
+  if (busy) { rescan = true; return; }
+  autoUi();
+  if (map.getZoom() < MIN_ZOOM) { say('Automatische Haussuche pausiert – zum Fortsetzen näher heranzoomen.'); return; }
+  if (navigator.onLine === false) { say('Kein Internet – die automatische Suche läuft weiter, sobald wieder Netz da ist.', true); return; }
+  if (Date.now() < retryAt) { scheduleScan(retryAt - Date.now() + 50); return; }
+  const missing = tilesInView().filter(t => !scanned[t.k]);
+  if (!missing.length) return;
+  // höchstens 9 Kacheln pro Abfrage zu einem Rechteck zusammenfassen
+  const batch = missing.slice(0, 9);
+  const S = Math.min(...batch.map(t => t.box[0])), W = Math.min(...batch.map(t => t.box[1]));
+  const N = Math.max(...batch.map(t => t.box[2])), E = Math.max(...batch.map(t => t.box[3]));
+  const bb = [S, W, N, E].map(v => v.toFixed(6)).join(',');
   const q = `[out:json][timeout:25];(way["building"](${bb});relation["building"]["type"="multipolygon"](${bb}););out geom;node["addr:housenumber"](${bb});out;`;
+  busy = true; autoUi();
+  say('Häuser im neuen Bereich werden gesucht …');
   try {
     const list = parseOverpass(await overpass(q));
     let fresh = 0;
-    for (const f of list) { if (!features.has(f.id)) fresh++; addFeature(f); }
-    loaded.push({ b, at: Date.now() }); if (loaded.length > 30) loaded.shift();
+    for (const f of list) { if (!features.has(f.id)) { fresh++; addFeature(f); } }  // bekannte Häuser nicht doppelt anlegen
+    const now = Date.now();
+    for (const t of batch) scanned[t.k] = now;
+    saveTiles();
     refreshLabels(); updateStats();
-    storeFeatures(list);
-    if (!list.length) say('Keine Gebäude gefunden. Bitte Karte verschieben.');
-    else say(`${fresh} neue Gebäude geladen, ${features.size} insgesamt gespeichert. Tippe auf ein Gebäude, um es zu markieren.`);
+    storeFeatures(list.filter(f => features.get(f.id) === f));
+    say(fresh ? `${fresh} neue Häuser gefunden (${features.size} gespeichert). Auto-Suche aktiv.` : 'Keine neuen Häuser in diesem Bereich. Auto-Suche aktiv.');
+    if (missing.length > batch.length) rescan = true;
   } catch (e) {
-    say('Gebäude konnten nicht geladen werden (' + e.message + '). Bitte gleich noch einmal versuchen.', true);
-  } finally { busy = false; loadBtn.disabled = false; }
+    retryAt = Date.now() + 15000;
+    say('Häuser konnten gerade nicht geladen werden (' + e.message + '). Neuer Versuch beim nächsten Verschieben.', true);
+  } finally {
+    busy = false; autoUi();
+    if (rescan) { rescan = false; scheduleScan(300); }
+  }
+}
+function setAuto(on) {
+  autoMode = on; settings.autoFind = on; saveSettings(); autoUi();
+  if (on) {
+    if (map.getZoom() < MIN_ZOOM) say('Auto-Suche an. Bitte näher heranzoomen (mindestens Zoomstufe 16) – dann werden Häuser automatisch gesucht.');
+    else { say('Auto-Suche an: Häuser werden beim Verschieben der Karte automatisch gesucht.'); scheduleScan(0); }
+  } else { clearTimeout(scanTimer); say('Auto-Suche aus. Zum Einschalten erneut „Häuser finden“ tippen.'); }
 }
 // Gebäude eines Gebiets nachladen, in Kacheln, damit große Gebiete nicht scheitern
 async function loadArea(box) {
@@ -1442,7 +1490,7 @@ locBtn.onclick = () => {
       firstFix = false;
       if (!bw.contains(ll)) { follow = false; locUi(); say('Standort liegt außerhalb von Baden-Württemberg.', true); return; }
       map.setView(ll, 18);
-      say('Standort gefunden. Jetzt „Häuser laden“ tippen.');
+      say(autoMode ? 'Standort gefunden. Häuser werden automatisch gesucht.' : 'Standort gefunden. Jetzt „Häuser finden“ tippen.');
     } else if (follow) map.panTo(ll);
     locUi();
   }, e => {
@@ -1850,7 +1898,7 @@ $('closeMenu').onclick = () => $('menu').close();
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('click', e => { if (e.target === d) d.close(); });
 
 /* ================= Start ================= */
-loadBtn.addEventListener('click', load);
+loadBtn.addEventListener('click', () => setAuto(!autoMode));
 $('filter').onchange = e => {
   filter = e.target.value;
   e.target.classList.toggle('on', filter !== 'all');
@@ -1864,10 +1912,13 @@ map.on('moveend', () => {
   refreshLabels(); updateStats();
   clearTimeout(viewTimer);
   viewTimer = setTimeout(() => { const c = map.getCenter(); settings.view = { c: [r6(c.lat), r6(c.lng)], z: map.getZoom() }; saveSettings(); }, 800);
-  if (map.getZoom() >= 16 && !busy && !drawMode && !eraseMode && !msg.classList.contains('error') && /Ausschnitt|heranzoomen|bewegen/.test(msg.textContent)) say('Kartenausschnitt gewählt. „Häuser laden“ tippen.');
+  autoUi();
+  if (autoMode) scheduleScan();
+  else if (map.getZoom() >= MIN_ZOOM && !busy && !drawMode && !eraseMode && !msg.classList.contains('error') && /Ausschnitt|heranzoomen|bewegen/.test(msg.textContent)) say('Kartenausschnitt gewählt. „Häuser finden“ tippen.');
 });
-window.addEventListener('offline', () => say('Keine Internetverbindung. Markieren funktioniert weiter, neue Häuser laden erst wieder mit Netz.', true));
-window.addEventListener('online', () => say('Wieder online.'));
+map.on('movestart zoomstart', () => clearTimeout(scanTimer));  // während der Bewegung keine Suche
+window.addEventListener('offline', () => say('Keine Internetverbindung. Markieren funktioniert weiter, neue Häuser werden erst wieder mit Netz gesucht.', true));
+window.addEventListener('online', () => { say('Wieder online.'); if (autoMode) scheduleScan(500); });
 
 (async () => {
   try {
@@ -1875,12 +1926,14 @@ window.addEventListener('online', () => say('Wieder online.'));
     for (const f of stored) if (validFeature(f)) addFeature(f);
     refreshLabels(); updateStats();
     const marked = Object.keys(records).filter(id => features.has(id)).length;
-    if (stored.length) say(`${stored.length} gespeicherte Gebäude geladen${marked ? ', davon ' + marked + ' markiert' : ''}. Für neue Straßen „Häuser laden“ tippen.`);
+    if (stored.length) say(`${stored.length} gespeicherte Gebäude geladen${marked ? ', davon ' + marked + ' markiert' : ''}. ${autoMode ? 'Auto-Suche aktiv.' : 'Für neue Straßen „Häuser finden“ tippen.'}`);
   } catch (e) {
     if (Object.keys(records).length) say('Markierungen erscheinen, sobald die Häuser im Ausschnitt geladen sind.');
   }
   snapshot();
   checkBackupBar();
+  autoUi();
+  if (autoMode) scheduleScan(1200);
   // per Link geschicktes Gebiet einlesen
   try {
     const d = await unpackHash();
