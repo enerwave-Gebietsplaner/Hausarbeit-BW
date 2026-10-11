@@ -826,11 +826,12 @@ button.danger{background:#a33}
   <label class="check"><input type="radio" name="shareArea" value="view"> Nur der aktuelle Kartenausschnitt</label>
   <label class="check"><input type="checkbox" id="shareNames"> Namen nicht Angetroffener mitsenden</label>
   <div class="stack">
-    <button id="shareGo">📤 Senden per WhatsApp, E-Mail, Bluetooth …</button>
+    <button id="shareLink">🔗 Als Link senden (empfohlen)</button>
+    <button class="secondary" id="shareGo">📎 Als Datei senden (z. B. Bluetooth)</button>
     <button class="secondary" id="shareSave">⬇ Nur als Datei speichern</button>
     <button class="secondary" id="shareCancel">Abbrechen</button>
   </div>
-  <p>Beim Kollegen: Datei aus WhatsApp/E-Mail speichern, dann in der Hauskarte „☰ Mehr → Datei öffnen → Zusammenführen“.</p>
+  <p><b>Link:</b> Der Kollege tippt in WhatsApp oder der E-Mail einfach auf den Link – die Hauskarte öffnet sich mit dem Gebiet, er bestätigt mit „Zusammenführen“. Fertig.</p>
 </div></dialog>
 
 <script>
@@ -844,7 +845,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 26;
+const VERSION = 27;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1214,6 +1215,25 @@ async function load() {
   } catch (e) {
     say('Gebäude konnten nicht geladen werden (' + e.message + '). Bitte gleich noch einmal versuchen.', true);
   } finally { busy = false; loadBtn.disabled = false; }
+}
+// Gebäude eines Gebiets nachladen, in Kacheln, damit große Gebiete nicht scheitern
+async function loadArea(box) {
+  const [S, W, N, E] = box, step = 0.012, tiles = [];
+  for (let la = S; la < N; la += step) for (let lo = W; lo < E; lo += step) tiles.push([la, lo, Math.min(la + step, N), Math.min(lo + step, E)]);
+  if (!tiles.length || tiles.length > 40) return 0;
+  let n = 0;
+  for (let i = 0; i < tiles.length; i++) {
+    const bb = tiles[i].map(v => v.toFixed(6)).join(',');
+    say(`Häuser des Gebiets werden geladen … (${i + 1}/${tiles.length})`);
+    try {
+      const list = parseOverpass(await overpass(`[out:json][timeout:25];(way["building"](${bb});relation["building"]["type"="multipolygon"](${bb}););out geom;node["addr:housenumber"](${bb});out;`));
+      for (const f of list) addFeature(f);
+      storeFeatures(list); n += list.length;
+    } catch (e) { /* einzelne Kachel fehlgeschlagen – Rest weiter laden */ }
+  }
+  for (const id of layers.keys()) restyle(id);
+  refreshLabels(); updateStats();
+  return n;
 }
 async function storeFeatures(list) {
   try {
@@ -1707,6 +1727,53 @@ $('shareGo').onclick = async () => {
     say('Teilen hat nicht geklappt (' + e.message + '). Die Datei liegt jetzt in „Downloads“ und kann von dort verschickt werden.', true);
   }
 };
+const b64u = bytes => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const unb64u = str => { const s = atob(str.replace(/-/g, '+').replace(/_/g, '/')); const b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; };
+async function packData(data) {
+  let bytes = new TextEncoder().encode(JSON.stringify(data)), tag = 'j';
+  if (window.CompressionStream) { bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()); tag = 'z'; }
+  return location.origin + location.pathname + '#' + tag + '=' + b64u(bytes);
+}
+async function unpackHash() {
+  const m = location.hash.match(/^#([zj])=(.+)$/);
+  if (!m) return null;
+  let bytes = unb64u(m[2]);
+  if (m[1] === 'z') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+async function buildLink(withNames) {
+  const area = document.querySelector('input[name="shareArea"]:checked')?.value || 'all';
+  const data = buildBackup(withNames, area);
+  const fs = Object.values(data.buildings);
+  data.count = fs.length;
+  if (fs.length) {
+    const lat = fs.map(f => f.c[0]), lng = fs.map(f => f.c[1]);
+    data.bbox = [Math.min(...lat) - 0.0005, Math.min(...lng) - 0.0007, Math.max(...lat) + 0.0005, Math.max(...lng) + 0.0007].map(r6);
+  }
+  const LIMIT = 30000;
+  let url = await packData(data);
+  if (url.length > LIMIT) { // zu lang: nur markierte Häuser mitschicken, den Rest lädt der Kollege selbst
+    const keep = {}; for (const id of Object.keys(data.records)) if (data.buildings[id]) keep[id] = data.buildings[id];
+    data.buildings = keep; url = await packData(data);
+  }
+  if (url.length > LIMIT) { data.buildings = {}; url = await packData(data); }
+  return { url, info: `${fs.length} Häuser, ${Object.keys(data.records).length} Markierungen` };
+}
+$('shareLink').onclick = async () => {
+  if (emptyHere()) { $('shareDlg').close(); return; }
+  const withNames = $('shareNames').checked;
+  $('shareDlg').close();
+  say('Link wird erstellt …');
+  try {
+    const { url, info } = await buildLink(withNames);
+    const text = 'Hauskarte-Gebiet (' + info + '): ' + url;
+    if (navigator.share) { await navigator.share({ text }); say('Link geteilt (' + info + '). Der Kollege tippt einfach auf den Link.'); }
+    else { await navigator.clipboard.writeText(url); say('Link kopiert (' + info + '). In WhatsApp oder E-Mail einfügen und senden.'); }
+  } catch (e) {
+    if (e.name === 'AbortError') { say('Teilen abgebrochen.'); return; }
+    say('Link konnte nicht geteilt werden: ' + e.message, true);
+  }
+};
 $('shareSave').onclick = () => { if (emptyHere()) { $('shareDlg').close(); return; } download(teamFile($('shareNames').checked)); $('shareDlg').close(); say('Datei liegt in „Downloads“. Von dort per WhatsApp, E-Mail oder Bluetooth verschicken.'); };
 $('restore').onclick = () => { $('menu').close(); $('file').click(); };
 
@@ -1761,6 +1828,10 @@ function applyImport(replace) {
   refreshLabels(); updateStats();
   const gebiet = geo.length ? ` Gebiet mit ${geo.length} Häusern eingespielt.` : '';
   say((replace ? `Sicherung wiederhergestellt: ${added} Markierungen.` : `Zusammengeführt: ${added} neu, ${updated} abgeglichen.`) + gebiet);
+  // Links enthalten bei großen Gebieten nicht alle Umrisse: fehlende Häuser selbst nachladen
+  if (Array.isArray(d.bbox) && d.bbox.length === 4 && geo.length < (d.count || Infinity)) {
+    loadArea(d.bbox).then(n => say(`Gebiet eingespielt: ${added + updated} Markierungen, ${n} Häuser geladen.`));
+  }
 }
 $('impMerge').onclick = () => applyImport(false);
 $('impReplace').onclick = () => { if (confirm('Wirklich alle Markierungen auf diesem Gerät durch die Datei ersetzen?')) applyImport(true); };
@@ -1810,6 +1881,17 @@ window.addEventListener('online', () => say('Wieder online.'));
   }
   snapshot();
   checkBackupBar();
+  // per Link geschicktes Gebiet einlesen
+  try {
+    const d = await unpackHash();
+    if (d) {
+      history.replaceState(null, '', location.pathname);
+      if (d.app !== 'Hauskarte BW' || !d.records) throw Error('kein Hauskarte-Link');
+      pendingImport = d;
+      $('importInfo').textContent = `Ein Kollege hat dir ein Gebiet geschickt: ${d.count ?? Object.keys(d.buildings || {}).length} Häuser, ${Object.keys(d.records).length} Markierungen${d.createdAt ? ' (Stand ' + fmt(d.createdAt) + ')' : ''}. Tippe auf „Zusammenführen“ – deine eigenen Markierungen bleiben erhalten.`;
+      $('importDlg').showModal();
+    }
+  } catch (e) { history.replaceState(null, '', location.pathname); say('Der Link ist unvollständig oder beschädigt: ' + e.message, true); }
 })();
 updateStats();
 
