@@ -702,6 +702,15 @@ button.on{outline:3px solid #ffb347;outline-offset:-3px}
 .editor textarea{width:100%;min-height:64px;font:15px system-ui,sans-serif;border:1px solid #aaa;border-radius:7px;padding:7px}
 .editor .row{display:flex;gap:6px;margin-top:8px}
 .editor .row button{flex:1}
+.mfh{width:100%;margin-top:8px}
+.units{max-height:34vh;overflow:auto;margin-top:6px;-webkit-overflow-scrolling:touch}
+.unit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) auto;gap:4px;padding:5px 0;border-bottom:1px solid #e3e8e6}
+.unit input,.unit select{font:14px system-ui,sans-serif;padding:7px 6px;border:1px solid #aaa;border-radius:7px;min-width:0;width:100%;background:#fff;color:#18342d}
+.unit .u-note{grid-column:1/-1}
+button.mini{padding:6px 10px;font-size:13px}
+.units-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:650;margin-top:8px}
+#filter{border:0;border-radius:9px;background:#5b4a8a;color:#fff;font:inherit;font-size:14px;font-weight:650;padding:10px 8px;max-width:200px}
+#filter.on{outline:3px solid #ffb347;outline-offset:-3px}
 .hn-icon{width:0!important;height:0!important}
 .hn-icon span{position:absolute;transform:translate(-50%,-50%);background:rgba(255,255,255,.93);border:1px solid #555;border-radius:4px;color:#111;font-weight:800;font-size:12px;line-height:15px;padding:0 4px;white-space:nowrap;pointer-events:none}
 dialog{border:0;border-radius:14px;padding:0;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 40px);color:#18342d}
@@ -728,6 +737,14 @@ button.danger{background:#a33}
 <nav class="toolbar">
   <button id="loc">◎ Mein Standort</button>
   <button id="load">▣ Häuser laden</button>
+  <select id="filter" aria-label="Filter">
+    <option value="all">⚲ Alle Häuser</option>
+    <option value="open">Nur offene</option>
+    <option value="red">Nur nicht angetroffen</option>
+    <option value="termin">Nur Termine</option>
+    <option value="done">Nur erledigt</option>
+    <option value="teil">Mehrfamilienhäuser offen</option>
+  </select>
   <button id="layerButton">Luftbild</button>
   <button id="drawButton">✎ Skizzieren</button>
   <button id="eraseButton">⌫ Radierer</button>
@@ -739,6 +756,11 @@ button.danger{background:#a33}
 <dialog id="menu"><div class="dlg">
   <h2>Mehr</h2>
   <div id="statsTable"></div>
+  <h3>Auswertung</h3>
+  <div class="stack">
+    <button id="xlsxMarked">📊 Excel-Liste (alle markierten Häuser)</button>
+    <button class="secondary" id="xlsxView">📊 Excel-Liste inkl. offene im Ausschnitt</button>
+  </div>
   <h3>Sichern &amp; Team</h3>
   <div class="stack">
     <button id="backup">💾 Sicherung speichern</button>
@@ -783,7 +805,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 19;
+const VERSION = 20;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -798,6 +820,14 @@ const STATUS = {
   kein:   { label: 'Kein Interesse',    icon: '⊘', fill: '#8b5cf6', line: '#5b21b6' }
 };
 const OPEN = { fill: '#86919b', line: '#53616b' };
+const PART = { label: 'Teilweise erledigt', fill: '#f59e0b', line: '#b45309' };
+const DONE = s => s === 'green' || s === 'kein';
+// Mehrfamilienhaus: Gesamtstatus aus den Parteien ableiten
+function aggStatus(units) {
+  if (!units.some(u => u.s)) return undefined;
+  return units.every(u => DONE(u.s)) ? 'green' : 'teil';
+}
+function progress(r) { const u = r?.units; return u?.length ? u.filter(x => DONE(x.s)).length + '/' + u.length : ''; }
 
 /* ================= Lokaler Speicher ================= */
 const KEY = 'hauskarte-bw-v4', DRAWKEY = 'hauskarte-bw-skizzen-v1', SETKEY = 'hauskarte-bw-settings-v1';
@@ -874,7 +904,8 @@ const polygons = L.featureGroup().addTo(map);
 const labels = L.layerGroup().addTo(map);
 
 function style(id) {
-  const s = STATUS[records[id]?.status];
+  const st = records[id]?.status;
+  const s = st === 'teil' ? PART : STATUS[st];
   return s ? { color: s.line, weight: 2.5, fillColor: s.fill, fillOpacity: 0.62 }
            : { color: OPEN.line, weight: 1.5, fillColor: OPEN.fill, fillOpacity: 0.35 };
 }
@@ -888,10 +919,33 @@ function addFeature(f) {
     L.DomEvent.stopPropagation(e);
     openEditor(f.id);
   });
-  layer.addTo(polygons);
   layers.set(f.id, layer);
+  if (matches(f.id)) layer.addTo(polygons);
 }
-function restyle(id) { layers.get(id)?.setStyle(style(id)); }
+function restyle(id) { const l = layers.get(id); if (!l) return; l.setStyle(style(id)); showIfMatch(id, l); }
+
+let filter = 'all';
+function statesOf(r) {
+  if (!r) return ['open'];
+  if (r.units?.length) return r.units.map(u => u.s || 'open');
+  return [r.status || 'open'];
+}
+function matches(id) {
+  if (filter === 'all') return true;
+  const r = records[id], ss = statesOf(r);
+  if (filter === 'open') return ss.includes('open');
+  if (filter === 'red') return ss.includes('red');
+  if (filter === 'termin') return ss.includes('termin');
+  if (filter === 'done') return r?.status === 'green' || r?.status === 'kein';
+  if (filter === 'teil') return !!r?.units?.length && r.status !== 'green';
+  return true;
+}
+function showIfMatch(id, l) {
+  const show = matches(id), has = polygons.hasLayer(l);
+  if (show && !has) polygons.addLayer(l);
+  else if (!show && has) polygons.removeLayer(l);
+}
+function applyFilter() { for (const [id, l] of layers) showIfMatch(id, l); refreshLabels(); }
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function refreshLabels() {
@@ -900,10 +954,12 @@ function refreshLabels() {
   const b = map.getBounds().pad(0.1);
   let n = 0;
   for (const f of features.values()) {
-    if (!f.hn || !b.contains(f.c)) continue;
+    const p = progress(records[f.id]);
+    const txt = [f.hn, p && '🏢 ' + p].filter(Boolean).join(' · ');
+    if (!txt || !b.contains(f.c) || !matches(f.id)) continue;
     if (++n > 600) break;
     labels.addLayer(L.marker(f.c, {
-      icon: L.divIcon({ className: 'hn-icon', html: '<span>' + esc(f.hn) + '</span>', iconSize: [0, 0] }),
+      icon: L.divIcon({ className: 'hn-icon', html: '<span>' + esc(txt) + '</span>', iconSize: [0, 0] }),
       interactive: false, keyboard: false
     }));
   }
@@ -1126,10 +1182,16 @@ function openEditor(id) {
   }
   const reset = el('button', { type: 'button', className: 'secondary', textContent: 'Zurücksetzen' });
   const save = el('button', { type: 'button', textContent: 'Speichern & schließen' });
+  const mfhBtn = el('button', { type: 'button', className: 'secondary mfh', textContent: '🏢 Mehrere Parteien (Mehrfamilienhaus)' });
+  const unitsWrap = el('div');
   function refresh() {
     const r = rec();
+    const multi = !!r.units?.length;
     for (const k in btns) btns[k].classList.toggle('active', r.status === k);
-    namesWrap.style.display = r.status === 'red' ? 'block' : 'none';
+    grid.style.display = multi ? 'none' : 'grid';
+    mfhBtn.style.display = multi ? 'none' : 'block';
+    unitsWrap.style.display = multi ? 'block' : 'none';
+    namesWrap.style.display = !multi && r.status === 'red' ? 'block' : 'none';
     const v = r.visits?.length || 0;
     meta.textContent = r.updatedAt ? `Zuletzt: ${fmt(r.updatedAt)} · ${v} ${v === 1 ? 'Besuch' : 'Besuche'}` : 'Noch nicht besucht';
   }
@@ -1153,32 +1215,95 @@ function openEditor(id) {
     if (key === 'green' || key === 'kein') { map.closePopup(); say(addrText(f) + ': ' + STATUS[key].label + ' gespeichert.'); }
     else say(STATUS[key].label + ' gespeichert. ' + (key === 'red' ? 'Namen eintragen und „Speichern“ tippen.' : 'Notiz eintragen und „Speichern“ tippen.'));
   }
+  function saveUnits(units, visit) {
+    const now = new Date().toISOString();
+    const r = { ...rec(), units };
+    readFields(r);
+    r.status = aggStatus(units);
+    if (!r.status) delete r.status;
+    r.updatedAt = now;
+    if (visit) r.visits = (r.visits || []).concat({ d: now, s: visit.s, u: visit.u }).slice(-60);
+    records[id] = r;
+    if (!persist()) return false;
+    restyle(id); updateStats(); refreshLabels(); refresh();
+    return true;
+  }
+  function renderUnits() {
+    const r = rec(), units = r.units || [];
+    const list = el('div', { className: 'units' });
+    units.forEach((u, i) => {
+      const name = el('input', { value: u.l || '', placeholder: 'Klingel / Wohnung' });
+      const sel = el('select');
+      sel.append(el('option', { value: '', textContent: '– offen' }));
+      for (const [k, s] of Object.entries(STATUS)) sel.append(el('option', { value: k, textContent: s.icon + ' ' + s.label }));
+      sel.value = u.s || '';
+      if (STATUS[u.s]) { sel.style.background = STATUS[u.s].fill; sel.style.color = '#fff'; }
+      const del = el('button', { type: 'button', className: 'secondary mini', textContent: '✕', title: 'Partei entfernen' });
+      const note = el('input', { className: 'u-note', value: u.note || '', placeholder: 'Name / Notiz' });
+      const upd = patch => { const all = rec().units.map(x => ({ ...x })); Object.assign(all[i], patch); for (const k in all[i]) if (all[i][k] === undefined || all[i][k] === '') delete all[i][k]; return all; };
+      name.onchange = () => saveUnits(upd({ l: name.value.trim() }));
+      note.onchange = () => saveUnits(upd({ note: note.value.trim() }));
+      sel.onchange = () => {
+        const s = sel.value || undefined;
+        const cur = rec().units[i].l || String(i + 1);
+        if (saveUnits(upd({ s, d: new Date().toISOString() }), { s: s || 'open', u: cur })) {
+          renderUnits();
+          say(cur + ': ' + (s ? STATUS[s].label : 'offen') + ' · ' + progress(rec()) + ' erledigt.');
+        }
+      };
+      del.onclick = () => {
+        if (!confirm(`Partei „${u.l || i + 1}“ wirklich entfernen?`)) return;
+        const all = rec().units.filter((_, j) => j !== i);
+        if (all.length) saveUnits(all); else { const r2 = { ...rec() }; delete r2.units; delete r2.status; records[id] = r2; persist(); restyle(id); updateStats(); refreshLabels(); refresh(); }
+        renderUnits();
+      };
+      list.append(el('div', { className: 'unit' }, name, sel, del, note));
+    });
+    const add = el('button', { type: 'button', className: 'secondary mini', textContent: '+ Partei' });
+    add.onclick = () => { const all = (rec().units || []).map(x => ({ ...x })); all.push({ l: String(all.length + 1) }); saveUnits(all); renderUnits(); list.scrollTop = list.scrollHeight; };
+    unitsWrap.replaceChildren(el('div', { className: 'units-head' }, el('span', { textContent: `Parteien · ${progress(r) || '0/0'} erledigt` }), add), list);
+  }
+  mfhBtn.onclick = () => {
+    const n = parseInt(prompt('Wie viele Parteien / Klingeln hat das Haus?', '6'), 10);
+    if (!(n >= 1 && n <= 80)) return;
+    const r = rec();
+    const units = Array.from({ length: n }, (_, i) => ({ l: String(i + 1) }));
+    // bisherige Einzelhaus-Markierung bleibt bei Partei 1 erhalten
+    if (r.status && STATUS[r.status]) { units[0].s = r.status; units[0].d = r.updatedAt; if (r.names?.length) units[0].note = r.names.join(', '); }
+    saveUnits(units);
+    renderUnits();
+    say(`${n} Parteien angelegt. Klingelnamen eintragen und Status pro Partei wählen.`);
+  };
   reset.onclick = () => {
-    if (records[id] && !confirm('Markierung, Namen und Notiz für dieses Gebäude löschen?')) return;
+    if (records[id] && !confirm('Markierung, Namen, Notiz und Parteien für dieses Gebäude löschen?')) return;
     delete records[id]; persist(); restyle(id); updateStats(); map.closePopup(); say('Markierung entfernt.');
   };
   save.onclick = () => {
     const r = { ...rec() };
     readFields(r);
-    if (!r.status && (r.note || r.names)) { r.status = 'red'; r.visits = [{ d: new Date().toISOString(), s: 'red' }]; }
-    if (r.status) { r.updatedAt = r.updatedAt || new Date().toISOString(); records[id] = r; }
+    if (!r.status && !r.units && (r.note || r.names)) { r.status = 'red'; r.visits = [{ d: new Date().toISOString(), s: 'red' }]; }
+    if (r.status || r.units) { r.updatedAt = r.updatedAt || new Date().toISOString(); records[id] = r; }
     if (!persist()) return;
     restyle(id); updateStats(); map.closePopup();
     const n = r.names?.length || 0;
     say('Gespeichert' + (n ? ` (${n} ${n === 1 ? 'Name' : 'Namen'})` : '') + '.');
   };
   const box = el('div', { className: 'editor' },
-    el('strong', { textContent: addrText(f) }), meta, grid, namesWrap,
+    el('strong', { textContent: addrText(f) }), meta, grid, mfhBtn, unitsWrap, namesWrap,
     el('label', { textContent: 'Notiz' }), note,
     el('div', { className: 'row' }, reset, save));
+  if (rec().units?.length) renderUnits();
   refresh();
-  L.popup({ maxWidth: 320, autoPanPadding: [20, 20] }).setLatLng(f.c).setContent(box).openOn(map);
+  L.popup({ maxWidth: 320, maxHeight: Math.max(220, map.getSize().y - 50), autoPanPadding: [10, 10] }).setLatLng(f.c).setContent(box).openOn(map);
 }
 
 /* ================= Übersicht ================= */
 function counts() {
-  const c = { green: 0, red: 0, termin: 0, kein: 0 };
-  for (const r of Object.values(records)) if (c[r.status] !== undefined) c[r.status]++;
+  const c = { green: 0, red: 0, termin: 0, kein: 0, teil: 0 };
+  for (const r of Object.values(records)) {
+    if (r.units?.length) { for (const u of r.units) if (c[u.s] !== undefined) c[u.s]++; if (r.status === 'teil') c.teil++; }
+    else if (c[r.status] !== undefined) c[r.status]++;
+  }
   return c;
 }
 function updateStats() {
@@ -1194,6 +1319,7 @@ function updateStats() {
     s.firstChild.style.background = STATUS[k].fill;
     stats.append(s);
   }
+  if (c.teil) { const s = el('span', { title: PART.label }, el('i'), '🏢' + c.teil); s.firstChild.style.background = PART.fill; stats.append(s); }
   if (features.size) { const s = el('span', { title: 'Offen im Ausschnitt' }, el('i'), open + ' offen'); s.firstChild.style.background = OPEN.fill; stats.append(s); }
 }
 function statsTable() {
@@ -1203,6 +1329,7 @@ function statsTable() {
   const today = new Date().toDateString();
   let visitsToday = 0;
   for (const r of Object.values(records)) for (const v of r.visits || []) if (new Date(v.d).toDateString() === today) visitsToday++;
+  t.append(el('tr', {}, el('td', { textContent: '🏢 Mehrfamilienhäuser teilweise' }), el('td', { textContent: c.teil })));
   t.append(el('tr', {}, el('td', { textContent: 'Besuche heute' }), el('td', { textContent: visitsToday })));
   t.append(el('tr', {}, el('td', { textContent: 'Gespeicherte Gebäude' }), el('td', { textContent: features.size })));
   $('statsTable').replaceChildren(t);
@@ -1313,6 +1440,78 @@ $('layerButton').onclick = () => {
   map.removeLayer(street); aerial.addTo(map); aerialOn = true; btn.textContent = 'Straßenkarte'; say('Luftbild wird geladen.');
 };
 
+/* ================= Excel-Export (.xlsx, ohne Zusatzbibliothek) ================= */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files) {
+  const enc = new TextEncoder(), parts = [], central = [];
+  let off = 0;
+  for (const f of files) {
+    const nb = enc.encode(f.name), d = enc.encode(f.text), crc = crc32(d);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(12, 0x21, true);
+    h.setUint32(14, crc, true); h.setUint32(18, d.length, true); h.setUint32(22, d.length, true); h.setUint16(26, nb.length, true);
+    parts.push(new Uint8Array(h.buffer), nb, d);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(14, 0x21, true);
+    c.setUint32(16, crc, true); c.setUint32(20, d.length, true); c.setUint32(24, d.length, true); c.setUint16(28, nb.length, true); c.setUint32(42, off, true);
+    central.push(new Uint8Array(c.buffer), nb);
+    off += 30 + nb.length + d.length;
+  }
+  const size = central.reduce((a, b) => a + b.length, 0);
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, size, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(e.buffer)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+const xe = s => String(s ?? '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function colName(i) { let s = ''; i++; while (i) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = (i - m - 1) / 26; } return s; }
+function buildXlsx(rows, widths, sheetName) {
+  const NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main', RNS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const data = rows.map((r, ri) => `<row r="${ri + 1}">` + r.map((v, ci) => {
+    const ref = colName(ci) + (ri + 1), st = ri === 0 ? ' s="1"' : '';
+    return typeof v === 'number' ? `<c r="${ref}"${st}><v>${v}</v></c>` : `<c r="${ref}" t="inlineStr"${st}><is><t xml:space="preserve">${xe(v)}</t></is></c>`;
+  }).join('') + '</row>').join('');
+  const last = colName(rows[0].length - 1) + rows.length;
+  const hdr = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  return zipStore([
+    { name: '[Content_Types].xml', text: hdr + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
+    { name: '_rels/.rels', text: hdr + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: 'xl/workbook.xml', text: hdr + `<workbook xmlns="${NS}" xmlns:r="${RNS}"><sheets><sheet name="${xe(sheetName)}" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">'${xe(sheetName)}'!$A$1:$${last.replace(/(\d+)$/, '$$$1')}</definedName></definedNames></workbook>` },
+    { name: 'xl/_rels/workbook.xml.rels', text: hdr + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>' },
+    { name: 'xl/styles.xml', text: hdr + `<styleSheet xmlns="${NS}"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>` },
+    { name: 'xl/worksheets/sheet1.xml', text: hdr + `<worksheet xmlns="${NS}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('')}</cols><sheetData>${data}</sheetData><autoFilter ref="A1:${last}"/></worksheet>` }
+  ]);
+}
+function exportExcel(withOpen) {
+  const head = ['Straße', 'Hausnr.', 'Partei', 'Status', 'Namen nicht angetroffen', 'Notiz', 'Letzte Änderung', 'Besuche', 'Breitengrad', 'Längengrad', 'Gebäude-ID'];
+  const label = s => s === 'teil' ? PART.label : STATUS[s]?.label || 'offen';
+  const rows = [];
+  const ids = new Set(Object.keys(records));
+  if (withOpen) { const b = map.getBounds(); for (const f of features.values()) if (b.contains(f.c)) ids.add(f.id); }
+  for (const id of ids) {
+    const r = records[id] || {}, f = features.get(id);
+    const base = [f?.st || '', f?.hn || ''], pos = f ? [f.c[0], f.c[1], id] : ['', '', id];
+    if (r.units?.length) {
+      r.units.forEach((u, i) => {
+        const lbl = u.l || String(i + 1);
+        const visits = (r.visits || []).filter(v => v.u === lbl).length;
+        rows.push([...base, lbl, label(u.s), '', u.note || '', u.d ? fmt(u.d) : '', visits, ...pos]);
+      });
+      if (r.note) rows.push([...base, 'ganzes Haus', label(r.status), '', r.note, r.updatedAt ? fmt(r.updatedAt) : '', 0, ...pos]);
+    } else {
+      rows.push([...base, '', label(r.status), (r.names || []).join(', '), r.note || '', r.updatedAt ? fmt(r.updatedAt) : '', r.visits?.length || 0, ...pos]);
+    }
+  }
+  if (!rows.length) { say('Noch keine Daten für die Excel-Liste vorhanden.', true); return; }
+  rows.sort((a, b) => (a[0] || '~').localeCompare(b[0] || '~', 'de') || String(a[1]).localeCompare(String(b[1]), 'de', { numeric: true }));
+  const blob = buildXlsx([head, ...rows], [26, 9, 16, 20, 30, 34, 18, 9, 12, 12, 16], 'Hauskarte');
+  download(new File([blob], 'hauskarte-bw-liste-' + new Date().toISOString().slice(0, 10) + '.xlsx', { type: blob.type }));
+  $('menu').close();
+  say(`Excel-Liste mit ${rows.length} Zeilen wurde zum Download angeboten.`);
+}
+$('xlsxMarked').onclick = () => exportExcel(false);
+$('xlsxView').onclick = () => exportExcel(true);
+
 /* ================= Sichern, Teilen, Zusammenführen ================= */
 function buildBackup(withNames = true) {
   const recs = {}, buildings = {};
@@ -1410,6 +1609,14 @@ for (const d of document.querySelectorAll('dialog')) d.addEventListener('click',
 
 /* ================= Start ================= */
 loadBtn.addEventListener('click', load);
+$('filter').onchange = e => {
+  filter = e.target.value;
+  e.target.classList.toggle('on', filter !== 'all');
+  applyFilter();
+  let n = 0; const b = map.getBounds();
+  for (const [id, l] of layers) if (polygons.hasLayer(l) && b.contains(features.get(id).c)) n++;
+  say(filter === 'all' ? 'Filter aus: alle Häuser sichtbar.' : `Filter „${e.target.selectedOptions[0].textContent}“: ${n} Häuser im Ausschnitt.`);
+};
 let viewTimer = 0;
 map.on('moveend', () => {
   refreshLabels(); updateStats();
