@@ -820,7 +820,10 @@ button.danger{background:#a33}
 
 <dialog id="shareDlg"><div class="dlg">
   <h2>An Kollegen senden</h2>
-  <p>Gesendet werden alle Markierungen, Notizen und Skizzen als kleine Datei.</p>
+  <p>Gesendet werden die Häuser des Gebiets (auch unmarkierte), alle Markierungen, Notizen, Skizzen und der Kartenausschnitt. Der Kollege sieht danach genau dieselbe Karte.</p>
+  <p><b>Welches Gebiet mitsenden?</b></p>
+  <label class="check"><input type="radio" name="shareArea" value="all" checked> Alle gespeicherten Häuser (komplettes Gebiet)</label>
+  <label class="check"><input type="radio" name="shareArea" value="view"> Nur der aktuelle Kartenausschnitt</label>
   <label class="check"><input type="checkbox" id="shareNames"> Namen nicht Angetroffener mitsenden</label>
   <div class="stack">
     <button id="shareGo">📤 Senden per WhatsApp, E-Mail, Bluetooth …</button>
@@ -841,7 +844,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 23;
+const VERSION = 24;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1579,20 +1582,26 @@ $('xlsxMarked').onclick = () => exportExcel(false);
 $('xlsxView').onclick = () => exportExcel(true);
 
 /* ================= Sichern, Teilen, Zusammenführen ================= */
-function buildBackup(withNames = true) {
+// area: 'marked' = nur markierte Häuser, 'view' = Kartenausschnitt + markierte, 'all' = alle gespeicherten Häuser
+function buildBackup(withNames = true, area = 'all') {
   const recs = {}, buildings = {};
   for (const [id, r] of Object.entries(records)) {
     const copy = { ...r };
-    if (!withNames) delete copy.names;
+    if (!withNames) { delete copy.names; if (copy.units) copy.units = copy.units.map(u => ({ ...u })); }
     recs[id] = copy;
     const f = features.get(id);
     if (f) buildings[id] = f;
   }
-  return { app: 'Hauskarte BW', version: VERSION, createdAt: new Date().toISOString(), records: recs, buildings, sketches: sketchData() };
+  if (area !== 'marked') {
+    const b = map.getBounds().pad(0.05);
+    for (const f of features.values()) if (area === 'all' || b.contains(f.c)) buildings[f.id] = f;
+  }
+  const c = map.getCenter();
+  return { app: 'Hauskarte BW', version: VERSION, createdAt: new Date().toISOString(), view: { c: [r6(c.lat), r6(c.lng)], z: map.getZoom() }, records: recs, buildings, sketches: sketchData() };
 }
 function backupFile(withNames) {
   const name = 'hauskarte-bw-' + (withNames ? 'sicherung' : 'team') + '-' + new Date().toISOString().slice(0, 10) + '.json';
-  return new File([JSON.stringify(buildBackup(withNames))], name, { type: 'application/json' });
+  return new File([JSON.stringify(buildBackup(withNames, 'all'))], name, { type: 'application/json' });
 }
 function download(file) {
   const url = URL.createObjectURL(file);
@@ -1605,7 +1614,7 @@ const today = () => { const d = new Date(); return d.getFullYear() + '-' + Strin
 async function snapshot() {
   if (!Object.keys(records).length) return;
   try {
-    await idb.putBackup({ day: today(), at: new Date().toISOString(), count: Object.keys(records).length, data: buildBackup(true) });
+    await idb.putBackup({ day: today(), at: new Date().toISOString(), count: Object.keys(records).length, data: buildBackup(true, 'marked') });
     dirty = false;
     const all = (await idb.backups()).map(b => b.day).sort();
     if (all.length > 30) await idb.delBackups(all.slice(0, all.length - 30));
@@ -1664,9 +1673,14 @@ $('backup').onclick = () => {
 $('share').onclick = () => { $('menu').close(); $('shareNames').checked = false; $('shareDlg').showModal(); };
 $('shareCancel').onclick = () => $('shareDlg').close();
 function teamFile(withNames) {
+  const area = document.querySelector('input[name="shareArea"]:checked')?.value || 'all';
+  const data = buildBackup(withNames, area);
   const name = 'hauskarte-team-' + new Date().toISOString().slice(0, 10) + '.txt';
-  return new File([JSON.stringify(buildBackup(withNames))], name, { type: 'text/plain' });
+  const file = new File([JSON.stringify(data)], name, { type: 'text/plain' });
+  lastShareInfo = `${Object.keys(data.buildings).length} Häuser, ${Object.keys(data.records).length} Markierungen, ${file.size < 1048576 ? Math.max(1, Math.round(file.size / 1024)) + ' KB' : (file.size / 1048576).toFixed(1).replace('.', ',') + ' MB'}`;
+  return file;
 }
+let lastShareInfo = '';
 $('shareGo').onclick = async () => {
   const file = teamFile($('shareNames').checked);
   $('shareDlg').close();
@@ -1679,7 +1693,7 @@ $('shareGo').onclick = async () => {
   }
   try {
     await navigator.share({ files: [file], title: 'Hauskarte BW', text: 'Hauskarte-Stand vom ' + new Date().toLocaleDateString('de-DE') + ' – in der Hauskarte unter „☰ Mehr → Datei öffnen → Zusammenführen“ einlesen.' });
-    say('Datei geteilt. Der Kollege liest sie unter „☰ Mehr → Datei öffnen → Zusammenführen“ ein.');
+    say('Geteilt: ' + lastShareInfo + '. Der Kollege liest die Datei unter „☰ Mehr → Datei öffnen → Zusammenführen“ ein.');
   } catch (e) {
     if (e.name === 'AbortError') { say('Teilen abgebrochen.'); return; }
     download(file);
@@ -1698,7 +1712,7 @@ $('file').onchange = async e => {
     if (d.app !== 'Hauskarte BW' || !d.records || typeof d.records !== 'object' || Array.isArray(d.records)) throw Error('keine Hauskarte-Datei');
     pendingImport = d;
     const n = Object.keys(d.records).length;
-    $('importInfo').textContent = `${f.name}: ${n} Markierungen${d.sketches?.length ? ', ' + d.sketches.length + ' Skizzen' : ''}${d.createdAt ? ', erstellt ' + fmt(d.createdAt) : ''}.`;
+    $('importInfo').textContent = `${f.name}: ${Object.keys(d.buildings || {}).length} Häuser, ${n} Markierungen${d.sketches?.length ? ', ' + d.sketches.length + ' Skizzen' : ''}${d.createdAt ? ', erstellt ' + fmt(d.createdAt) : ''}.`;
     $('importDlg').showModal();
   } catch (err) { say('Datei öffnen fehlgeschlagen: ' + err.message, true); }
   finally { e.target.value = ''; }
@@ -1734,8 +1748,12 @@ function applyImport(replace) {
     saveSketches();
   }
   for (const id of layers.keys()) restyle(id);
+  // zum eingespielten Gebiet springen
+  if (d.view && Array.isArray(d.view.c) && bw.pad(0.15).contains(d.view.c)) map.setView(d.view.c, d.view.z || 17);
+  else if (geo.length) map.fitBounds(L.latLngBounds(geo.map(f => f.c)).pad(0.1), { maxZoom: 18 });
   refreshLabels(); updateStats();
-  say(replace ? `Sicherung wiederhergestellt: ${added} Markierungen.` : `Zusammengeführt: ${added} neu, ${updated} abgeglichen.`);
+  const gebiet = geo.length ? ` Gebiet mit ${geo.length} Häusern eingespielt.` : '';
+  say((replace ? `Sicherung wiederhergestellt: ${added} Markierungen.` : `Zusammengeführt: ${added} neu, ${updated} abgeglichen.`) + gebiet);
 }
 $('impMerge').onclick = () => applyImport(false);
 $('impReplace').onclick = () => { if (confirm('Wirklich alle Markierungen auf diesem Gerät durch die Datei ersetzen?')) applyImport(true); };
