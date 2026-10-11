@@ -844,7 +844,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 24;
+const VERSION = 25;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1692,7 +1692,8 @@ $('shareGo').onclick = async () => {
     return;
   }
   try {
-    await navigator.share({ files: [file], title: 'Hauskarte BW', text: 'Hauskarte-Stand vom ' + new Date().toLocaleDateString('de-DE') + ' – in der Hauskarte unter „☰ Mehr → Datei öffnen → Zusammenführen“ einlesen.' });
+    // nur die Datei teilen: mit zusätzlichem Text verschicken WhatsApp & Co. oft nur den Text
+    await navigator.share({ files: [file] });
     say('Geteilt: ' + lastShareInfo + '. Der Kollege liest die Datei unter „☰ Mehr → Datei öffnen → Zusammenführen“ ein.');
   } catch (e) {
     if (e.name === 'AbortError') { say('Teilen abgebrochen.'); return; }
