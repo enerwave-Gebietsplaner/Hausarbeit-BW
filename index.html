@@ -746,18 +746,7 @@ button.danger{background:#a33}
     <button class="secondary" id="restore">📥 Datei öffnen</button>
   </div>
   <p>Daten liegen nur auf diesem Gerät. Für das Team: „An Kollegen senden“ und beim Kollegen „Datei öffnen → Zusammenführen“. Neuere Einträge gewinnen.</p>
-  <h3>Datenschutz</h3>
-  <label class="check" for="retention" style="display:block">Namen nicht Angetroffener automatisch löschen nach</label>
-  <select id="retention">
-    <option value="14">14 Tagen</option>
-    <option value="30">30 Tagen</option>
-    <option value="60">60 Tagen</option>
-    <option value="90">90 Tagen</option>
-    <option value="0">nie</option>
-  </select>
-  <div class="stack" style="margin-top:8px">
-    <button class="danger" id="wipeNames">Alle gespeicherten Namen jetzt löschen</button>
-  </div>
+  <p>Es wird nichts automatisch gelöscht. Alle Markierungen, Namen und Notizen bleiben gespeichert, bis du sie selbst zurücksetzt.</p>
   <p>Tipp: Die App über „Zum Startbildschirm hinzufügen“ installieren. Dann funktioniert sie auch ohne Netz, und der Browser löscht die Daten nicht so leicht.</p>
   <p><a href="v16.html">Alte Version V16 öffnen</a> (nutzt dieselben Markierungen)</p>
   <div class="stack" style="margin-top:12px"><button class="secondary" id="closeMenu">Schließen</button></div>
@@ -794,7 +783,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 18;
+const VERSION = 19;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -815,7 +804,8 @@ const KEY = 'hauskarte-bw-v4', DRAWKEY = 'hauskarte-bw-skizzen-v1', SETKEY = 'ha
 function readJSON(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } }
 let records = readJSON(KEY, {});
 if (!records || typeof records !== 'object' || Array.isArray(records)) records = {};
-const settings = Object.assign({ retentionDays: 60 }, readJSON(SETKEY, {}));
+const settings = Object.assign({}, readJSON(SETKEY, {}));
+delete settings.retentionDays; // automatisches Löschen abgeschaltet
 function persist() {
   try { localStorage.setItem(KEY, JSON.stringify(records)); return true; }
   catch (e) { say('Speichern fehlgeschlagen. Bitte Browser-Speicher prüfen.', true); return false; }
@@ -854,7 +844,6 @@ const idb = (() => {
     clear: () => run('readwrite', s => { s.clear(); })
   };
 })();
-const MAX_STORED = 15000;
 
 /* ================= Karte ================= */
 const bw = L.latLngBounds([47.45, 7.45], [49.85, 10.65]);
@@ -1111,11 +1100,6 @@ async function load() {
 async function storeFeatures(list) {
   try {
     await idb.put(list);
-    if (features.size > MAX_STORED) {
-      const old = [...features.values()].filter(f => !records[f.id]).sort((a, b) => a.t - b.t).slice(0, features.size - MAX_STORED);
-      await idb.del(old.map(f => f.id));
-      for (const f of old) { features.delete(f.id); polygons.removeLayer(layers.get(f.id)); layers.delete(f.id); }
-    }
   } catch (e) { /* Gebäude bleiben dann nur bis zum Neustart sichtbar */ }
 }
 
@@ -1222,17 +1206,6 @@ function statsTable() {
   t.append(el('tr', {}, el('td', { textContent: 'Besuche heute' }), el('td', { textContent: visitsToday })));
   t.append(el('tr', {}, el('td', { textContent: 'Gespeicherte Gebäude' }), el('td', { textContent: features.size })));
   $('statsTable').replaceChildren(t);
-}
-
-/* ================= Datenschutz: Namen automatisch löschen ================= */
-function purgeNames() {
-  const days = +settings.retentionDays;
-  if (!days) return 0;
-  const cut = Date.now() - days * 864e5;
-  let n = 0;
-  for (const r of Object.values(records)) if (r.names?.length && Date.parse(r.updatedAt || 0) < cut) { delete r.names; n++; }
-  if (n) persist();
-  return n;
 }
 
 /* ================= Standort (mitlaufend) ================= */
@@ -1431,19 +1404,8 @@ $('impMerge').onclick = () => applyImport(false);
 $('impReplace').onclick = () => { if (confirm('Wirklich alle Markierungen auf diesem Gerät durch die Datei ersetzen?')) applyImport(true); };
 
 /* ================= Menü ================= */
-$('menuButton').onclick = () => { statsTable(); $('retention').value = String(settings.retentionDays); $('menu').showModal(); };
+$('menuButton').onclick = () => { statsTable(); $('menu').showModal(); };
 $('closeMenu').onclick = () => $('menu').close();
-$('retention').onchange = e => {
-  settings.retentionDays = +e.target.value; saveSettings();
-  const n = purgeNames();
-  say('Einstellung gespeichert.' + (n ? ` Namen bei ${n} älteren Einträgen gelöscht.` : ''));
-};
-$('wipeNames').onclick = () => {
-  if (!confirm('Alle gespeicherten Namen nicht angetroffener Personen löschen? Markierungen und Notizen bleiben.')) return;
-  let n = 0;
-  for (const r of Object.values(records)) if (r.names) { delete r.names; n++; }
-  persist(); $('menu').close(); say(`Namen bei ${n} Gebäuden gelöscht.`);
-};
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('click', e => { if (e.target === d) d.close(); });
 
 /* ================= Start ================= */
@@ -1458,7 +1420,6 @@ map.on('moveend', () => {
 window.addEventListener('offline', () => say('Keine Internetverbindung. Markieren funktioniert weiter, neue Häuser laden erst wieder mit Netz.', true));
 window.addEventListener('online', () => say('Wieder online.'));
 
-const purged = purgeNames();
 (async () => {
   try {
     const stored = await idb.all();
@@ -1469,8 +1430,7 @@ const purged = purgeNames();
   } catch (e) {
     if (Object.keys(records).length) say('Markierungen erscheinen, sobald die Häuser im Ausschnitt geladen sind.');
   }
-  if (purged) say(`Datenschutz: Namen bei ${purged} Einträgen älter als ${settings.retentionDays} Tage automatisch gelöscht.`);
-  else if (Object.keys(records).length >= 20 && (!settings.lastBackup || Date.now() - settings.lastBackup > 7 * 864e5))
+  if (Object.keys(records).length >= 20 && (!settings.lastBackup || Date.now() - settings.lastBackup > 7 * 864e5))
     setTimeout(() => say('Erinnerung: Letzte Sicherung ist über eine Woche her. „☰ Mehr → Sicherung speichern“.'), 6000);
 })();
 updateStats();
