@@ -744,6 +744,7 @@ button.danger{background:#a33}
     <option value="termin">Nur Termine</option>
     <option value="done">Nur erledigt</option>
     <option value="teil">Mehrfamilienhäuser offen</option>
+    <option value="due">⏰ Wiedervorlage fällig</option>
   </select>
   <button id="layerButton">Luftbild</button>
   <button id="drawButton">✎ Skizzieren</button>
@@ -756,6 +757,13 @@ button.danger{background:#a33}
 <dialog id="menu"><div class="dlg">
   <h2>Mehr</h2>
   <div id="statsTable"></div>
+  <h3>Wiedervorlage</h3>
+  <label class="check" for="revisit" style="display:block">„Nicht angetroffen“ wieder anlaufen nach</label>
+  <select id="revisit">
+    <option value="1">1 Tag</option><option value="2">2 Tagen</option><option value="3">3 Tagen</option>
+    <option value="5">5 Tagen</option><option value="7">7 Tagen</option><option value="14">14 Tagen</option>
+  </select>
+  <p>Fällige Häuser bekommen einen dunklen, gestrichelten Rand und ⏰ an der Hausnummer. Der Filter „⏰ Wiedervorlage fällig“ zeigt nur diese.</p>
   <h3>Auswertung</h3>
   <div class="stack">
     <button id="xlsxMarked">📊 Excel-Liste (alle markierten Häuser)</button>
@@ -805,7 +813,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 20;
+const VERSION = 21;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -827,6 +835,14 @@ function aggStatus(units) {
   if (!units.some(u => u.s)) return undefined;
   return units.every(u => DONE(u.s)) ? 'green' : 'teil';
 }
+// Wiedervorlage: Zeitpunkt der ältesten offenen „nicht angetroffen“-Markierung
+function redSince(r) {
+  if (!r) return null;
+  if (r.units?.length) { const ds = r.units.filter(u => u.s === 'red').map(u => Date.parse(u.d || r.updatedAt || 0)); return ds.length ? Math.min(...ds) : null; }
+  return r.status === 'red' ? Date.parse(r.updatedAt || 0) : null;
+}
+function dueAt(r) { const t = redSince(r); return t === null || isNaN(t) ? null : t + (+settings.revisitDays || 3) * 864e5; }
+function isDue(r) { const t = dueAt(r); return t !== null && Date.now() >= t; }
 function progress(r) { const u = r?.units; return u?.length ? u.filter(x => DONE(x.s)).length + '/' + u.length : ''; }
 
 /* ================= Lokaler Speicher ================= */
@@ -834,7 +850,7 @@ const KEY = 'hauskarte-bw-v4', DRAWKEY = 'hauskarte-bw-skizzen-v1', SETKEY = 'ha
 function readJSON(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } }
 let records = readJSON(KEY, {});
 if (!records || typeof records !== 'object' || Array.isArray(records)) records = {};
-const settings = Object.assign({}, readJSON(SETKEY, {}));
+const settings = Object.assign({ revisitDays: 3 }, readJSON(SETKEY, {}));
 delete settings.retentionDays; // automatisches Löschen abgeschaltet
 function persist() {
   try { localStorage.setItem(KEY, JSON.stringify(records)); return true; }
@@ -906,8 +922,9 @@ const labels = L.layerGroup().addTo(map);
 function style(id) {
   const st = records[id]?.status;
   const s = st === 'teil' ? PART : STATUS[st];
-  return s ? { color: s.line, weight: 2.5, fillColor: s.fill, fillOpacity: 0.62 }
-           : { color: OPEN.line, weight: 1.5, fillColor: OPEN.fill, fillOpacity: 0.35 };
+  if (isDue(records[id])) return { color: '#4a0d0d', weight: 4, dashArray: '7 5', fillColor: s ? s.fill : STATUS.red.fill, fillOpacity: 0.75 };
+  return s ? { color: s.line, weight: 2.5, dashArray: null, fillColor: s.fill, fillOpacity: 0.62 }
+           : { color: OPEN.line, weight: 1.5, dashArray: null, fillColor: OPEN.fill, fillOpacity: 0.35 };
 }
 function addFeature(f) {
   features.set(f.id, f);
@@ -937,6 +954,7 @@ function matches(id) {
   if (filter === 'red') return ss.includes('red');
   if (filter === 'termin') return ss.includes('termin');
   if (filter === 'done') return r?.status === 'green' || r?.status === 'kein';
+  if (filter === 'due') return isDue(r);
   if (filter === 'teil') return !!r?.units?.length && r.status !== 'green';
   return true;
 }
@@ -955,7 +973,7 @@ function refreshLabels() {
   let n = 0;
   for (const f of features.values()) {
     const p = progress(records[f.id]);
-    const txt = [f.hn, p && '🏢 ' + p].filter(Boolean).join(' · ');
+    const txt = [isDue(records[f.id]) && '⏰', f.hn, p && '🏢 ' + p].filter(Boolean).join(' ');
     if (!txt || !b.contains(f.c) || !matches(f.id)) continue;
     if (++n > 600) break;
     labels.addLayer(L.marker(f.c, {
@@ -1193,7 +1211,9 @@ function openEditor(id) {
     unitsWrap.style.display = multi ? 'block' : 'none';
     namesWrap.style.display = !multi && r.status === 'red' ? 'block' : 'none';
     const v = r.visits?.length || 0;
-    meta.textContent = r.updatedAt ? `Zuletzt: ${fmt(r.updatedAt)} · ${v} ${v === 1 ? 'Besuch' : 'Besuche'}` : 'Noch nicht besucht';
+    const due = dueAt(r);
+    const wv = due === null ? '' : Date.now() >= due ? ' · ⏰ Wiedervorlage fällig' : ' · Wiedervorlage ab ' + new Date(due).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    meta.textContent = (r.updatedAt ? `Zuletzt: ${fmt(r.updatedAt)} · ${v} ${v === 1 ? 'Besuch' : 'Besuche'}` : 'Noch nicht besucht') + wv;
   }
   names.value = (rec().names || []).join('\n');
   note.value = rec().note || '';
@@ -1319,6 +1339,8 @@ function updateStats() {
     s.firstChild.style.background = STATUS[k].fill;
     stats.append(s);
   }
+  const dueN = Object.values(records).filter(isDue).length;
+  if (dueN) { const s = el('span', { title: 'Wiedervorlage fällig' }, '⏰ ' + dueN); stats.append(s); }
   if (c.teil) { const s = el('span', { title: PART.label }, el('i'), '🏢' + c.teil); s.firstChild.style.background = PART.fill; stats.append(s); }
   if (features.size) { const s = el('span', { title: 'Offen im Ausschnitt' }, el('i'), open + ' offen'); s.firstChild.style.background = OPEN.fill; stats.append(s); }
 }
@@ -1329,6 +1351,7 @@ function statsTable() {
   const today = new Date().toDateString();
   let visitsToday = 0;
   for (const r of Object.values(records)) for (const v of r.visits || []) if (new Date(v.d).toDateString() === today) visitsToday++;
+  t.append(el('tr', {}, el('td', { textContent: '⏰ Wiedervorlage fällig' }), el('td', { textContent: Object.values(records).filter(isDue).length })));
   t.append(el('tr', {}, el('td', { textContent: '🏢 Mehrfamilienhäuser teilweise' }), el('td', { textContent: c.teil })));
   t.append(el('tr', {}, el('td', { textContent: 'Besuche heute' }), el('td', { textContent: visitsToday })));
   t.append(el('tr', {}, el('td', { textContent: 'Gespeicherte Gebäude' }), el('td', { textContent: features.size })));
@@ -1483,9 +1506,11 @@ function buildXlsx(rows, widths, sheetName) {
   ]);
 }
 function exportExcel(withOpen) {
-  const head = ['Straße', 'Hausnr.', 'Partei', 'Status', 'Namen nicht angetroffen', 'Notiz', 'Letzte Änderung', 'Besuche', 'Breitengrad', 'Längengrad', 'Gebäude-ID'];
+  const head = ['Straße', 'Hausnr.', 'Partei', 'Status', 'Namen nicht angetroffen', 'Notiz', 'Letzte Änderung', 'Besuche', 'Wiedervorlage ab', 'Breitengrad', 'Längengrad', 'Gebäude-ID'];
   const label = s => s === 'teil' ? PART.label : STATUS[s]?.label || 'offen';
   const rows = [];
+  const wvDate = t => t === null || isNaN(t) ? '' : new Date(t).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + (Date.now() >= t ? ' (fällig)' : '');
+  const days = (+settings.revisitDays || 3) * 864e5;
   const ids = new Set(Object.keys(records));
   if (withOpen) { const b = map.getBounds(); for (const f of features.values()) if (b.contains(f.c)) ids.add(f.id); }
   for (const id of ids) {
@@ -1495,16 +1520,16 @@ function exportExcel(withOpen) {
       r.units.forEach((u, i) => {
         const lbl = u.l || String(i + 1);
         const visits = (r.visits || []).filter(v => v.u === lbl).length;
-        rows.push([...base, lbl, label(u.s), '', u.note || '', u.d ? fmt(u.d) : '', visits, ...pos]);
+        rows.push([...base, lbl, label(u.s), '', u.note || '', u.d ? fmt(u.d) : '', visits, u.s === 'red' ? wvDate(Date.parse(u.d || r.updatedAt || 0) + days) : '', ...pos]);
       });
-      if (r.note) rows.push([...base, 'ganzes Haus', label(r.status), '', r.note, r.updatedAt ? fmt(r.updatedAt) : '', 0, ...pos]);
+      if (r.note) rows.push([...base, 'ganzes Haus', label(r.status), '', r.note, r.updatedAt ? fmt(r.updatedAt) : '', 0, '', ...pos]);
     } else {
-      rows.push([...base, '', label(r.status), (r.names || []).join(', '), r.note || '', r.updatedAt ? fmt(r.updatedAt) : '', r.visits?.length || 0, ...pos]);
+      rows.push([...base, '', label(r.status), (r.names || []).join(', '), r.note || '', r.updatedAt ? fmt(r.updatedAt) : '', r.visits?.length || 0, wvDate(dueAt(r)), ...pos]);
     }
   }
   if (!rows.length) { say('Noch keine Daten für die Excel-Liste vorhanden.', true); return; }
   rows.sort((a, b) => (a[0] || '~').localeCompare(b[0] || '~', 'de') || String(a[1]).localeCompare(String(b[1]), 'de', { numeric: true }));
-  const blob = buildXlsx([head, ...rows], [26, 9, 16, 20, 30, 34, 18, 9, 12, 12, 16], 'Hauskarte');
+  const blob = buildXlsx([head, ...rows], [26, 9, 16, 20, 30, 34, 18, 9, 18, 12, 12, 16], 'Hauskarte');
   download(new File([blob], 'hauskarte-bw-liste-' + new Date().toISOString().slice(0, 10) + '.xlsx', { type: blob.type }));
   $('menu').close();
   say(`Excel-Liste mit ${rows.length} Zeilen wurde zum Download angeboten.`);
@@ -1603,7 +1628,15 @@ $('impMerge').onclick = () => applyImport(false);
 $('impReplace').onclick = () => { if (confirm('Wirklich alle Markierungen auf diesem Gerät durch die Datei ersetzen?')) applyImport(true); };
 
 /* ================= Menü ================= */
-$('menuButton').onclick = () => { statsTable(); $('menu').showModal(); };
+$('menuButton').onclick = () => { statsTable(); $('revisit').value = String(settings.revisitDays); $('menu').showModal(); };
+$('revisit').onchange = e => {
+  settings.revisitDays = +e.target.value; saveSettings();
+  for (const id of layers.keys()) restyle(id);
+  refreshLabels(); updateStats(); statsTable();
+  say(`Wiedervorlage: „Nicht angetroffen“ wird nach ${settings.revisitDays} ${settings.revisitDays === 1 ? 'Tag' : 'Tagen'} fällig.`);
+};
+// alle 10 Minuten neu prüfen, ob Häuser fällig geworden sind
+setInterval(() => { for (const id of Object.keys(records)) if (layers.has(id)) restyle(id); refreshLabels(); updateStats(); }, 600000);
 $('closeMenu').onclick = () => $('menu').close();
 for (const d of document.querySelectorAll('dialog')) d.addEventListener('click', e => { if (e.target === d) d.close(); });
 
