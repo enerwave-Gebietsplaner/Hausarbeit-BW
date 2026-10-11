@@ -844,7 +844,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 25;
+const VERSION = 26;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1681,7 +1681,13 @@ function teamFile(withNames) {
   return file;
 }
 let lastShareInfo = '';
+function emptyHere() {
+  if (Object.keys(records).length || features.size) return false;
+  say('In diesem Browser sind keine Häuser und Markierungen gespeichert – es gäbe nichts zu senden. Bitte im Browser senden, in dem du gearbeitet hast (z. B. Chrome), nicht aus WhatsApp oder einer anderen App heraus.', true);
+  return true;
+}
 $('shareGo').onclick = async () => {
+  if (emptyHere()) { $('shareDlg').close(); return; }
   const file = teamFile($('shareNames').checked);
   $('shareDlg').close();
   let can = false;
@@ -1701,7 +1707,7 @@ $('shareGo').onclick = async () => {
     say('Teilen hat nicht geklappt (' + e.message + '). Die Datei liegt jetzt in „Downloads“ und kann von dort verschickt werden.', true);
   }
 };
-$('shareSave').onclick = () => { download(teamFile($('shareNames').checked)); $('shareDlg').close(); say('Datei liegt in „Downloads“. Von dort per WhatsApp, E-Mail oder Bluetooth verschicken.'); };
+$('shareSave').onclick = () => { if (emptyHere()) { $('shareDlg').close(); return; } download(teamFile($('shareNames').checked)); $('shareDlg').close(); say('Datei liegt in „Downloads“. Von dort per WhatsApp, E-Mail oder Bluetooth verschicken.'); };
 $('restore').onclick = () => { $('menu').close(); $('file').click(); };
 
 let pendingImport = null;
