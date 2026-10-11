@@ -770,7 +770,7 @@ button.danger{background:#a33}
   <button id="eraseButton">⌫ Radierer</button>
   <button class="secondary" id="sunBtn" title="Sonnenmodus">☀</button>
   <button class="secondary" id="menuButton">☰ Mehr</button>
-  <input id="file" type="file" accept="application/json,.json" hidden>
+  <input id="file" type="file" accept=".json,.txt,application/json,text/plain" hidden>
 </nav>
 <div id="backupBar"><span>💾 Heute noch keine Sicherungsdatei gespeichert.</span><button id="barSave">Speichern</button><button class="secondary" id="barLater">Später</button></div>
 <div id="message" role="status" aria-live="polite">Karte bewegen, nah heranzoomen und „Häuser laden“ tippen.</div>
@@ -820,12 +820,14 @@ button.danger{background:#a33}
 
 <dialog id="shareDlg"><div class="dlg">
   <h2>An Kollegen senden</h2>
-  <p>Gesendet werden alle Markierungen, Notizen und Skizzen.</p>
+  <p>Gesendet werden alle Markierungen, Notizen und Skizzen als kleine Datei.</p>
   <label class="check"><input type="checkbox" id="shareNames"> Namen nicht Angetroffener mitsenden</label>
   <div class="stack">
-    <button id="shareGo">Senden</button>
+    <button id="shareGo">📤 Senden per WhatsApp, E-Mail, Bluetooth …</button>
+    <button class="secondary" id="shareSave">⬇ Nur als Datei speichern</button>
     <button class="secondary" id="shareCancel">Abbrechen</button>
   </div>
+  <p>Beim Kollegen: Datei aus WhatsApp/E-Mail speichern, dann in der Hauskarte „☰ Mehr → Datei öffnen → Zusammenführen“.</p>
 </div></dialog>
 
 <script>
@@ -839,7 +841,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 22;
+const VERSION = 23;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1661,14 +1663,30 @@ $('backup').onclick = () => {
 };
 $('share').onclick = () => { $('menu').close(); $('shareNames').checked = false; $('shareDlg').showModal(); };
 $('shareCancel').onclick = () => $('shareDlg').close();
+function teamFile(withNames) {
+  const name = 'hauskarte-team-' + new Date().toISOString().slice(0, 10) + '.txt';
+  return new File([JSON.stringify(buildBackup(withNames))], name, { type: 'text/plain' });
+}
 $('shareGo').onclick = async () => {
-  const file = backupFile($('shareNames').checked);
+  const file = teamFile($('shareNames').checked);
   $('shareDlg').close();
+  let can = false;
+  try { can = !!navigator.canShare?.({ files: [file] }); } catch (e) {}
+  if (!can) {
+    download(file);
+    say('Direktes Teilen geht in diesem Browser nicht. Die Datei liegt jetzt in „Downloads“ und kann von dort per WhatsApp, E-Mail oder Bluetooth verschickt werden.', true);
+    return;
+  }
   try {
-    if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: 'Hauskarte BW' }); say('Datei geteilt. Der Kollege öffnet sie unter „Mehr → Datei öffnen → Zusammenführen“.'); }
-    else { download(file); say('Teilen wird hier nicht unterstützt. Datei wurde heruntergeladen und kann per Messenger oder E-Mail weitergegeben werden.'); }
-  } catch (e) { if (e.name !== 'AbortError') say('Teilen fehlgeschlagen: ' + e.message, true); }
+    await navigator.share({ files: [file], title: 'Hauskarte BW', text: 'Hauskarte-Stand vom ' + new Date().toLocaleDateString('de-DE') + ' – in der Hauskarte unter „☰ Mehr → Datei öffnen → Zusammenführen“ einlesen.' });
+    say('Datei geteilt. Der Kollege liest sie unter „☰ Mehr → Datei öffnen → Zusammenführen“ ein.');
+  } catch (e) {
+    if (e.name === 'AbortError') { say('Teilen abgebrochen.'); return; }
+    download(file);
+    say('Teilen hat nicht geklappt (' + e.message + '). Die Datei liegt jetzt in „Downloads“ und kann von dort verschickt werden.', true);
+  }
 };
+$('shareSave').onclick = () => { download(teamFile($('shareNames').checked)); $('shareDlg').close(); say('Datei liegt in „Downloads“. Von dort per WhatsApp, E-Mail oder Bluetooth verschicken.'); };
 $('restore').onclick = () => { $('menu').close(); $('file').click(); };
 
 let pendingImport = null;
