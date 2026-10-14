@@ -748,6 +748,96 @@ button.danger{background:#a33}
 </style>
 </head>
 <body>
+<div id="lock" role="dialog" aria-modal="true" aria-label="App-Sperre">
+  <div class="lk-box">
+    <div class="lk-icon">🔒</div>
+    <div class="lk-title">Hauskarte BW</div>
+    <div class="lk-sub" id="lkSub">Bitte Code eingeben</div>
+    <div class="lk-dots" id="lkDots"><i></i><i></i><i></i><i></i></div>
+    <div class="lk-pad" id="lkPad">
+      <button type="button">1</button><button type="button">2</button><button type="button">3</button>
+      <button type="button">4</button><button type="button">5</button><button type="button">6</button>
+      <button type="button">7</button><button type="button">8</button><button type="button">9</button>
+      <span></span><button type="button">0</button><button type="button" class="lk-del" aria-label="Löschen">⌫</button>
+    </div>
+  </div>
+</div>
+<style>
+#lock{position:fixed;inset:0;z-index:2147483000;background:#173a34;color:#fff;display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,-apple-system,Arial,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#lock.open{display:none}
+#lock .lk-box{width:100%;max-width:320px;text-align:center}
+#lock .lk-icon{font-size:40px}
+#lock .lk-title{font-size:22px;font-weight:800;margin-top:6px}
+#lock .lk-sub{font-size:15px;margin:8px 0 18px;min-height:20px;opacity:.9}
+#lock .lk-sub.err{color:#ffb4a8;opacity:1;font-weight:700}
+#lock .lk-dots{display:flex;gap:16px;justify-content:center;margin-bottom:26px}
+#lock .lk-dots i{width:16px;height:16px;border-radius:50%;border:2px solid #fff;display:block}
+#lock .lk-dots i.on{background:#fff}
+#lock .lk-dots.shake{animation:lkshake .35s}
+@keyframes lkshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+#lock .lk-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+#lock .lk-pad button{all:unset;box-sizing:border-box;width:72px;height:72px;justify-self:center;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:28px;font-weight:600;text-align:center;line-height:72px;cursor:pointer}
+#lock .lk-pad button:active{background:rgba(255,255,255,.32)}
+#lock .lk-pad button:disabled{opacity:.35}
+#lock .lk-pad .lk-del{font-size:24px;background:transparent}
+</style>
+<script>
+/* App-Sperre: Code-Abfrage beim Start und nach 5 Minuten im Hintergrund.
+   Hinweis: Das ist ein Sichtschutz gegen neugierige Blicke, kein echter Datenschutz –
+   die Daten liegen weiterhin im Browser dieses Geräts. Der Code steht hier nur als Prüfsumme. */
+(() => {
+  const HASH = 7848850338005432, LEN = 4, RELOCK_MS = 5 * 60000;
+  const cyrb53 = (str, seed = 0) => { let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed; for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909); return 4294967296 * (2097151 & h2) + (h1 >>> 0); };
+  const lock = document.getElementById('lock'), dots = document.getElementById('lkDots'), sub = document.getElementById('lkSub'), pad = document.getElementById('lkPad');
+  let code = '', fails = 0, waitUntil = 0, hiddenAt = 0, release;
+  window.hauskarteUnlocked = new Promise(r => { release = r; });
+  const draw = () => dots.querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i < code.length));
+  const setPad = on => pad.querySelectorAll('button').forEach(b => { b.disabled = !on; });
+  function show() {
+    code = ''; draw(); lock.classList.remove('open');
+    sub.textContent = 'Bitte Code eingeben'; sub.classList.remove('err');
+    document.querySelectorAll('dialog[open]').forEach(d => d.close());
+  }
+  function check() {
+    if (cyrb53('hauskarte-bw:' + code, 17) === HASH) {
+      fails = 0; lock.classList.add('open'); release(); code = ''; draw();
+      return;
+    }
+    fails++;
+    dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
+    navigator.vibrate?.(200);
+    code = ''; draw();
+    sub.classList.add('err');
+    if (fails >= 5) {
+      waitUntil = Date.now() + 30000; setPad(false);
+      const tick = () => {
+        const s = Math.ceil((waitUntil - Date.now()) / 1000);
+        if (s > 0) { sub.textContent = `Zu viele Versuche – bitte ${s} s warten`; setTimeout(tick, 500); }
+        else { fails = 0; setPad(true); sub.textContent = 'Bitte Code eingeben'; sub.classList.remove('err'); }
+      };
+      tick();
+    } else sub.textContent = 'Falscher Code';
+  }
+  function press(k) {
+    if (Date.now() < waitUntil || lock.classList.contains('open')) return;
+    if (k === 'del') { code = code.slice(0, -1); draw(); return; }
+    if (code.length >= LEN) return;
+    code += k; draw();
+    if (code.length === LEN) setTimeout(check, 120);
+  }
+  pad.addEventListener('click', e => { const b = e.target.closest('button'); if (b) press(b.classList.contains('lk-del') ? 'del' : b.textContent); });
+  document.addEventListener('keydown', e => {
+    if (lock.classList.contains('open')) return;
+    if (/^[0-9]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('del');
+    e.stopPropagation();
+  }, true);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') hiddenAt = Date.now();
+    else if (hiddenAt && Date.now() - hiddenAt > RELOCK_MS && lock.classList.contains('open')) show();
+  });
+  show();
+})();
+</script>
 <header>
   <span class="title">Hauskarte BW <small class="key" id="ver"></small></span>
   <div id="stats" aria-label="Übersicht"></div>
@@ -845,7 +935,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 28;
+const VERSION = 29;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1940,6 +2030,7 @@ window.addEventListener('online', () => { say('Wieder online.'); if (autoMode) s
     if (d) {
       history.replaceState(null, '', location.pathname);
       if (d.app !== 'Hauskarte BW' || !d.records) throw Error('kein Hauskarte-Link');
+      await window.hauskarteUnlocked;  // erst nach Code-Eingabe anzeigen
       pendingImport = d;
       $('importInfo').textContent = `Ein Kollege hat dir ein Gebiet geschickt: ${d.count ?? Object.keys(d.buildings || {}).length} Häuser, ${Object.keys(d.records).length} Markierungen${d.createdAt ? ' (Stand ' + fmt(d.createdAt) + ')' : ''}. Tippe auf „Zusammenführen“ – deine eigenen Markierungen bleiben erhalten.`;
       $('importDlg').showModal();
