@@ -683,6 +683,18 @@ header .title{font-weight:700;white-space:nowrap}
 #stats span{background:rgba(255,255,255,.14);border-radius:12px;padding:2px 7px;white-space:nowrap}
 #stats i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;font-style:normal}
 #map{flex:1 1 auto;min-height:240px}
+#searchBox{display:none;flex:0 0 auto;background:#fff;border-bottom:1px solid #c9d3cf;padding:8px;position:relative;z-index:1001}
+#searchBox.show{display:block}
+#searchBox form{display:flex;gap:6px}
+#searchInput{flex:1;min-width:0;font:inherit;font-size:16px;padding:11px 10px;border:2px solid #0f5e4d;border-radius:10px;color:#0d241e;background:#fff}
+#searchBox form button{padding:10px 12px;min-height:46px}
+#searchResults{list-style:none;margin:6px 0 0;padding:0;max-height:45vh;overflow:auto}
+#searchResults li{padding:10px 8px;border-bottom:1px solid #e3e8e6;font-size:15px;cursor:pointer;line-height:1.3}
+#searchResults li:active,#searchResults li:hover{background:#eef4f1}
+#searchResults li small{display:block;color:#56645f;font-size:12px}
+#searchResults li.info{cursor:default;color:#56645f;font-size:14px}
+#searchResults li.info:hover{background:none}
+body.sun #searchInput{border-color:#000;font-weight:700}
 .toolbar{flex:0 0 auto;display:flex;gap:7px;overflow-x:auto;padding:8px;background:#fff;border-top:1px solid #c9d3cf;-webkit-overflow-scrolling:touch}
 button{border:0;border-radius:10px;background:#0f5e4d;color:#fff;font:inherit;font-size:15px;font-weight:700;padding:13px 14px;min-height:48px;white-space:nowrap;cursor:pointer;touch-action:manipulation}
 button:disabled{opacity:.55}
@@ -842,8 +854,17 @@ button.danger{background:#a33}
   <span class="title">Hauskarte BW <small class="key" id="ver"></small></span>
   <div id="stats" aria-label="Übersicht"></div>
 </header>
+<div id="searchBox" role="search">
+  <form id="searchForm" autocomplete="off">
+    <input id="searchInput" type="search" enterkeyhint="search" placeholder="Ort, Straße oder Adresse (z. B. Fellbach Bahnhofstr. 12)">
+    <button type="submit">Suchen</button>
+    <button type="button" class="secondary" id="searchClose" aria-label="Suche schließen">✕</button>
+  </form>
+  <ul id="searchResults"></ul>
+</div>
 <div id="map"></div>
 <nav class="toolbar">
+  <button id="searchBtn">🔍 Ort suchen</button>
   <button id="loc">◎ Mein Standort</button>
   <button id="load">▣ Häuser finden</button>
   <select id="filter" aria-label="Filter">
@@ -935,7 +956,7 @@ button.danger{background:#a33}
 <script>
 (() => {
 'use strict';
-const VERSION = 29;
+const VERSION = 30;
 const $ = id => document.getElementById(id);
 const msg = $('message');
 function say(s, error = false) { msg.textContent = s; msg.classList.toggle('error', error); }
@@ -1647,6 +1668,104 @@ map.on('click', e => {
   if (best) { sketches.removeLayer(best); saveSketches(); say('Skizzenlinie entfernt. Radierer bleibt aktiv.'); }
   else say('Keine Skizzenlinie getroffen. Direkt auf eine orange Linie tippen.');
 });
+
+/* ================= Ort suchen ================= */
+// Online-Suche über OpenStreetMap (Nominatim, max. 1 Anfrage/Sekunde, nur nach Absenden – keine Live-Vorschläge laut Nutzungsregeln).
+// Gespeicherte Häuser werden schon beim Tippen lokal gefunden, auch ohne Netz.
+const sBox = $('searchBox'), sInput = $('searchInput'), sList = $('searchResults');
+let searchMarker = null, lastQueryAt = 0;
+function openSearch() { sBox.classList.add('show'); map.invalidateSize(); setTimeout(() => sInput.focus(), 50); }
+function closeSearch() { sBox.classList.remove('show'); sList.replaceChildren(); map.invalidateSize(); }
+$('searchBtn').onclick = () => sBox.classList.contains('show') ? closeSearch() : openSearch();
+$('searchClose').onclick = closeSearch;
+sInput.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+const norm = t => String(t || '').toLowerCase().replace(/straße/g, 'str').replace(/strasse/g, 'str').replace(/str\./g, 'str').replace(/[.,]/g, ' ').replace(/\s+/g, ' ').trim();
+function localHits(q) {
+  const parts = norm(q).split(' ').filter(Boolean);
+  if (!parts.length) return [];
+  const hits = [];
+  for (const f of features.values()) {
+    if (!f.st && !f.hn) continue;
+    const hay = norm(f.st + ' ' + f.hn);
+    if (parts.every(p => hay.includes(p))) { hits.push(f); if (hits.length >= 6) break; }
+  }
+  return hits;
+}
+function goTo(lat, lng, zoom, label, bbox) {
+  if (!bw.pad(0.15).contains([lat, lng])) { say('Dieser Ort liegt außerhalb von Baden-Württemberg.', true); return; }
+  if (follow) { follow = false; locUi(); }
+  if (bbox && zoom < 17) map.fitBounds(bbox, { maxZoom: zoom });
+  else map.setView([lat, lng], zoom);
+  if (searchMarker) map.removeLayer(searchMarker);
+  searchMarker = L.circleMarker([lat, lng], { radius: 11, color: '#fff', weight: 3, fillColor: '#d11a2a', fillOpacity: 1, interactive: false, renderer: posRenderer }).addTo(map);
+  setTimeout(() => { if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; } }, 120000);
+  closeSearch();
+  const z = map.getZoom();
+  say(label + (autoMode ? (z >= MIN_ZOOM ? ' – Häuser werden automatisch gesucht.' : ' – zum Laden der Häuser näher heranzoomen.') : (z >= MIN_ZOOM ? ' – jetzt „Häuser finden“ tippen.' : '')));
+}
+function item(title, subtitle, onPick, cls) {
+  const li = el('li', { className: cls || '' }, title);
+  if (subtitle) li.append(el('small', { textContent: subtitle }));
+  if (onPick) li.onclick = onPick;
+  return li;
+}
+function showLocal(q) {
+  const hits = localHits(q);
+  const rows = hits.map(f => item('🏠 ' + addrText(f), 'Gespeichertes Haus' + (records[f.id]?.status ? ' · ' + (records[f.id].status === 'teil' ? PART.label : STATUS[records[f.id].status]?.label || '') : ''),
+    () => { goTo(f.c[0], f.c[1], 19, addrText(f)); setTimeout(() => openEditor(f.id), 400); }));
+  return rows;
+}
+sInput.addEventListener('input', () => {
+  const q = sInput.value.trim();
+  if (q.length < 2) { sList.replaceChildren(); return; }
+  const rows = showLocal(q);
+  sList.replaceChildren(...rows, item('↵ „Suchen“ tippen, um überall in Baden-Württemberg zu suchen', '', null, 'info'));
+});
+function shortName(r) {
+  const a = r.address || {};
+  const street = [a.road || a.pedestrian || a.footway, a.house_number].filter(Boolean).join(' ');
+  const town = a.city || a.town || a.village || a.municipality || a.suburb || '';
+  const title = street ? street + (town ? ', ' + town : '') : (r.name || town || r.display_name.split(',')[0]);
+  const sub = [a.postcode, a.city_district || a.suburb, a.county].filter(Boolean).join(' · ');
+  return { title, sub };
+}
+$('searchForm').onsubmit = async e => {
+  e.preventDefault();
+  const q = sInput.value.trim();
+  if (q.length < 2) return;
+  // Koordinaten direkt eingeben, z. B. "48.83, 9.31"
+  const co = q.match(/^\s*(4[7-9][.,]\d+)\s*[,; ]\s*(\d{1,2}[.,]\d+)\s*$/);
+  if (co) { goTo(parseFloat(co[1].replace(',', '.')), parseFloat(co[2].replace(',', '.')), 18, 'Koordinaten ' + q); return; }
+  const local = showLocal(q);
+  if (navigator.onLine === false) { sList.replaceChildren(...local, item('Kein Internet – nur gespeicherte Häuser durchsuchbar.', '', null, 'info')); return; }
+  const wait = 1100 - (Date.now() - lastQueryAt);
+  if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  lastQueryAt = Date.now();
+  sList.replaceChildren(...local, item('Suche läuft …', '', null, 'info'));
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?' + new URLSearchParams({
+      q, format: 'jsonv2', addressdetails: '1', limit: '8', countrycodes: 'de', 'accept-language': 'de',
+      viewbox: '7.45,49.85,10.65,47.45', bounded: '1'
+    });
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw Error(res.status === 429 ? 'zu viele Anfragen, bitte kurz warten' : 'HTTP ' + res.status);
+    const data = await res.json();
+    const rows = data.map(r => {
+      const { title, sub } = shortName(r);
+      const lat = +r.lat, lng = +r.lon;
+      const isHouse = !!r.address?.house_number || r.addresstype === 'building' || r.category === 'building';
+      const isStreet = r.addresstype === 'road' || r.category === 'highway';
+      const zoom = isHouse ? 19 : isStreet ? 18 : 16;
+      const bb = r.boundingbox ? [[+r.boundingbox[0], +r.boundingbox[2]], [+r.boundingbox[1], +r.boundingbox[3]]] : null;
+      return item((isHouse ? '📍 ' : isStreet ? '🛣 ' : '🏘 ') + title, sub, () => goTo(lat, lng, zoom, title, bb));
+    });
+    if (!rows.length && !local.length) { sList.replaceChildren(item('Nichts gefunden. Tipp: Ort mit angeben, z. B. „Hauptstr. 5 Waiblingen“.', '', null, 'info')); return; }
+    sList.replaceChildren(...local, ...rows);
+    if (rows.length === 1 && !local.length) rows[0].click();
+  } catch (err) {
+    sList.replaceChildren(...local, item('Online-Suche fehlgeschlagen (' + err.message + ').', '', null, 'info'));
+  }
+};
 
 /* ================= Luftbild ================= */
 $('layerButton').onclick = () => {
