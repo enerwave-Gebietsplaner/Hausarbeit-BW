@@ -1,0 +1,32 @@
+HAUSKARTE BW - TEAM-SERVER
+==========================
+
+EINRICHTEN (einmalig, auf dem Buero-Laptop)
+1. Voraussetzungen: Node.js (LTS, nodejs.org) und Tailscale installiert und angemeldet,
+   in Tailscale "MagicDNS" und "HTTPS Certificates" eingeschaltet.
+2. Diesen Ordner entpacken (z. B. in "Downloads").
+3. Doppelklick auf "Einrichten.bat" -> Frage nach Administratorrechten mit "Ja" bestaetigen.
+   Das Programm wird nach C:\Hauskarte kopiert, startet ab jetzt automatisch mit Windows,
+   der Laptop geht am Netzteil nicht mehr in den Ruhezustand.
+   Am Ende wird die Adresse fuer die Tablets angezeigt (steht auch in C:\Hauskarte\ADRESSE.txt).
+4. Doppelklick auf "C:\Hauskarte\Mitarbeiter verwalten.bat" -> Mitarbeiter mit Name und PIN anlegen.
+
+TABLET EINRICHTEN (pro Mitarbeiter, ca. 5 Minuten)
+1. App "Tailscale" aus dem Play Store installieren, mit dem Firmenkonto anmelden.
+   Neue Mitarbeiter muessen in Tailscale erst eingeladen werden (login.tailscale.com -> Users -> Invite).
+2. In Chrome die Adresse aus ADRESSE.txt oeffnen -> Menue (drei Punkte) -> "Zum Startbildschirm hinzufuegen".
+3. App oeffnen -> Code eingeben -> mit Name und PIN anmelden.
+4. Bisherige Daten uebernehmen: In der ALTEN Hauskarte (GitHub-Link) "Mehr -> Sicherung speichern".
+   In der NEUEN App "Mehr -> Datei oeffnen -> Zusammenfuehren" und die gespeicherte Datei waehlen.
+
+IM BETRIEB
+- Oben in der App zeigt das Symbol den Stand: gruen = abgeglichen, grau = offline (Eingaben warten),
+  rot = Problem. Offline erfasste Eingaben werden automatisch nachgeliefert.
+- Der Laptop muss eingeschaltet, am Netzteil und mit dem Internet verbunden bleiben.
+- Sicherungen: jeden Tag automatisch in C:\Hauskarte\daten\sicherungen (die letzten 60 Tage).
+  Empfehlung: diesen Ordner zusaetzlich auf OneDrive/USB-Stick/NAS kopieren lassen.
+- Mitarbeiter ausgeschieden: "Mitarbeiter verwalten" -> sperren UND in Tailscale entfernen.
+- Server-Protokoll: C:\Hauskarte\daten\server.log
+- Updates kommen automatisch: Der Server prueft alle 30 Minuten auf GitHub (Ordner team-server)
+  nach einer neuen Version und installiert sie selbst. Die Tablets bekommen sie beim naechsten Oeffnen.
+  Daten und Mitarbeiter bleiben dabei unveraendert.
