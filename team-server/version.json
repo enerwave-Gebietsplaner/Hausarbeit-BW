@@ -1,13 +1,13 @@
 {
- "version": 1,
- "created": "2026-10-15T10:15:49.910Z",
+ "version": 2,
+ "created": "2026-10-15T14:00:21.383Z",
  "files": {
   "server.js": "822d7b6ebced8cdd51db7b1f860d8b9229208754f9e50c6aa8749cef394fb1cb",
   "start-server.cmd": "6ddaaf4a03e46a5a433e74c3b2723b57cb4192e1a1a9ce663215e9d539d07562",
   "mitarbeiter.ps1": "bb3821d5e290ddb540142c41d6a2320bc7f06859c3a384ac44de6eb66dd36096",
   "Mitarbeiter verwalten.bat": "ce672017ca6eb6a372cdf15fff098b599fcb8faa1429b4a1ac2f607b78a8d65e",
   "ANLEITUNG.txt": "05641f2dabf37d0cc1acfc5f09a2607e7b6cc12f28fa92d119d3555574e746c8",
-  "app/index.html": "d30982dde700539ec1cc4258e33f8d95bfa0991213e1c128c5f1dc3eeaafe1ad",
+  "app/index.html": "329d55beeb250a424e3fcff23912085115e782e9b0189cb44c3c7379b881ad97",
   "app/sw.js": "65719ff03006957fda97f7b4992d59aae49f220da55d211edff3c26cc544fab8",
   "app/sync-config.js": "0512bd7379e56ab866c319bb04b993a4cb7cb55bf84f9e45b564e372814eadfc",
   "app/manifest.webmanifest": "0eeb10c00d2451c139160aac043ee5041209ac08beb98948b7aaa17bc09241e3",
