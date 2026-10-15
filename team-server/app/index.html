@@ -1564,13 +1564,17 @@ locBtn.onclick = () => {
     if (!posMarker) {
       accCircle = L.circle(ll, { radius: acc, color: '#006fe6', weight: 1, fillOpacity: 0.08, interactive: false, renderer: posRenderer }).addTo(map);
       posMarker = L.circleMarker(ll, { radius: 8, color: '#fff', weight: 3, fillColor: '#006fe6', fillOpacity: 1, interactive: false, renderer: posRenderer }).addTo(map);
-    } else { posMarker.setLatLng(ll); accCircle.setLatLng(ll).setRadius(acc); }
+    } else {
+      // Strom sparen: winzige GPS-Schwankungen nicht neu zeichnen
+      if (map.distance(posMarker.getLatLng(), ll) < 2 && Math.abs(accCircle.getRadius() - acc) < 5 && !firstFix) return;
+      posMarker.setLatLng(ll); accCircle.setLatLng(ll).setRadius(acc);
+    }
     if (firstFix) {
       firstFix = false;
       if (!bw.contains(ll)) { follow = false; locUi(); say('Standort liegt außerhalb von Baden-Württemberg.', true); return; }
       map.setView(ll, 18);
       say(autoMode ? 'Standort gefunden. Häuser werden automatisch gesucht.' : 'Standort gefunden. Jetzt „Häuser finden“ tippen.');
-    } else if (follow) map.panTo(ll);
+    } else if (follow) { const pt = map.latLngToContainerPoint(ll), sz = map.getSize(); if (Math.abs(pt.x - sz.x / 2) > sz.x * 0.15 || Math.abs(pt.y - sz.y / 2) > sz.y * 0.15) map.panTo(ll); }  // nur nachführen, wenn der Punkt aus der Mitte wandert
     locUi();
   }, e => {
     if (e.code === 1) {
@@ -1581,6 +1585,12 @@ locBtn.onclick = () => {
   locUi();
 };
 map.on('dragstart', () => { if (follow) { follow = false; locUi(); } });
+// Strom sparen: GPS aus, solange die App im Hintergrund ist; beim Zurückkehren automatisch wieder an
+let gpsPaused = false, gpsFollow = false;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && watchId !== null) { gpsPaused = true; gpsFollow = follow; navigator.geolocation.clearWatch(watchId); watchId = null; }
+  else if (document.visibilityState === 'visible' && gpsPaused) { gpsPaused = false; const keepMarker = posMarker; locBtn.onclick(); if (keepMarker) { firstFix = false; follow = gpsFollow; locUi(); } }
+});
 
 /* ================= Skizzen ================= */
 const sketches = L.featureGroup().addTo(map);
@@ -2519,7 +2529,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') scheduleSync(500);
   else { saveSync(true); runSync(); }
 });
-setInterval(() => { if (document.visibilityState === 'visible') runSync(); }, 60000);
+setInterval(() => { if (document.visibilityState === 'visible' && (sync.outbox.length || Date.now() - sync.lastOk > 110000)) runSync(); }, 60000);  // ohne eigene Änderungen nur alle 2 Minuten
 // diese Seite + Zugangsdatei im Offline-Speicher halten (der Service Worker legt alles ab, was online geladen wird)
 const keepOffline = () => { if (navigator.onLine) for (const u of ['./', 'sync-config.js', 'manifest.webmanifest']) fetch(u, { cache: 'no-cache' }).catch(() => {}); };
 navigator.serviceWorker?.ready.then(keepOffline).catch(() => {});
