@@ -824,7 +824,6 @@ document.getElementById('lock')?.remove();
     <option value="teil">Mehrfamilienhäuser offen</option>
     <option value="due">⏰ Wiedervorlage fällig</option>
   </select>
-  <button id="layerButton">Luftbild</button>
   <button id="drawButton">✎ Skizzieren</button>
   <button id="eraseButton">⌫ Radierer</button>
   <button class="secondary" id="sunBtn" title="Sonnenmodus">☀</button>
@@ -1745,8 +1744,8 @@ $('searchForm').onsubmit = async e => {
   }
 };
 
-/* ================= Luftbild ================= */
-$('layerButton').onclick = () => {
+/* ================= Luftbild (in der Team-Version entfernt) ================= */
+if ($('layerButton')) $('layerButton').onclick = () => {
   const btn = $('layerButton');
   if (aerialOn) { if (aerial) map.removeLayer(aerial); street.addTo(map); aerialOn = false; btn.textContent = 'Luftbild'; say('Straßenkarte eingeschaltet.'); return; }
   if (!aerial) {
