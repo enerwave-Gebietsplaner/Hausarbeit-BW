@@ -999,6 +999,20 @@ const idb = (() => {
 /* ================= Karte ================= */
 const bw = L.latLngBounds([47.45, 7.45], [49.85, 10.65]);
 const renderer = L.canvas({ padding: 0.5, tolerance: 5 });
+/* Flüssiges Drehen: Während der Zwei-Finger-Geste wird die Karte nur per Grafikkarte (CSS) gedreht.
+   Häuser und Beschriftungen werden erst 0,12 s nach der letzten Bewegung neu gezeichnet. */
+(() => {
+  const mp = L.Marker.prototype, rp = L.Renderer.prototype, mEv = mp.getEvents, rEv = rp.getEvents;
+  mp.getEvents = function () { const e = mEv.apply(this, arguments); delete e.rotate; return e; };
+  rp.getEvents = function () { const e = rEv.apply(this, arguments); delete e.rotate; return e; };
+  L.Map.addInitHook(function () {
+    let t = 0;
+    this.on('rotate', () => {
+      clearTimeout(t);
+      t = setTimeout(() => { this.eachLayer(l => { if (l instanceof L.Renderer) l._update(); else if (l instanceof L.Marker) l.update(); }); }, 120);
+    });
+  });
+})();
 const map = L.map('map', { maxZoom: 21, minZoom: 8, maxBounds: bw.pad(0.15), renderer, rotate: true, touchRotate: true, shiftKeyRotate: true, bearing: 0, rotateControl: { closeOnZeroBearing: true, position: 'topleft', title: 'Nach Norden ausrichten' } });
 if (settings.view && bw.pad(0.15).contains(settings.view.c)) map.setView(settings.view.c, settings.view.z);
 else map.setView([48.832, 9.315], 15);
