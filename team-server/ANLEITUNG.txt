@@ -40,7 +40,11 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
 - Administrator: Neki bekommt die Admin-Rechte automatisch, solange es noch keinen Admin gibt.
   Nur der Administrator kann unter 'Mitarbeiter' neue Mitarbeiter anlegen, eine persoenliche PIN
   vergeben oder erzeugen, PIN aendern, Admin-Rechte vergeben, Mitarbeiter blockieren,
-  wieder aktivieren/freigeben oder endgueltig loeschen und den Zoom-Link festlegen.
+  wieder aktivieren/freigeben oder endgueltig loeschen.
+- Teamcall: Im Team-Chat oben steht fuer alle der naechste Teamcall mit Datum, Uhrzeit und
+  dem Knopf 'Zoom-Call beitreten'. Nur der Administrator tippt dort auf 'Bearbeiten' und stellt
+  Zoom-Link, einmaliges Datum oder 'Jede Woche' (Wochentag), Start- und Endzeit ein.
+  Wird zentral gespeichert; alle Tablets zeigen die Aenderung spaetestens nach einer Minute.
   Das ist dieselbe Mitarbeiterliste wie in 'Mitarbeiter verwalten.bat'.
 - Chat: Fotos, Videos, PDFs und Dateien bis 200 MB, Sprachnachrichten ueber das Mikrofon-Symbol
   (beim ersten Mal in Chrome das Mikrofon erlauben).

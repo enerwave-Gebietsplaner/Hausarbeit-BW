@@ -200,13 +200,28 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
 
     /* ---------- Teamcall ---------- */
     const getSet = k => (db.prepare('SELECT value FROM settings WHERE key = ?').get(k) || {}).value || '';
-    if (p === 'settings' && M === 'GET') return send(res, 200, { zoom: getSet('zoom'), zoomNote: getSet('zoomNote') });
+    const getCall = () => { try { return JSON.parse(getSet('call') || 'null'); } catch (e) { return null; } };
+    if (p === 'settings' && M === 'GET') return send(res, 200, { zoom: getSet('zoom'), zoomNote: getSet('zoomNote'), call: getCall() });
     if (p === 'settings' && M === 'POST') {
       if (!isAdmin) return err(res, 403, 'Nur Administratoren können den Teamcall-Link ändern.');
       const b = await readBody(req) || {};
       const put = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
       if (b.zoom !== undefined) { const z = String(b.zoom).trim(); if (z && !/^https:\/\/\S+$/.test(z)) return err(res, 400, 'Bitte einen Link beginnend mit https:// eingeben.'); put.run('zoom', z.slice(0, 500)); }
       if (b.zoomNote !== undefined) put.run('zoomNote', String(b.zoomNote).trim().slice(0, 120));
+      // Termin: einmalig (Datum) oder jede Woche (Wochentag 0=So … 6=Sa), Start- und Endzeit
+      if (b.call !== undefined) {
+        if (b.call === null) put.run('call', '');
+        else {
+          const c = b.call, hm = /^([01]\d|2[0-3]):[0-5]\d$/;
+          const out = { repeat: !!c.repeat, start: String(c.start || ''), end: String(c.end || '') };
+          if (!hm.test(out.start) || !hm.test(out.end)) return err(res, 400, 'Bitte Start- und Endzeit angeben.');
+          if (out.end <= out.start) return err(res, 400, 'Die Endzeit muss nach der Startzeit liegen.');
+          if (out.repeat) { out.weekday = Number(c.weekday); if (!Number.isInteger(out.weekday) || out.weekday < 0 || out.weekday > 6) return err(res, 400, 'Bitte einen Wochentag wählen.'); }
+          else { out.date = String(c.date || ''); if (!/^\d{4}-\d{2}-\d{2}$/.test(out.date) || isNaN(Date.parse(out.date))) return err(res, 400, 'Bitte ein Datum wählen.'); }
+          put.run('call', JSON.stringify(out));
+          log('Teamcall-Termin geändert von', meRow.name + ':', JSON.stringify(out));
+        }
+      }
       return send(res, 200, { ok: true });
     }
     return err(res, 404, 'unbekannt');

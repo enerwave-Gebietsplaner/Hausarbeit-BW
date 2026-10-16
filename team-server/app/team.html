@@ -64,6 +64,17 @@ h2 { margin: 0; font-size: 19px; text-wrap: balance }
 .btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line) }
 .btn.danger { background: var(--danger) }
 .btn.zoom { background: #2d8cff }
+.callcard { background: linear-gradient(135deg, #173a34, #1f5246); color: #fff; border: 0; gap: 8px }
+.callcard .lbl { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #9fe3b8; display: flex; align-items: center; gap: 8px }
+.callcard .when { font-size: 21px; font-weight: 750; line-height: 1.25 }
+.callcard .sub { font-size: 13.5px; color: rgba(255,255,255,.78) }
+.callcard .live { background: #f24747; color: #fff; border-radius: 8px; padding: 2px 8px; font-size: 11.5px; letter-spacing: 0; animation: pulse 1.6s infinite }
+.callcard .edit { background: rgba(255,255,255,.14); color: #fff; border: 0; margin-left: auto; padding: 7px 11px; font-size: 13px }
+.callcard .top { display: flex; align-items: center; gap: 8px }
+.callcard .join { width: auto; align-self: stretch; box-sizing: border-box; margin-top: 4px }
+@keyframes pulse { 50% { opacity: .55 } }
+@media (prefers-reduced-motion: reduce) { .callcard .live { animation: none } }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px } .seg label { border: 1px solid var(--line); border-radius: 10px; padding: 10px; text-align: center; font-weight: 650; cursor: pointer } .seg input { position: absolute; opacity: 0; pointer-events: none } .seg label:has(input:checked) { background: var(--accent-ink); color: #fff; border-color: var(--accent-ink) }
 .btn:disabled { opacity: .5; cursor: default }
 .btn svg { width: 20px; height: 20px }
 label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); flex: 1; min-width: 140px }
@@ -265,7 +276,8 @@ const realApi = {
   delContract: id => call('POST', 'contracts/' + id + '/delete'),
   setGoal: (month, goal) => call('POST', 'goals', { month, goal }),
   settings: () => call('GET', 'settings'),
-  setZoom: zoom => call('POST', 'settings', { zoom })
+  setZoom: zoom => call('POST', 'settings', { zoom }),
+  setCall: d => call('POST', 'settings', d)
 };
 
 /* ---------- Vorschau-Daten ---------- */
@@ -298,7 +310,7 @@ const demoApi = (() => {
   add('u2', 12, cur); add('u3', 9, cur); add('u4', 15, cur); add('u5', 7, cur);
   add('u2', 14, prev); add('u3', 11, prev); add('u4', 13, prev); add('u5', 10, prev); add('u1', 3, prev);
   const goals = { [cur]: 60, [prev]: 55 };
-  let zoom = 'https://zoom.us/j/1234567890';
+  let zoom = 'https://zoom.us/j/1234567890', demoCall = { repeat: true, weekday: 1, start: '10:00', end: '11:00' };
   const dmId = (a, b) => 'dm:' + [a, b].sort().join('~');
   const wait = v => new Promise(r => setTimeout(() => r(structuredClone(v)), 120));
   const me = () => users.find(u => u.id === meId);
@@ -328,7 +340,8 @@ const demoApi = (() => {
     addContract: note => { contracts.push({ id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }); return wait({ ok: true }); },
     delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
     setGoal: (month, goal) => { goals[month] = goal; return wait({ ok: true }); },
-    settings: () => wait({ zoom }),
+    settings: () => wait({ zoom, call: demoCall }),
+    setCall: d => { if (d.zoom !== undefined) zoom = d.zoom; if (d.call !== undefined) demoCall = d.call; return wait({ ok: true }); },
     setZoom: z => { zoom = z; return wait({ ok: true }); },
     dmId
   };
@@ -415,6 +428,89 @@ async function pollUnread() {
 const chName = id => id === 'team' ? 'Team-Chat (alle)' : userById(id.slice(3).split('~').find(x => x !== me.id)).name;
 const zoomBtn = () => settings.zoom ? h('a', { class: 'btn zoom', href: settings.zoom, target: '_blank', rel: 'noopener' }, svg(I.video), 'Zoom-Call beitreten') : null;
 
+/* ---------- Teamcall-Termin (Admin stellt ein, alle sehen den nächsten Termin) ---------- */
+const WDAYS = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+const atTime = (d, hm) => { const [H, M] = hm.split(':').map(Number); const x = new Date(d); x.setHours(H, M, 0, 0); return x; };
+function nextCall(c, now = new Date()) {
+  if (!c || !c.start || !c.end) return null;
+  if (c.repeat) {
+    for (let i = 0; i <= 7; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+      if (d.getDay() !== c.weekday) continue;
+      const s = atTime(d, c.start), e = atTime(d, c.end);
+      if (e > now) return { s, e, live: now >= s };
+    }
+    return null;
+  }
+  const [Y, Mo, D] = c.date.split('-').map(Number), d = new Date(Y, Mo - 1, D);
+  const s = atTime(d, c.start), e = atTime(d, c.end);
+  return e > now ? { s, e, live: now >= s } : null;
+}
+function callWhen(n) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.round((new Date(n.s.getFullYear(), n.s.getMonth(), n.s.getDate()) - today) / 864e5);
+  const day = diff === 0 ? 'Heute' : diff === 1 ? 'Morgen' : WDAYS[n.s.getDay()];
+  return day + ', ' + n.s.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' · ' + settings.call.start + '–' + settings.call.end + ' Uhr';
+}
+function callCard() {
+  const card = h('div', { class: 'card callcard' });
+  const fill = () => {
+    const c = settings.call, n = nextCall(c);
+    card.hidden = !n && !settings.zoom && !me.admin;  // nichts zu zeigen: unsichtbar, prüft aber weiter jede Minute
+    const top = h('div', { class: 'top' }, h('span', { class: 'lbl' }, n ? (n.live ? 'Teamcall' : 'Nächster Teamcall') : 'Teamcall', n && n.live ? h('span', { class: 'live' }, 'läuft gerade') : null),
+      me.admin ? h('button', { class: 'btn edit', onclick: callEditor }, 'Bearbeiten') : null);
+    const sub = c && c.repeat ? 'Jeden ' + WDAYS[c.weekday] + ' von ' + c.start + ' bis ' + c.end + ' Uhr' : null;
+    put(card, top,
+      n ? h('div', { class: 'when' }, callWhen(n)) : h('div', { class: 'sub' }, me.admin ? (c ? 'Der eingestellte Termin ist vorbei. Tippe auf „Bearbeiten“ für einen neuen Termin.' : 'Noch kein Termin eingestellt. Tippe auf „Bearbeiten“.') : 'Zurzeit ist kein Termin geplant.'),
+      n && sub ? h('div', { class: 'sub' }, sub) : null,
+      settings.zoom ? Object.assign(zoomBtn(), { className: 'btn zoom big join' }) : (me.admin ? h('div', { class: 'sub' }, 'Noch kein Zoom-Link hinterlegt.') : null));
+  };
+  fill();
+  // Änderungen des Admins kommen automatisch an: jede Minute neu laden, solange die Karte zu sehen ist
+  const t = setInterval(async () => {
+    if (!document.body.contains(card)) return clearInterval(t);
+    settings = await api.settings().catch(() => settings); fill();
+  }, 60000);
+  return card;
+}
+function callEditor() {
+  let s;
+  const c = settings.call || { repeat: true, weekday: 1, start: '10:00', end: '11:00' };
+  const link = h('input', { id: 'zoomLink', type: 'url', value: settings.zoom || '', placeholder: 'https://zoom.us/j/…' });
+  const rOnce = h('input', { type: 'radio', name: 'callRep', id: 'callOnce' }), rWeek = h('input', { type: 'radio', name: 'callRep', id: 'callWeekly' });
+  (c.repeat ? rWeek : rOnce).checked = true;
+  const wd = h('select', { id: 'callWeekday' }, ...[1, 2, 3, 4, 5, 6, 0].map(i => h('option', { value: i }, WDAYS[i])));
+  wd.value = String(c.weekday ?? 1);
+  const dt = h('input', { id: 'callDate', type: 'date', value: c.date || new Date().toLocaleDateString('sv-SE') });
+  const st = h('input', { id: 'callStart', type: 'time', value: c.start }), en = h('input', { id: 'callEnd', type: 'time', value: c.end });
+  const lWd = h('label', { class: 'f' }, 'Wochentag', wd), lDt = h('label', { class: 'f' }, 'Datum', dt);
+  const sync = () => { lWd.hidden = !rWeek.checked; lDt.hidden = rWeek.checked; };
+  rOnce.onchange = rWeek.onchange = sync; sync();
+  const err = h('p', { class: 'muted', role: 'alert', style: 'color:var(--danger);margin:0' });
+  const form = h('form', { style: 'display:flex;flex-direction:column;gap:12px' }, h('h2', {}, 'Teamcall einstellen'),
+    h('label', { class: 'f' }, 'Zoom-Link', link),
+    h('div', { class: 'seg' }, h('label', {}, rOnce, 'Einmalig'), h('label', {}, rWeek, 'Jede Woche')),
+    h('div', { class: 'row' }, lWd, lDt),
+    h('div', { class: 'row' }, h('label', { class: 'f' }, 'Startzeit', st), h('label', { class: 'f' }, 'Endzeit', en)),
+    err,
+    h('div', { class: 'row' }, h('button', { class: 'btn green', type: 'submit', id: 'callSave' }, 'Speichern'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen'),
+      settings.call ? h('button', { class: 'btn ghost', type: 'button', id: 'callRemove', style: 'color:var(--danger);margin-left:auto', onclick: async () => { try { await api.setCall({ call: null }); settings.call = null; s.remove(); toast('Termin entfernt.'); refreshCall(); } catch (x) { err.textContent = x.message; } } }, 'Termin entfernen') : null),
+    h('p', { class: 'muted', style: 'margin:0' }, 'Wird zentral gespeichert und erscheint automatisch bei allen Mitarbeitern im Team-Chat und im Dashboard.'));
+  form.onsubmit = async e => {
+    e.preventDefault(); err.textContent = '';
+    const z = link.value.trim();
+    if (z && !/^https:\/\//.test(z)) return err.textContent = 'Bitte einen Zoom-Link beginnend mit https:// eingeben.';
+    if (!st.value || !en.value) return err.textContent = 'Bitte Start- und Endzeit angeben.';
+    if (en.value <= st.value) return err.textContent = 'Die Endzeit muss nach der Startzeit liegen.';
+    const call = rWeek.checked ? { repeat: true, weekday: Number(wd.value), start: st.value, end: en.value } : { repeat: false, date: dt.value, start: st.value, end: en.value };
+    if (!call.repeat && !dt.value) return err.textContent = 'Bitte ein Datum wählen.';
+    try { await api.setCall({ zoom: z, call }); settings.zoom = z; settings.call = call; s.remove(); toast('Teamcall gespeichert – alle sehen ihn jetzt.'); refreshCall(); }
+    catch (x) { err.textContent = x.message; }
+  };
+  s = sheet(form);
+}
+function refreshCall() { document.querySelectorAll('.callcard').forEach(old => old.replaceWith(callCard())); }
+
 async function renderChat() {
   const sub = (location.hash.split('/')[1] || '');
   if (sub) return openConversation(decodeURIComponent(sub));
@@ -424,7 +520,7 @@ async function renderChat() {
   v.replaceChildren(h('div', { class: 'chat-list' }, h('div', { class: 'empty' }, 'Chats werden geladen …')));
   const chs = await pollUnread(), read = store.get(readKey(), {});
   const list = h('div', { class: 'chat-list' });
-  const zb = zoomBtn(); if (zb) { zb.classList.add('big'); list.append(zb); }
+  list.append(callCard());
   const team = chs.find(c => c.id === 'team') || { id: 'team' };
   const item = c => {
     const other = c.id === 'team' ? null : userById(c.id.slice(3).split('~').find(x => x !== me.id));
@@ -565,7 +661,6 @@ async function renderTeam() {
       u.admin ? h('span', { class: 'pill' }, 'Admin') : null)),
     blocked.length ? h('h2', { style: 'font-size:16px;margin-top:8px' }, 'Blockiert · ' + blocked.length) : null,
     ...blocked.map(u => h('button', { class: 'person', style: 'opacity:.75', onclick: () => personSheet(u, countOf(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name), h('div', { class: 'muted' }, 'Zugang gesperrt')), h('span', { class: 'pill off' }, 'Blockiert'))),
-    me.admin ? zoomCard() : null,
     me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet die Hauskarte öffnen und mit Name und PIN anmelden – fertig.'))) : null
   );
 }
@@ -642,11 +737,6 @@ function accessSheet(name, pin, changed) {
     h('p', { class: 'muted', style: 'margin:0' }, 'Die PIN wird nur jetzt angezeigt – bitte notieren oder direkt weitergeben.'),
     h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: async () => { try { await navigator.clipboard.writeText(text); toast('Zugangsdaten kopiert.'); } catch (e) { toast('Kopieren nicht möglich – bitte abschreiben.'); } } }, 'Kopieren'), h('button', { class: 'btn green', type: 'button', onclick: () => s.remove() }, 'Fertig'))));
 }
-function zoomCard() {
-  const inp = h('input', { id: 'zoomLink', type: 'url', value: settings.zoom || '', placeholder: 'https://zoom.us/j/…' });
-  return h('div', { class: 'card' }, h('b', {}, 'Zoom-Teamcall'), h('p', { class: 'muted', style: 'margin:0' }, 'Dieser Link öffnet sich bei allen über „Zoom-Call beitreten“ im Team-Chat und im Dashboard.'),
-    h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Zoom-Link', inp), h('button', { class: 'btn', onclick: async () => { const z = inp.value.trim(); if (z && !/^https:\/\//.test(z)) return toast('Bitte einen Link beginnend mit https:// eingeben.'); await api.setZoom(z); settings.zoom = z; toast(z ? 'Zoom-Link gespeichert.' : 'Zoom-Link entfernt.'); } }, 'Speichern')));
-}
 
 /* ================= Dashboard ================= */
 let dashMonth = monthKey(new Date()), prevMine = null;
@@ -693,8 +783,7 @@ async function renderDashboard() {
     }
     rank = h('div', { class: 'card' }, h('b', {}, 'Team im ' + monthName(dashMonth)), h('span', { class: 'muted' }, 'Verträge pro Mitarbeiter' + (isCur ? ' – der Monat läuft noch' : '')), grid);
   }
-  const zb = zoomBtn(); if (zb) zb.classList.add('big');
-  put(v, nav, myCard, rank, zb);
+  put(v, nav, myCard, rank, callCard());
 }
 function goalEditor(d) {
   const inp = h('input', { id: 'goal', type: 'number', min: 0, step: 1, value: d.goal || '', placeholder: 'z. B. 60' });
