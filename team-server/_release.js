@@ -1,8 +1,8 @@
 // Erzeugt version.json für die automatischen Updates des Team-Servers.
 // Aufruf (im Ordner team-server):  node _release.js
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
-const FILES = ['server.js', 'start-server.cmd', 'mitarbeiter.ps1', 'Mitarbeiter verwalten.bat', 'ANLEITUNG.txt',
-  'app/index.html', 'app/sw.js', 'app/sync-config.js', 'app/manifest.webmanifest', 'app/icon.svg', 'app/v16.html'];
+const FILES = ['server.js', 'team.js', 'start-server.cmd', 'mitarbeiter.ps1', 'Mitarbeiter verwalten.bat', 'ANLEITUNG.txt',
+  'app/index.html', 'app/team.html', 'app/sw.js', 'app/sync-config.js', 'app/manifest.webmanifest', 'app/icon.svg', 'app/v16.html'];
 const old = fs.existsSync('version.json') ? JSON.parse(fs.readFileSync('version.json', 'utf8')) : { version: 0 };
 const files = {};
 for (const f of FILES) files[f] = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, f))).digest('hex');

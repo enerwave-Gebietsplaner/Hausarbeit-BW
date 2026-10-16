@@ -1,4 +1,12 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Hauskarte BW Team</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#173a34">
 <style>
@@ -17,6 +25,9 @@
   --bg: #0f1d1a; --card: #172925; --fg: #e3eee9; --muted: #9db3ab; --line: #2a403a;
   --bubble-me: #1d4a38; --bubble: #1d322d; --accent-ink: #5fd68a; --warn: #f0a24b; --danger: #ff7a7a; --info: #8fb2ff; color-scheme: dark }
 html, body { height: 100% }
+body { margin: 0 }
+[hidden] { display: none !important }
+img { max-width: 100% }
 body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; display: flex; flex-direction: column }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--brand) }
 button, input, select, textarea { font: inherit; color: inherit }
@@ -118,7 +129,8 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .viewer img { max-width: 96%; max-height: 92% }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none } }
 </style>
-
+</head>
+<body>
 <header class="top">
   <div class="wrap">
     <span class="title">Hauskarte BW <small>Team</small></span>
@@ -247,8 +259,8 @@ const demoApi = (() => {
     { ch: 'team', from: 'u4', text: 'Hier das Gebiet für morgen, grün ist schon erledigt.', file: 'f1', at: at(0, 7, 48) },
     { ch: 'team', from: 'u1', text: 'Neues Preisblatt für Oktober:', file: 'f2', at: at(0, 7, 55) },
     { ch: 'team', from: 'u5', text: 'Danke! Bin ab 10 Uhr in der Karlstraße.', at: at(0, 8, 3) },
-    { ch: 'dm:u1-u2', from: 'u2', text: 'Kannst du mir die Unterlagen für Herrn Meier schicken?', at: at(0, 7, 30) },
-    { ch: 'dm:u1-u2', from: 'u1', text: 'Mache ich gleich.', at: at(0, 7, 41) }
+    { ch: 'dm:u1~u2', from: 'u2', text: 'Kannst du mir die Unterlagen für Herrn Meier schicken?', at: at(0, 7, 30) },
+    { ch: 'dm:u1~u2', from: 'u1', text: 'Mache ich gleich.', at: at(0, 7, 41) }
   ].map(m => ({ ...m, id: ++seq }));
   const contracts = [];
   const add = (uid, n, month, d0 = 1) => { const [y, m] = month.split('-').map(Number); for (let i = 0; i < n; i++) { const d = new Date(y, m - 1, Math.min(d0 + (i % 14), 28), 10 + (i % 7), (i * 13) % 60); if (d > now) d.setTime(now.getTime() - (i + 1) * 3600e3); contracts.push({ id: ++cseq, uid, month, at: d.toISOString(), note: i % 3 === 0 ? 'Strom, Haushalt' : '' }); } };
@@ -256,7 +268,7 @@ const demoApi = (() => {
   add('u2', 14, prev); add('u3', 11, prev); add('u4', 13, prev); add('u5', 10, prev); add('u1', 3, prev);
   const goals = { [cur]: 60, [prev]: 55 };
   let zoom = 'https://zoom.us/j/1234567890';
-  const dmId = (a, b) => 'dm:' + [a, b].sort().join('-');
+  const dmId = (a, b) => 'dm:' + [a, b].sort().join('~');
   const wait = v => new Promise(r => setTimeout(() => r(structuredClone(v)), 120));
   const me = () => users.find(u => u.id === meId);
   return {
@@ -266,7 +278,7 @@ const demoApi = (() => {
     addUser: d => { if (users.some(u => u.name.toLowerCase() === d.name.toLowerCase())) return Promise.reject(Error('„' + d.name + '“ gibt es schon.')); const u = { id: 'u' + (users.length + 1 + Math.random()).toString(36).slice(2, 7), name: d.name, admin: !!d.admin, active: true }; users.push(u); return wait(u); },
     updateUser: (id, d) => { const u = users.find(x => x.id === id); Object.assign(u, d.active === false ? { active: false } : {}, d.admin !== undefined ? { admin: d.admin } : {}); return wait(u); },
     channels: () => {
-      const mine = msgs.filter(m => m.ch === 'team' || m.ch.split(/[:-]/).includes(meId));
+      const mine = msgs.filter(m => m.ch === 'team' || m.ch.slice(3).split('~').includes(meId));
       const chs = {};
       for (const m of mine) chs[m.ch] = m;
       return wait(Object.entries(chs).map(([id, last]) => ({ id, last: { text: last.text || (last.file ? files[last.file].name : ''), from: last.from, at: last.at, id: last.id } })));
@@ -289,7 +301,7 @@ const demoApi = (() => {
   };
 })();
 const api = DEMO ? demoApi : realApi;
-const dmId = (a, b) => 'dm:' + [a, b].sort().join('-');
+const dmId = (a, b) => 'dm:' + [a, b].sort().join('~');
 
 /* ================= Zustand ================= */
 let me = null, users = [], settings = { zoom: '' }, view = 'chat';
@@ -366,13 +378,14 @@ async function pollUnread() {
     return chs;
   } catch (e) { return []; }
 }
-const chName = id => id === 'team' ? 'Team-Chat (alle)' : userById(id.slice(3).split('-').find(x => x !== me.id)).name;
+const chName = id => id === 'team' ? 'Team-Chat (alle)' : userById(id.slice(3).split('~').find(x => x !== me.id)).name;
 const zoomBtn = () => settings.zoom ? h('a', { class: 'btn zoom', href: settings.zoom, target: '_blank', rel: 'noopener' }, svg(I.video), 'Teamcall beitreten') : null;
 
 async function renderChat() {
   const sub = (location.hash.split('/')[1] || '');
   if (sub) return openConversation(decodeURIComponent(sub));
   clearInterval(chatTimer); openCh = null;
+  [settings, users] = await Promise.all([api.settings().catch(() => settings), api.users().catch(() => users)]);
   const v = $('view-chat');
   v.replaceChildren(h('div', { class: 'chat-list' }, h('div', { class: 'empty' }, 'Chats werden geladen …')));
   const chs = await pollUnread(), read = store.get(readKey(), {});
@@ -380,7 +393,7 @@ async function renderChat() {
   const zb = zoomBtn(); if (zb) { zb.classList.add('big'); list.append(zb); }
   const team = chs.find(c => c.id === 'team') || { id: 'team' };
   const item = c => {
-    const other = c.id === 'team' ? null : userById(c.id.slice(3).split('-').find(x => x !== me.id));
+    const other = c.id === 'team' ? null : userById(c.id.slice(3).split('~').find(x => x !== me.id));
     const unread = c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0);
     return h('button', { class: 'ch', onclick: () => { location.hash = '#chat/' + encodeURIComponent(c.id); } },
       other ? av(other) : h('span', { class: 'av', style: 'background:var(--brand-2)' }, svg(I.msg)),
@@ -451,14 +464,14 @@ async function openConversation(ch) {
   chatTimer = setInterval(() => { if (openCh === ch && document.visibilityState === 'visible') loadMsgs(); }, 5000);
 }
 function fileView(f) {
-  if (f.type && f.type.startsWith('image/')) {
+  if (/^image\/(jpeg|png|gif|webp)$/.test(f.type || '')) {
     const im = h('img', { alt: f.name, loading: 'lazy', width: 480, height: 320 });
     api.fileBlob(f).then(b => { im.src = URL.createObjectURL(b); }).catch(() => { im.alt = 'Bild nicht verfügbar'; });
     im.onclick = () => { const vw = h('div', { class: 'viewer', onclick: () => vw.remove() }, h('img', { src: im.src, alt: f.name })); document.body.append(vw); };
     return im;
   }
   const a = h('a', { class: 'file', href: '#', title: 'Öffnen' }, svg(I.file), h('span', {}, f.name), h('small', {}, size(f.size)));
-  a.onclick = async e => { e.preventDefault(); try { const b = await api.fileBlob(f); const url = URL.createObjectURL(b); const x = h('a', { href: url, download: f.name, target: '_blank' }); document.body.append(x); x.click(); x.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); } catch (err) { toast(err.message); } };
+  a.onclick = async e => { e.preventDefault(); try { let b = await api.fileBlob(f); if (!/^(image\/(jpeg|png|gif|webp)|application\/pdf)$/.test(b.type)) b = new Blob([b], { type: 'application/octet-stream' }); const url = URL.createObjectURL(b); const x = h('a', { href: url, download: f.name, target: '_blank' }); document.body.append(x); x.click(); x.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); } catch (err) { toast(err.message); } };
   return a;
 }
 
@@ -535,6 +548,7 @@ function zoomCard() {
 let dashMonth = monthKey(new Date());
 async function renderDashboard() {
   const v = $('view-dashboard');
+  settings = await api.settings().catch(() => settings);
   const cur = monthKey(new Date());
   let d;
   try { d = await api.contracts(dashMonth); } catch (e) { v.replaceChildren(h('div', { class: 'empty' }, e.message)); return; }
@@ -584,3 +598,5 @@ function goalEditor(d) {
 boot();
 })();
 </script>
+</body>
+</html>

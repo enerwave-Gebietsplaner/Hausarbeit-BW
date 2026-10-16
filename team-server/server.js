@@ -7,6 +7,7 @@
                      node server.js user pin "Max Müller" 1234
                      node server.js user remove "Max Müller"
                      node server.js user list
+                     node server.js user admin "Max Müller"        (Administrator; "nein" zum Entziehen)
    Sicherung jetzt:  node server.js backup
 */
 'use strict';
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT NOT NULL UNIQUE
 CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, kind TEXT NOT NULL, uid TEXT NOT NULL, expires INTEGER NOT NULL);
 `);
 
+try { db.exec('ALTER TABLE users ADD COLUMN admin INTEGER NOT NULL DEFAULT 0'); } catch (e) { /* Spalte gibt es schon */ }
 const now = () => new Date().toISOString();
 const log = (...a) => console.log(new Date().toLocaleString('de-DE'), ...a);
 
@@ -86,10 +88,16 @@ if (cmd === 'user') {
     db.prepare('UPDATE users SET active = 0 WHERE id = ?').run(u.id);
     db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id);
     console.log(`„${u.name}“ gesperrt. Seine bisherigen Eingaben bleiben erhalten.`);
+  } else if (sub === 'admin') {
+    const u = findUser(name); if (!u) { console.log('Mitarbeiter nicht gefunden.'); process.exit(1); }
+    const on = !/^(nein|no|0|aus)$/i.test(String(args[1] || 'ja'));
+    db.prepare('UPDATE users SET admin = ? WHERE id = ?').run(on ? 1 : 0, u.id);
+    console.log(on ? `„${u.name}“ ist jetzt Administrator.` : `„${u.name}“ ist kein Administrator mehr.`);
   } else {
-    const list = db.prepare('SELECT name, active, created_at FROM users ORDER BY name').all();
+    const list = db.prepare('SELECT name, active, admin, created_at FROM users ORDER BY name').all();
     if (!list.length) console.log('Noch keine Mitarbeiter. Anlegen: node server.js user add "Name" PIN');
-    for (const u of list) console.log((u.active ? '  ✓ ' : '  ✗ gesperrt: ') + u.name);
+    for (const u of list) console.log((u.active ? '  ✓ ' : '  ✗ gesperrt: ') + u.name + (u.admin ? '  (Admin)' : ''));
+    if (list.length && !list.some(u => u.admin && u.active)) console.log('\n  Hinweis: Noch kein Administrator. Festlegen: node server.js user admin "Name"');
   }
   process.exit(0);
 }
@@ -135,6 +143,8 @@ function serveFile(req, res, url) {
   res.writeHead(200, { 'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
   fs.createReadStream(file).pipe(res);
 }
+
+const team = require('./team.js')({ db, DATA, readBody, send, userFromToken, hashPin, log });
 
 const insertChange = db.prepare('INSERT OR IGNORE INTO changes (id, bid, f, v, t, uid, by_name, device, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
 const upsertBuilding = db.prepare('INSERT INTO buildings (id, data, updated_at) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at');
@@ -208,6 +218,7 @@ async function handle(req, res) {
     }
     return send(res, 404, { message: 'unbekannt' });
   }
+  if (url.pathname.startsWith('/api/')) return team.handle(req, res, url);
   if (url.pathname === '/status') {
     const c = db.prepare('SELECT COUNT(*) n, MAX(created_at) last FROM changes').get();
     return send(res, 200, { ok: true, aenderungen: c.n, letzte: c.last });

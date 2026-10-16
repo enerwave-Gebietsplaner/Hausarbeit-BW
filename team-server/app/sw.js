@@ -1,8 +1,8 @@
 // Hauskarte BW – Offline-Speicher (Service Worker)
-const APP = 'hauskarte-team-v1';
+const APP = 'hauskarte-team-v2';
 const TILES = 'hauskarte-tiles-v1';
 const MAX_TILES = 3000;
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+const SHELL = ['./', './index.html', './team.html', './manifest.webmanifest', './icon.svg'];
 const LIBS = [];
 const TILE_HOSTS = ['tile.openstreetmap.org', 'server.arcgisonline.com'];
 
