@@ -127,6 +127,17 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--brand); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px; z-index: 30; max-width: calc(100% - 32px) }
 .viewer { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: grid; place-items: center; z-index: 40 }
 .viewer img { max-width: 96%; max-height: 92% }
+.m video { max-width: 100%; max-height: 320px; border-radius: 9px; background: #000 }
+.m audio { width: 260px; max-width: 100%; height: 40px }
+.voice { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted) }
+.voice svg { width: 16px; height: 16px; flex: 0 0 auto }
+.icon-btn.mic.rec { background: var(--danger); color: #fff; border: 0 }
+.recbar { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; font-variant-numeric: tabular-nums }
+.recbar .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--danger); animation: blink 1s infinite }
+@keyframes blink { 50% { opacity: .25 } }
+@media (prefers-reduced-motion: reduce) { .recbar .dot { animation: none } }
+.prog { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; flex: 1; min-width: 60px }
+.prog i { display: block; height: 100%; background: var(--accent); width: 0 }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none } }
 </style>
 </head>
@@ -160,6 +171,7 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 'use strict';
 const $ = id => document.getElementById(id);
 const h = (tag, props = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(props)) { if (k === 'class') e.className = v; else if (k.startsWith('on')) e[k] = v; else if (v !== undefined && v !== null && v !== false) e.setAttribute(k, v === true ? '' : v); } e.append(...kids.flat().filter(x => x !== null && x !== undefined && x !== false)); return e; };
+const put = (el, ...k) => el.replaceChildren(...k.flat().filter(x => x !== null && x !== undefined && x !== false));
 const svg = path => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.innerHTML = path; return s; };
 const I = {
   clip: '<path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/>',
@@ -169,7 +181,8 @@ const I = {
   file: '<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   msg: '<path d="M4 5h16v11H9l-5 4z"/>',
-  x: '<path d="M6 6l12 12M18 6 6 18"/>'
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>'
 };
 const COLORS = ['#1f7a45', '#1d4ed8', '#b45309', '#7c3aed', '#be185d', '#0f766e', '#a16207', '#4d7c0f'];
 const avColor = id => COLORS[[...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0) % COLORS.length];
@@ -186,7 +199,7 @@ const size = b => b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' K
 const store = { get(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 let toastT = 0;
 function toast(t) { document.querySelector('.toast')?.remove(); const e = h('div', { class: 'toast', role: 'status' }, t); document.body.append(e); clearTimeout(toastT); toastT = setTimeout(() => e.remove(), 2600); }
-const MAX_FILE = 25 * 1048576;
+const MAX_FILE = 200 * 1048576;
 
 /* ================= Datenzugriff =================
    Echtbetrieb: Server auf dem Büro-Laptop (gleiche Anmeldung wie die Hauskarte).
@@ -223,11 +236,26 @@ const realApi = {
   updateUser: (id, d) => call('POST', 'users/' + encodeURIComponent(id), d),
   channels: () => call('GET', 'channels'),
   messages: (ch, after) => call('GET', 'messages?channel=' + encodeURIComponent(ch) + '&after=' + (after || 0)),
-  send: async (ch, text, file) => {
+  send: async (ch, text, file, onProgress) => {
     let attachment = null;
-    if (file) attachment = (await call('POST', 'files', null, { headers: { 'Content-Type': file.type || 'application/octet-stream', 'X-Filename': encodeURIComponent(file.name) }, body: file })).id;
+    if (file) {
+      const tk = await token();
+      attachment = await new Promise((resolve, reject) => {
+        const x = new XMLHttpRequest();
+        x.open('POST', '/api/files');
+        x.setRequestHeader('Authorization', 'Bearer ' + tk);
+        x.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        x.setRequestHeader('X-Filename', encodeURIComponent(file.name));
+        x.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100)); };
+        x.onload = () => { let j = {}; try { j = JSON.parse(x.responseText); } catch (e) {} x.status === 200 ? resolve(j.id) : reject(Error(j.message || 'Hochladen fehlgeschlagen (' + x.status + ')')); };
+        x.onerror = () => reject(Error('Keine Verbindung zum Server. Ist Tailscale an?'));
+        x.send(file);
+      });
+    }
     return call('POST', 'messages', { channel: ch, text, attachment });
   },
+  mediaUrl: f => '/api/files/' + f.id + '?t=' + encodeURIComponent(auth ? auth.access : ''),
+  deleteUser: id => call('POST', 'users/' + encodeURIComponent(id) + '/delete'),
   fileBlob: async att => { const r = await fetch('/api/files/' + att.id, { headers: { Authorization: 'Bearer ' + await token() } }); if (!r.ok) throw Error('Datei nicht verfügbar'); return r.blob(); },
   contracts: month => call('GET', 'contracts?month=' + month),
   addContract: note => call('POST', 'contracts', { note }),
@@ -276,7 +304,9 @@ const demoApi = (() => {
     me: () => wait(me()),
     users: () => wait(users),
     addUser: d => { if (users.some(u => u.name.toLowerCase() === d.name.toLowerCase())) return Promise.reject(Error('„' + d.name + '“ gibt es schon.')); const u = { id: 'u' + (users.length + 1 + Math.random()).toString(36).slice(2, 7), name: d.name, admin: !!d.admin, active: true }; users.push(u); return wait(u); },
-    updateUser: (id, d) => { const u = users.find(x => x.id === id); Object.assign(u, d.active === false ? { active: false } : {}, d.admin !== undefined ? { admin: d.admin } : {}); return wait(u); },
+    updateUser: (id, d) => { const u = users.find(x => x.id === id); if (d.active !== undefined) u.active = d.active; if (d.admin !== undefined) u.admin = d.admin; return wait(u); },
+    deleteUser: id => { const i = users.findIndex(x => x.id === id); if (i >= 0) users[i] = { ...users[i], active: false, deleted: true }; return wait({ ok: true }); },
+    mediaUrl: f => { const x = files[f.id]; return x.url || (x.obj || (x.obj = URL.createObjectURL(x.blob))); },
     channels: () => {
       const mine = msgs.filter(m => m.ch === 'team' || m.ch.slice(3).split('~').includes(meId));
       const chs = {};
@@ -305,7 +335,7 @@ const dmId = (a, b) => 'dm:' + [a, b].sort().join('~');
 
 /* ================= Zustand ================= */
 let me = null, users = [], settings = { zoom: '' }, view = 'chat';
-const userById = id => users.find(u => u.id === id) || { id, name: 'Ehemalig' };
+const userById = id => { const u = users.find(x => x.id === id); return u ? (u.deleted ? { ...u, name: u.name + ' (gelöscht)' } : u) : { id, name: 'Ehemalig' }; };
 const readKey = () => 'hauskarte-team-read-' + (me ? me.id : '');
 
 async function boot() {
@@ -420,25 +450,59 @@ async function openConversation(ch) {
   attach.onclick = () => { $('filePick').value = ''; $('filePick').click(); };
   $('filePick').onchange = () => {
     const f = $('filePick').files[0]; if (!f) return;
-    if (f.size > MAX_FILE) { toast('Datei ist zu groß (höchstens 25 MB).'); return; }
+    if (f.size > MAX_FILE) { toast('Datei ist zu groß (höchstens 200 MB).'); return; }
     pendingFile = f;
     const rm = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Anhang entfernen', onclick: () => { pendingFile = null; pend.hidden = true; } }, svg(I.x));
-    pend.replaceChildren(f.type.startsWith('image/') ? h('img', { src: URL.createObjectURL(f), alt: '' }) : svg(I.file), h('span', { style: 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, f.name + ' · ' + size(f.size)), rm);
+    pend.replaceChildren(f.type.startsWith('image/') ? h('img', { src: URL.createObjectURL(f), alt: '' }) : svg(f.type.startsWith('video/') ? I.video : f.type.startsWith('audio/') ? I.mic : I.file), h('span', { style: 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, f.name + ' · ' + size(f.size)), rm);
     pend.hidden = false;
   };
   const doSend = async () => {
     const text = ta.value.trim();
     if (!text && !pendingFile) return;
     send.disabled = true;
-    try { await api.send(ch, text, pendingFile); ta.value = ''; ta.oninput(); pendingFile = null; pend.hidden = true; await loadMsgs(); }
-    catch (e) { toast(e.message); }
+    let bar = null;
+    if (pendingFile && pendingFile.size > 512 * 1024) { bar = h('i'); pend.append(h('span', { class: 'prog', 'aria-label': 'Hochladen' }, bar)); }
+    try { await api.send(ch, text, pendingFile, pct => { if (bar) bar.style.width = pct + '%'; }); ta.value = ''; ta.oninput(); pendingFile = null; pend.hidden = true; await loadMsgs(); }
+    catch (e) { toast(e.message); bar?.parentNode.remove(); }
     finally { send.disabled = false; }
   };
+  /* Sprachnachricht: Mikrofon antippen, sprechen, „Senden“ */
+  const mic = h('button', { class: 'icon-btn mic', type: 'button', title: 'Sprachnachricht aufnehmen', 'aria-label': 'Sprachnachricht aufnehmen' }, svg(I.mic));
+  const composer = h('div', { class: 'composer' });
+  const normal = () => composer.replaceChildren(attach, ta, mic, send);
+  mic.onclick = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) return toast('Sprachaufnahme wird auf diesem Gerät nicht unterstützt.');
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+    catch (e) { return toast('Kein Zugriff aufs Mikrofon. Bitte in Chrome für diese Seite erlauben.'); }
+    const type = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+    const rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined), parts = [];
+    let cancelled = false; const t0 = Date.now();
+    rec.ondataavailable = e => { if (e.data.size) parts.push(e.data); };
+    const clock = h('span', {}, '0:00');
+    const stop = c => { cancelled = c; clearInterval(tick); if (rec.state !== 'inactive') rec.stop(); stream.getTracks().forEach(t => t.stop()); };
+    const tick = setInterval(() => { const s = Math.floor((Date.now() - t0) / 1000); clock.textContent = Math.floor(s / 60) + ':' + pad(s % 60); if (s >= 300) stop(false); }, 250);
+    rec.onstop = async () => {
+      normal();
+      if (cancelled || !parts.length) return;
+      const mime = (rec.mimeType || type || 'audio/webm').split(';')[0], ext = mime.includes('mp4') ? 'm4a' : mime.includes('ogg') ? 'ogg' : 'webm';
+      const secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
+      const file = new File(parts, 'Sprachnachricht ' + Math.floor(secs / 60) + '-' + pad(secs % 60) + '.' + ext, { type: mime });
+      send.disabled = true;
+      try { await api.send(ch, '', file); await loadMsgs(); } catch (e) { toast(e.message); } finally { send.disabled = false; }
+    };
+    rec.start(1000);
+    composer.replaceChildren(
+      h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Aufnahme verwerfen', title: 'Verwerfen', onclick: () => stop(true) }, svg(I.x)),
+      h('div', { class: 'recbar', role: 'status' }, h('span', { class: 'dot' }), h('span', {}, 'Aufnahme läuft'), clock),
+      h('button', { class: 'icon-btn send', type: 'button', 'aria-label': 'Sprachnachricht senden', title: 'Senden', onclick: () => stop(false) }, svg(I.send)));
+  };
+  normal();
   send.onclick = doSend;
   ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && window.matchMedia('(pointer:fine)').matches) { e.preventDefault(); doSend(); } };
   const head = h('div', { class: 'conv-head' }, h('a', { class: 'icon-btn', href: '#chat', 'aria-label': 'Zurück zur Chat-Übersicht' }, svg(I.back)), h('b', {}, chName(ch)), ch === 'team' ? zoomBtn() : null);
   const note = ch === 'team' ? null : h('p', { class: 'muted', style: 'margin:8px 0 0' }, 'Privater Chat: nur ihr beide könnt diese Nachrichten lesen.');
-  v.replaceChildren(h('div', { class: 'conv' }, head, note, msgs, h('div', {}, pend, h('div', { class: 'composer' }, attach, ta, send))));
+  v.replaceChildren(h('div', { class: 'conv' }, head, note, msgs, h('div', {}, pend, composer)));
   let lastDay = '';
   async function loadMsgs() {
     let list;
@@ -464,11 +528,17 @@ async function openConversation(ch) {
   chatTimer = setInterval(() => { if (openCh === ch && document.visibilityState === 'visible') loadMsgs(); }, 5000);
 }
 function fileView(f) {
-  if (/^image\/(jpeg|png|gif|webp)$/.test(f.type || '')) {
-    const im = h('img', { alt: f.name, loading: 'lazy', width: 480, height: 320 });
-    api.fileBlob(f).then(b => { im.src = URL.createObjectURL(b); }).catch(() => { im.alt = 'Bild nicht verfügbar'; });
+  const t = f.type || '';
+  if (/^image\/(jpeg|png|gif|webp)$/.test(t)) {
+    const im = h('img', { alt: f.name, loading: 'lazy', width: 480, height: 320, src: api.mediaUrl(f) });
+    im.onerror = () => { im.replaceWith(h('span', { class: 'muted' }, 'Bild nicht verfügbar')); };
     im.onclick = () => { const vw = h('div', { class: 'viewer', onclick: () => vw.remove() }, h('img', { src: im.src, alt: f.name })); document.body.append(vw); };
     return im;
+  }
+  if (/^video\//.test(t)) return h('video', { controls: true, preload: 'metadata', playsinline: true, src: api.mediaUrl(f), 'aria-label': f.name });
+  if (/^audio\//.test(t)) {
+    const voice = /^Sprachnachricht/.test(f.name);
+    return h('div', {}, h('div', { class: 'voice' }, svg(I.mic), voice ? 'Sprachnachricht' + ((/(\d+)-(\d\d)\./.exec(f.name) || []).length ? ' · ' + (/(\d+)-(\d\d)\./.exec(f.name)[1]) + ':' + (/(\d+)-(\d\d)\./.exec(f.name)[2]) : '') : f.name), h('audio', { controls: true, preload: 'metadata', src: api.mediaUrl(f) }));
   }
   const a = h('a', { class: 'file', href: '#', title: 'Öffnen' }, svg(I.file), h('span', {}, f.name), h('small', {}, size(f.size)));
   a.onclick = async e => { e.preventDefault(); try { let b = await api.fileBlob(f); if (!/^(image\/(jpeg|png|gif|webp)|application\/pdf)$/.test(b.type)) b = new Blob([b], { type: 'application/octet-stream' }); const url = URL.createObjectURL(b); const x = h('a', { href: url, download: f.name, target: '_blank' }); document.body.append(x); x.click(); x.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); } catch (err) { toast(err.message); } };
@@ -483,11 +553,14 @@ async function renderTeam() {
   const cs = await api.contracts(month).catch(() => null);
   const countOf = id => cs && cs.users ? (cs.users.find(u => u.id === id) || {}).count || 0 : null;
   const list = users.filter(u => u.active).sort((a, b) => a.name.localeCompare(b.name, 'de'));
-  v.replaceChildren(
+  const blocked = me.admin ? users.filter(u => !u.active && !u.deleted).sort((a, b) => a.name.localeCompare(b.name, 'de')) : [];
+  put(v, 
     h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Team · ' + list.length + ' Mitarbeiter'), me.admin ? h('button', { class: 'btn green', onclick: addUserSheet }, svg(I.plus), 'Mitarbeiter') : null),
     ...list.map(u => h('button', { class: 'person', onclick: () => personSheet(u, countOf(u.id)) }, av(u),
       h('span', { class: 't' }, h('b', {}, u.name + (u.id === me.id ? ' (du)' : '')), h('div', { class: 'muted' }, countOf(u.id) !== null ? countOf(u.id) + ' Verträge im ' + MONTHS[new Date().getMonth()] : 'Mitarbeiter')),
       u.admin ? h('span', { class: 'pill' }, 'Admin') : null)),
+    blocked.length ? h('h2', { style: 'font-size:16px;margin-top:8px' }, 'Blockiert · ' + blocked.length) : null,
+    ...blocked.map(u => h('button', { class: 'person', style: 'opacity:.75', onclick: () => personSheet(u, countOf(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name), h('div', { class: 'muted' }, 'Zugang gesperrt')), h('span', { class: 'pill off' }, 'Blockiert'))),
     me.admin ? zoomCard() : null,
     me.admin ? h('p', { class: 'muted' }, 'Neue Tablets brauchen zusätzlich die Tailscale-App, angemeldet mit eurem gemeinsamen Konto. Ohne Tailscale ist die Hauskarte von außen nicht erreichbar.') : null
   );
@@ -503,20 +576,27 @@ function personSheet(u, count) {
   let s;
   const close = () => s.remove();
   const actions = h('div', { class: 'row' });
-  if (u.id !== me.id) actions.append(h('button', { class: 'btn big green', onclick: () => { close(); location.hash = '#chat/' + encodeURIComponent(dmId(me.id, u.id)); } }, svg(I.msg), 'Nachricht senden'));
+  if (u.id !== me.id && u.active) actions.append(h('button', { class: 'btn big green', onclick: () => { close(); location.hash = '#chat/' + encodeURIComponent(dmId(me.id, u.id)); } }, svg(I.msg), 'Nachricht senden'));
   const admin = h('div', { class: 'card' });
   if (me.admin) {
     const pin = h('input', { id: 'newPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' });
     admin.append(h('b', {}, 'Verwalten'),
       h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Neue PIN', pin), h('button', { class: 'btn', onclick: async () => { if (pin.value.length < 4) return toast('Die PIN braucht mindestens 4 Ziffern.'); try { await api.updateUser(u.id, { pin: pin.value }); toast('PIN für ' + u.name + ' geändert.'); close(); } catch (e) { toast(e.message); } } }, 'PIN speichern')));
     if (u.id !== me.id) {
-      admin.append(h('button', { class: 'btn ghost', onclick: async () => { await api.updateUser(u.id, { admin: !u.admin }); toast(u.name + (u.admin ? ' ist kein Admin mehr.' : ' ist jetzt Admin.')); close(); renderTeam(); } }, u.admin ? 'Admin-Rechte entziehen' : 'Zum Admin machen'));
-      const conf = h('div', { class: 'confirm', hidden: true }, h('span', {}, u.name + ' wirklich aus dem Team entfernen? Der Zugang wird gesperrt. Bisherige Nachrichten, Hausmarkierungen und Vertragszahlen bleiben erhalten.'),
-        h('div', { class: 'row' }, h('button', { class: 'btn danger', onclick: async () => { await api.updateUser(u.id, { active: false }); toast(u.name + ' wurde entfernt.'); close(); renderTeam(); } }, 'Ja, entfernen'), h('button', { class: 'btn ghost', onclick: () => { conf.hidden = true; } }, 'Abbrechen')));
-      admin.append(h('button', { class: 'btn ghost', style: 'color:var(--danger)', onclick: () => { conf.hidden = false; } }, 'Aus dem Team entfernen'), conf);
+      const act = async (fn, msg) => { try { await fn(); toast(msg); close(); renderTeam(); } catch (e) { toast(e.message); } };
+      const confirmBox = (text, label, fn, msg) => { const c = h('div', { class: 'confirm', hidden: true }, h('span', {}, text), h('div', { class: 'row' }, h('button', { class: 'btn danger', onclick: () => act(fn, msg) }, label), h('button', { class: 'btn ghost', onclick: () => { c.hidden = true; } }, 'Abbrechen'))); return c; };
+      if (u.active) {
+        admin.append(h('button', { class: 'btn ghost', onclick: () => act(() => api.updateUser(u.id, { admin: !u.admin }), u.name + (u.admin ? ' ist kein Admin mehr.' : ' ist jetzt Admin.')) }, u.admin ? 'Admin-Rechte entziehen' : 'Zum Admin machen'));
+        const cb = confirmBox(u.name + ' blockieren? Die Anmeldung wird sofort gesperrt. Nachrichten, Hausmarkierungen und Vertragszahlen bleiben erhalten. Du kannst den Zugang jederzeit wieder freigeben.', 'Ja, blockieren', () => api.updateUser(u.id, { active: false }), u.name + ' ist blockiert.');
+        admin.append(h('button', { class: 'btn ghost', style: 'color:var(--danger)', onclick: () => { cb.hidden = false; } }, 'Blockieren'), cb);
+      } else {
+        admin.append(h('button', { class: 'btn green', onclick: () => act(() => api.updateUser(u.id, { active: true }), u.name + ' ist wieder freigegeben.') }, 'Wieder freigeben'));
+      }
+      const cd = confirmBox(u.name + ' endgültig löschen? Der Zugang wird entfernt und kann nicht wiederhergestellt werden. Bereits geschriebene Nachrichten und gezählte Verträge bleiben in der Statistik erhalten.', 'Endgültig löschen', () => api.deleteUser(u.id), u.name + ' wurde gelöscht.');
+      admin.append(h('button', { class: 'btn ghost', style: 'color:var(--danger)', onclick: () => { cd.hidden = false; } }, 'Endgültig löschen'), cd);
     }
   }
-  s = sheet(h('div', { class: 'row' }, av(u), h('div', { style: 'flex:1' }, h('h2', {}, u.name), h('div', { class: 'muted' }, (u.admin ? 'Administrator' : 'Mitarbeiter') + (count !== null ? ' · ' + count + ' Verträge diesen Monat' : ''))), h('button', { class: 'icon-btn', 'aria-label': 'Schließen', onclick: () => close() }, svg(I.x))),
+  s = sheet(h('div', { class: 'row' }, av(u), h('div', { style: 'flex:1' }, h('h2', {}, u.name), h('div', { class: 'muted' }, (u.active ? (u.admin ? 'Administrator' : 'Mitarbeiter') : 'Blockiert') + (count !== null ? ' · ' + count + ' Verträge diesen Monat' : ''))), h('button', { class: 'icon-btn', 'aria-label': 'Schließen', onclick: () => close() }, svg(I.x))),
     actions.childNodes.length ? actions : null, me.admin ? admin : null);
 }
 function addUserSheet() {
@@ -587,7 +667,7 @@ async function renderDashboard() {
     rank = h('div', { class: 'card' }, h('b', {}, 'Alle Mitarbeiter'), h('span', { class: 'muted' }, 'Nur für Administratoren sichtbar'), grid);
   }
   const zb = zoomBtn(); if (zb) zb.classList.add('big');
-  v.replaceChildren(nav, totalCard, myCard, rank, zb);
+  put(v, nav, totalCard, myCard, rank, zb);
 }
 function goalEditor(d) {
   const inp = h('input', { id: 'goal', type: 'number', min: 0, step: 1, value: d.goal || '', placeholder: 'z. B. 60' });

@@ -8,7 +8,7 @@ const crypto = require('crypto');
 module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPin, log }) {
   const FILES = path.join(DATA, 'anhaenge');
   fs.mkdirSync(FILES, { recursive: true });
-  const MAX_FILE = 25 * 1048576;
+  const MAX_FILE = 200 * 1048576;  // 200 MB (Videos)
   db.exec(`
   CREATE TABLE IF NOT EXISTS messages (seq INTEGER PRIMARY KEY AUTOINCREMENT, channel TEXT NOT NULL, uid TEXT NOT NULL, text TEXT, file_id TEXT, created_at TEXT NOT NULL);
   CREATE INDEX IF NOT EXISTS messages_channel ON messages(channel, seq);
@@ -17,6 +17,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   CREATE INDEX IF NOT EXISTS contracts_month ON contracts(month, deleted);
   CREATE TABLE IF NOT EXISTS goals (month TEXT PRIMARY KEY, goal INTEGER NOT NULL);
   CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
+  CREATE TABLE IF NOT EXISTS former_users (id TEXT PRIMARY KEY, name TEXT NOT NULL, deleted_at TEXT NOT NULL);
   `);
   const now = () => new Date().toISOString();
   const curMonth = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' }).slice(0, 7);
@@ -32,15 +33,17 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     if (m[1] !== me.uid && m[2] !== me.uid) return false;
     return !!userRow(m[1]) && !!userRow(m[2]);
   }
-  function readRaw(req, limit) {
+  function saveUpload(req, dest, limit) {
     return new Promise((resolve, reject) => {
-      const chunks = []; let size = 0;
-      req.on('data', c => { size += c.length; if (size > limit) { reject(Object.assign(Error('Datei ist zu groß (höchstens 25 MB).'), { code: 413 })); req.destroy(); } else chunks.push(c); });
-      req.on('end', () => resolve(Buffer.concat(chunks)));
-      req.on('error', reject);
+      const out = fs.createWriteStream(dest); let size = 0, failed = false;
+      const fail = e => { if (failed) return; failed = true; out.destroy(); fs.rm(dest, { force: true }, () => {}); reject(e); };
+      req.on('data', c => { size += c.length; if (size > limit) { fail(Object.assign(Error('Datei ist zu groß (höchstens 200 MB).'), { code: 413 })); req.destroy(); } });
+      req.on('error', fail); out.on('error', fail);
+      req.pipe(out);
+      out.on('finish', () => { if (!failed) resolve(size); });
     });
   }
-  const SAFE_INLINE = /^(image\/(jpeg|png|gif|webp)|application\/pdf)$/;
+  const SAFE_INLINE = /^(image\/(jpeg|png|gif|webp)|application\/pdf|video\/(mp4|webm|quicktime|3gpp|x-matroska)|audio\/(webm|ogg|mpeg|mp4|aac|wav|x-m4a|mp3|3gpp|amr))$/;
   const msgOut = r => ({ id: r.seq, from: r.uid, text: r.text || '', at: r.created_at, file: r.file_id ? (() => { const f = db.prepare('SELECT id, name, type, size FROM files WHERE id = ?').get(r.file_id); return f || null; })() : null });
 
   async function handle(req, res, url) {
@@ -53,7 +56,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
 
     /* ---------- Ich & Team ---------- */
     if (p === 'me' && M === 'GET') return send(res, 200, pub(meRow));
-    if (p === 'users' && M === 'GET') return send(res, 200, db.prepare('SELECT id, name, admin, active FROM users ORDER BY name COLLATE NOCASE').all().map(pub));
+    if (p === 'users' && M === 'GET') return send(res, 200, db.prepare('SELECT id, name, admin, active FROM users ORDER BY name COLLATE NOCASE').all().map(pub).concat(db.prepare('SELECT id, name FROM former_users').all().map(u => ({ id: u.id, name: u.name, admin: false, active: false, deleted: true }))));
     if (p === 'users' && M === 'POST') {
       if (!isAdmin) return err(res, 403, 'Nur Administratoren können Mitarbeiter anlegen.');
       const b = await readBody(req) || {}, name = String(b.name || '').trim(), pin = String(b.pin || '');
@@ -68,14 +71,29 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       return send(res, 200, pub(userRow(id)));
     }
     let m;
+    if ((m = /^users\/([^/]+)\/delete$/.exec(p)) && M === 'POST') {
+      if (!isAdmin) return err(res, 403, 'Nur Administratoren können Mitarbeiter löschen.');
+      const u = userRow(decodeURIComponent(m[1])); if (!u) return err(res, 404, 'Mitarbeiter nicht gefunden.');
+      if (u.id === me.uid) return err(res, 400, 'Du kannst dich nicht selbst löschen.');
+      db.exec('BEGIN');
+      try {
+        db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id);
+        db.prepare('DELETE FROM users WHERE id = ?').run(u.id);
+        db.prepare('INSERT OR REPLACE INTO former_users (id, name, deleted_at) VALUES (?, ?, ?)').run(u.id, u.name, now());
+        db.exec('COMMIT');
+      } catch (e) { db.exec('ROLLBACK'); throw e; }
+      log('Mitarbeiter gelöscht:', u.name, 'von', meRow.name);
+      return send(res, 200, { ok: true });
+    }
     if ((m = /^users\/([^/]+)$/.exec(p)) && M === 'POST') {
       if (!isAdmin) return err(res, 403, 'Nur Administratoren können Mitarbeiter verwalten.');
       const u = userRow(decodeURIComponent(m[1])); if (!u) return err(res, 404, 'Mitarbeiter nicht gefunden.');
       const b = await readBody(req) || {};
-      if (u.id === me.uid && (b.active === false || b.admin === false)) return err(res, 400, 'Du kannst dich nicht selbst entfernen oder dir die Admin-Rechte nehmen.');
+      if (u.id === me.uid && (b.active === false || b.admin === false)) return err(res, 400, 'Du kannst dich nicht selbst blockieren oder dir die Admin-Rechte nehmen.');
       if (b.pin !== undefined) { if (String(b.pin).length < 4) return err(res, 400, 'Die PIN braucht mindestens 4 Ziffern.'); db.prepare('UPDATE users SET hash = ? WHERE id = ?').run(hashPin(String(b.pin)), u.id); if (u.id !== me.uid) db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id); }
       if (b.admin !== undefined) db.prepare('UPDATE users SET admin = ? WHERE id = ?').run(b.admin ? 1 : 0, u.id);
-      if (b.active === false) { db.prepare('UPDATE users SET active = 0 WHERE id = ?').run(u.id); db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id); log('Mitarbeiter entfernt:', u.name, 'von', meRow.name); }
+      if (b.active === false) { db.prepare('UPDATE users SET active = 0 WHERE id = ?').run(u.id); db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id); log('Mitarbeiter blockiert:', u.name, 'von', meRow.name); }
+      if (b.active === true) { db.prepare('UPDATE users SET active = 1 WHERE id = ?').run(u.id); log('Mitarbeiter freigegeben:', u.name, 'von', meRow.name); }
       return send(res, 200, pub(userRow(u.id)));
     }
 
@@ -102,15 +120,14 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       return send(res, 200, { id: Number(r.lastInsertRowid) });
     }
     if (p === 'files' && M === 'POST') {
-      let buf;
-      try { buf = await readRaw(req, MAX_FILE); } catch (e) { return err(res, e.code || 400, e.message); }
-      if (!buf.length) return err(res, 400, 'Leere Datei.');
+      const id = crypto.randomBytes(16).toString('hex'), dest = path.join(FILES, id);
+      let size;
+      try { size = await saveUpload(req, dest, MAX_FILE); } catch (e) { return err(res, e.code || 400, e.message); }
+      if (!size) { fs.rmSync(dest, { force: true }); return err(res, 400, 'Leere Datei.'); }
       let name = 'Datei'; try { name = decodeURIComponent(String(req.headers['x-filename'] || 'Datei')); } catch (e) {}
       name = name.replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').slice(0, 120) || 'Datei';
-      const type = String(req.headers['content-type'] || 'application/octet-stream').split(';')[0].trim().slice(0, 100);
-      const id = crypto.randomBytes(16).toString('hex');
-      fs.writeFileSync(path.join(FILES, id), buf);
-      db.prepare('INSERT INTO files (id, name, type, size, uid, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(id, name, type, buf.length, me.uid, now());
+      const type = String(req.headers['content-type'] || 'application/octet-stream').split(';')[0].trim().toLowerCase().slice(0, 100);
+      db.prepare('INSERT INTO files (id, name, type, size, uid, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(id, name, type, size, me.uid, now());
       return send(res, 200, { id });
     }
     if ((m = /^files\/([0-9a-f]{32})$/.exec(p)) && M === 'GET') {
@@ -119,7 +136,15 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       const ok = f.uid === me.uid || db.prepare('SELECT channel FROM messages WHERE file_id = ?').all(f.id).some(r => canAccess(me, r.channel));
       if (!ok) return err(res, 403, 'Kein Zugriff auf diese Datei.');
       const inline = SAFE_INLINE.test(f.type);
-      res.writeHead(200, { 'Content-Type': inline ? f.type : 'application/octet-stream', 'Content-Length': f.size, 'Content-Disposition': (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(f.name), 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, max-age=86400', 'Content-Security-Policy': "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox" });
+      const head = { 'Content-Type': inline ? f.type : 'application/octet-stream', 'Accept-Ranges': 'bytes', 'Content-Disposition': (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(f.name), 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, max-age=86400', 'Content-Security-Policy': "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox" };
+      const rg = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+      if (rg && (rg[1] || rg[2])) {
+        let a = rg[1] ? +rg[1] : Math.max(0, f.size - +rg[2]), b = rg[1] && rg[2] ? Math.min(+rg[2], f.size - 1) : f.size - 1;
+        if (a > b || a >= f.size) { res.writeHead(416, { 'Content-Range': 'bytes */' + f.size }); return res.end(); }
+        res.writeHead(206, { ...head, 'Content-Range': `bytes ${a}-${b}/${f.size}`, 'Content-Length': b - a + 1 });
+        return fs.createReadStream(path.join(FILES, f.id), { start: a, end: b }).pipe(res);
+      }
+      res.writeHead(200, { ...head, 'Content-Length': f.size });
       return fs.createReadStream(path.join(FILES, f.id)).pipe(res);
     }
 

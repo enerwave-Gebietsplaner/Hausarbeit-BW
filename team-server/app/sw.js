@@ -1,5 +1,5 @@
 // Hauskarte BW – Offline-Speicher (Service Worker)
-const APP = 'hauskarte-team-v2';
+const APP = 'hauskarte-team-v3';
 const TILES = 'hauskarte-tiles-v1';
 const MAX_TILES = 3000;
 const SHELL = ['./', './index.html', './team.html', './manifest.webmanifest', './icon.svg'];
@@ -34,7 +34,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   // Abgleich mit dem Server nie zwischenspeichern
-  if (url.origin === self.location.origin && /^\/(rest|auth)\/|^\/status$/.test(url.pathname)) return;
+  if (url.origin === self.location.origin && /^\/(rest|auth|api)\/|^\/status$/.test(url.pathname)) return;
 
   // App selbst: zuerst Netz (damit Updates sofort ankommen), offline aus dem Speicher
   if (url.origin === self.location.origin) {

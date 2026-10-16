@@ -115,7 +115,9 @@ function issue(u) {
   return { access_token: access, refresh_token: refresh, expires_in: ACCESS_MS / 1000, user: { id: u.id, email: '', user_metadata: { name: u.name } } };
 }
 function userFromToken(req) {
-  const tok = String(req.headers.authorization || '').replace(/^Bearer /, '');
+  let tok = String(req.headers.authorization || '').replace(/^Bearer /, '');
+  // Bilder, Videos und Sprachnachrichten im Chat werden direkt per Adresse geladen (Schlüssel in ?t=)
+  if (!tok && /^\/api\/files\/[0-9a-f]{32}$/.test(String(req.url).split('?')[0])) tok = new URL(req.url, 'http://x').searchParams.get('t') || '';
   if (!tok) return null;
   const s = db.prepare("SELECT s.uid, u.name FROM sessions s JOIN users u ON u.id = s.uid WHERE s.token = ? AND s.kind = 'a' AND s.expires > ? AND u.active = 1").get(tok, Date.now());
   return s || null;
