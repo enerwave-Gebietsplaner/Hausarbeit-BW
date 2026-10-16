@@ -156,8 +156,9 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       const goal = (db.prepare('SELECT goal FROM goals WHERE month = ?').get(month) || {}).goal || 0;
       const first = (db.prepare('SELECT MIN(month) f FROM contracts WHERE deleted = 0').get() || {}).f || curMonth();
       const months = db.prepare('SELECT DISTINCT month FROM contracts WHERE deleted = 0 ORDER BY month').all().map(r => r.month);
+      // Monatszahlen aller Mitarbeiter sind für das ganze Team sichtbar (Name + Anzahl)
       let users = null;
-      if (isAdmin) {
+      {
         const counts = {}; for (const c of list) counts[c.uid] = (counts[c.uid] || 0) + 1;
         users = db.prepare('SELECT id, name, active FROM users').all().map(u => ({ id: u.id, name: u.name, active: !!u.active, count: counts[u.id] || 0 })).filter(u => u.active || u.count);
       }

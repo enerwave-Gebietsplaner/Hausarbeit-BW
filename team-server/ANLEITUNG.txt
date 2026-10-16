@@ -39,6 +39,8 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   und den Zoom-Link festlegen.
 - Chat: Fotos, Videos, PDFs und Dateien bis 200 MB, Sprachnachrichten ueber das Mikrofon-Symbol
   (beim ersten Mal in Chrome das Mikrofon erlauben).
-- Vertraege: Jeder traegt nur fuer sich selbst ein. Mitarbeiter sehen ihre eigene Zahl und die Teamsumme,
-  der Administrator sieht die Rangliste aller. Vergangene Monate bleiben gespeichert.
+- Vertraege: Jeder traegt nur fuer sich selbst ein. Alle sehen ihre eigene Monatszahl und die
+  Monatszahlen der Kollegen (Name + Anzahl). Vergangene Monate bleiben gespeichert.
+- Motivation: persoenliche Begruessung einmal pro Arbeitstag, kurze Nachrichten bei eigenen
+  Vertrags-Meilensteinen (1., 2., 3., jeder 5., persoenlicher Monatsrekord).
 - Chat-Anhaenge liegen in C:\Hauskarte\daten\anhaenge (bitte bei der externen Sicherung mitsichern).

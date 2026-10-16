@@ -7,6 +7,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
+<script src="motivation.js" defer></script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#173a34">
 <style>
@@ -346,6 +347,7 @@ async function boot() {
   } catch (e) { if (e.auth) return showLogin(e.message); return fatal(e.message); }
   renderMe();
   route();
+  if (!DEMO && window.HauskarteMotivation) window.HauskarteMotivation.greet();
   pollUnread();
   setInterval(pollUnread, 30000);
 }
@@ -409,7 +411,7 @@ async function pollUnread() {
   } catch (e) { return []; }
 }
 const chName = id => id === 'team' ? 'Team-Chat (alle)' : userById(id.slice(3).split('~').find(x => x !== me.id)).name;
-const zoomBtn = () => settings.zoom ? h('a', { class: 'btn zoom', href: settings.zoom, target: '_blank', rel: 'noopener' }, svg(I.video), 'Teamcall beitreten') : null;
+const zoomBtn = () => settings.zoom ? h('a', { class: 'btn zoom', href: settings.zoom, target: '_blank', rel: 'noopener' }, svg(I.video), 'Zoom-Call beitreten') : null;
 
 async function renderChat() {
   const sub = (location.hash.split('/')[1] || '');
@@ -625,7 +627,7 @@ function zoomCard() {
 }
 
 /* ================= Dashboard ================= */
-let dashMonth = monthKey(new Date());
+let dashMonth = monthKey(new Date()), prevMine = null;
 async function renderDashboard() {
   const v = $('view-dashboard');
   settings = await api.settings().catch(() => settings);
@@ -638,18 +640,20 @@ async function renderDashboard() {
     h('button', { class: 'icon-btn', 'aria-label': 'Vorheriger Monat', disabled: dashMonth <= first, onclick: () => { dashMonth = shiftMonth(dashMonth, -1); renderDashboard(); } }, svg(I.back)),
     h('b', {}, monthName(dashMonth) + (isCur ? '' : ' (abgeschlossen)')),
     h('button', { class: 'icon-btn', 'aria-label': 'Nächster Monat', disabled: isCur, onclick: () => { dashMonth = shiftMonth(dashMonth, 1); renderDashboard(); } }, (() => { const s = svg(I.back); s.style.transform = 'scaleX(-1)'; return s; })()));
-  const pct = d.goal ? Math.min(100, Math.round(d.total / d.goal * 100)) : 0;
-  const totalCard = h('div', { class: 'card' },
-    h('span', { class: 'muted' }, 'Team gesamt'),
-    h('div', { class: 'total' }, h('span', { class: 'big' }, d.total), h('span', {}, d.goal ? 'von ' + d.goal + ' Verträgen' : 'Verträge')),
-    d.goal ? h('div', { class: 'bar', role: 'progressbar', 'aria-valuenow': pct, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('i', { style: 'width:' + pct + '%' })) : null,
-    d.goal ? h('span', { class: 'muted' }, pct + ' % vom Monatsziel' + (isCur && d.total < d.goal ? ' · noch ' + (d.goal - d.total) : '')) : null,
-    me.admin ? goalEditor(d) : null);
-  const myCard = h('div', { class: 'card' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, 'Meine Verträge'), h('span', { class: 'total' }, h('span', { class: 'big', style: 'font-size:30px' }, d.myCount))));
+  const myCard = h('div', { class: 'card' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, isCur ? 'Meine Verträge diesen Monat' : 'Meine Verträge'), h('span', { class: 'total' }, h('span', { class: 'big', style: 'font-size:34px' }, d.myCount))));
   if (isCur) {
     const note = h('input', { id: 'contractNote', placeholder: 'Notiz (optional), z. B. Kunde oder Tarif', autocomplete: 'off' });
     const add = h('button', { class: 'btn big green' }, svg(I.plus), 'Vertrag eintragen');
-    add.onclick = async () => { add.disabled = true; try { await api.addContract(note.value.trim()); toast('Vertrag für ' + me.name + ' gezählt.'); renderDashboard(); } catch (e) { toast(e.message); add.disabled = false; } };
+    add.onclick = async () => {
+      add.disabled = true;
+      try {
+        await api.addContract(note.value.trim());
+        const after = await api.contracts(cur);
+        if (prevMine === null) prevMine = await api.contracts(shiftMonth(cur, -1)).then(x => x.myCount).catch(() => 0);
+        if (!(window.HauskarteMotivation && window.HauskarteMotivation.contract(after.myCount, prevMine))) toast('Vertrag für ' + me.name + ' gezählt.');
+        renderDashboard();
+      } catch (e) { toast(e.message); add.disabled = false; }
+    };
     myCard.append(h('label', { class: 'f' }, 'Notiz', note), add, h('p', { class: 'muted', style: 'margin:0' }, 'Wird automatisch dir zugeordnet.'));
   }
   if (d.mine.length) {
@@ -658,16 +662,17 @@ async function renderDashboard() {
     myCard.append(ul);
   }
   let rank = null;
-  if (d.users) {
+  if (d.users && d.users.length) {
     const max = Math.max(1, ...d.users.map(u => u.count));
     const grid = h('div', { class: 'rank' });
     for (const u of [...d.users].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'de'))) {
-      grid.append(av(u), h('span', { class: 'nm' }, u.name), h('span', { class: 'ct' }, u.count), h('span'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(u.count / max * 100) + '%' })));
+      const mine = u.id === me.id;
+      grid.append(av(u), h('span', { class: 'nm', style: mine ? 'color:var(--accent-ink)' : '' }, u.name + (mine ? ' (du)' : '')), h('span', { class: 'ct' }, u.count), h('span'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(u.count / max * 100) + '%' + (mine ? '' : ';background:#7fb8a0') })));
     }
-    rank = h('div', { class: 'card' }, h('b', {}, 'Alle Mitarbeiter'), h('span', { class: 'muted' }, 'Nur für Administratoren sichtbar'), grid);
+    rank = h('div', { class: 'card' }, h('b', {}, 'Team im ' + monthName(dashMonth)), h('span', { class: 'muted' }, 'Verträge pro Mitarbeiter' + (isCur ? ' – der Monat läuft noch' : '')), grid);
   }
   const zb = zoomBtn(); if (zb) zb.classList.add('big');
-  put(v, nav, totalCard, myCard, rank, zb);
+  put(v, nav, myCard, rank, zb);
 }
 function goalEditor(d) {
   const inp = h('input', { id: 'goal', type: 'number', min: 0, step: 1, value: d.goal || '', placeholder: 'z. B. 60' });
