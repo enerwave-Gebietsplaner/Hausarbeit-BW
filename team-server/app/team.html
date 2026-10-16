@@ -142,6 +142,23 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .rank .bar { grid-column: 2 / 4; height: 6px; margin-top: -4px }
 .mine li { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line) }
 .mine { list-style: none; margin: 0; padding: 0 }
+.daygoal { cursor: pointer; text-align: left; font: inherit; color: inherit; width: 100% }
+.daygoal .dg-top { display: flex; justify-content: space-between; align-items: center; gap: 10px }
+.daygoal .dg-num { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1 }
+.daygoal .dg-num small { font-size: 20px; color: var(--muted); font-weight: 700 }
+.daygoal .dg-bar { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden }
+.daygoal .dg-bar i { display: block; height: 100%; background: var(--accent-ink); border-radius: 6px; transition: width .4s }
+.daygoal.done { border-color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink) }
+.daygoal .dg-edit { font-size: 13px; color: var(--accent-ink); font-weight: 700 }
+.tvs { display: flex; flex-direction: column }
+.tv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line) }
+.tv:first-child { border-top: 0 }
+.tv .av { grid-row: span 3 }
+.tv b { font-size: 15.5px }
+.tv .l { font-size: 14px; font-variant-numeric: tabular-nums }
+.tv .l strong { font-weight: 750 }
+.tv .mb { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; max-width: 240px } .tv .mb i { display: block; height: 100%; background: #7fb8a0 }
+.tv.me b { color: var(--accent-ink) } .tv.me .mb i { background: var(--accent-ink) }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--brand); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px; z-index: 30; max-width: calc(100% - 32px) }
 .viewer { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: grid; place-items: center; z-index: 40 }
 .viewer img { max-width: 96%; max-height: 92% }
@@ -280,6 +297,7 @@ const realApi = {
   contracts: month => call('GET', 'contracts?month=' + month),
   addContract: note => call('POST', 'contracts', { note }),
   delContract: id => call('POST', 'contracts/' + id + '/delete'),
+  setDayGoal: goal => call('POST', 'daygoal', { goal }),
   setGoal: (month, goal) => call('POST', 'goals', { month, goal }),
   settings: () => call('GET', 'settings'),
   setZoom: zoom => call('POST', 'settings', { zoom }),
@@ -346,6 +364,7 @@ const demoApi = (() => {
       return wait({ month, total: list.length, goal: goals[month] || 0, mine: list.filter(c => c.uid === meId).sort((a, b) => b.at.localeCompare(a.at)), myCount: list.filter(c => c.uid === meId).length, users: isAdmin ? per : null, months: [...new Set(contracts.map(c => c.month).concat(cur))].sort() });
     },
     addContract: note => { contracts.push({ id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }); return wait({ ok: true }); },
+    setDayGoal: () => wait({ ok: true }),
     delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
     setGoal: (month, goal) => { goals[month] = goal; return wait({ ok: true }); },
     settings: () => wait({ zoom, call: demoCall }),
@@ -373,6 +392,12 @@ async function boot() {
   route();
   if (!DEMO && window.HauskarteMotivation) window.HauskarteMotivation.greet();
   setInterval(() => pollUnread(true), 30000);
+  // Dashboard offen: Zahlen und Tagesziele der Kollegen alle 15 Sekunden auffrischen (nicht während man tippt)
+  setInterval(() => {
+    if (view !== 'dashboard' || document.visibilityState !== 'visible' || document.querySelector('.sheet')) return;
+    const n = $('contractNote'); if (document.activeElement?.matches?.('input, textarea') || (n && n.value)) return;
+    renderDashboard();
+  }, 15000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && me) pollUnread(true); });
 }
 function fatal(t) { for (const s of document.querySelectorAll('.view')) s.hidden = true; const v = $('view-login'); v.hidden = false; v.replaceChildren(h('div', { class: 'card' }, h('h2', {}, 'Team-Bereich nicht erreichbar'), h('p', { class: 'muted' }, t), h('button', { class: 'btn', onclick: () => location.reload() }, 'Erneut versuchen'))); }
@@ -786,7 +811,9 @@ async function renderDashboard() {
         await api.addContract(note.value.trim());
         const after = await api.contracts(cur);
         if (prevMine === null) prevMine = await api.contracts(shiftMonth(cur, -1)).then(x => x.myCount).catch(() => 0);
-        if (!(window.HauskarteMotivation && window.HauskarteMotivation.contract(after.myCount, prevMine))) toast('Vertrag für ' + me.name + ' gezählt.');
+        const t = after.today;
+        if (t && t.goal && t.count === t.goal && window.HauskarteMotivation) window.HauskarteMotivation.show('🎉 Super! Du hast dein Tagesziel erreicht!', true);
+        else if (!(window.HauskarteMotivation && window.HauskarteMotivation.contract(after.myCount, prevMine))) toast('Vertrag für ' + me.name + ' gezählt.');
         renderDashboard();
       } catch (e) { toast(e.message); add.disabled = false; }
     };
@@ -807,9 +834,53 @@ async function renderDashboard() {
     }
     rank = h('div', { class: 'card' }, h('b', {}, 'Team im ' + monthName(dashMonth)), h('span', { class: 'muted' }, 'Verträge pro Mitarbeiter' + (isCur ? ' – der Monat läuft noch' : '')), grid);
   }
-  put(v, nav, myCard, rank, callCard());
+  // Persönliches Tagesziel + Teamvergleich heute (aus denselben Verträgen berechnet)
+  let goalCard = null, teamToday = null;
+  if (isCur && d.today) {
+    const t = d.today;
+    if (t.goal) {
+      const pct = Math.min(100, Math.round(t.count / t.goal * 100)), done = t.count >= t.goal;
+      goalCard = h('button', { class: 'card daygoal' + (done ? ' done' : ''), id: 'dayGoal', onclick: () => dayGoalEditor(t) },
+        h('div', { class: 'dg-top' }, h('b', {}, 'Mein Tagesziel'), h('span', { class: 'dg-edit' }, 'Ändern')),
+        h('div', { class: 'dg-top' }, h('span', {}, 'Tagesziel: ' + t.goal + ' ' + (t.goal === 1 ? 'Vertrag' : 'Verträge')), h('span', { class: 'dg-num', id: 'dayProgress' }, String(t.count), h('small', {}, ' / ' + t.goal))),
+        h('div', { class: 'dg-bar' }, h('i', { style: 'width:' + pct + '%' })),
+        h('span', { class: 'muted' }, done ? (t.count > t.goal ? '🏆 Ziel übertroffen – ' + (t.count - t.goal) + ' mehr als geplant!' : '🏆 Tagesziel erreicht!') : 'Aktuell: ' + t.count + ' / ' + t.goal + ' – noch ' + (t.goal - t.count) + ' bis zum Ziel'));
+    } else {
+      goalCard = h('button', { class: 'card daygoal', id: 'dayGoal', onclick: () => dayGoalEditor(t) },
+        h('div', { class: 'dg-top' }, h('b', {}, 'Mein Tagesziel'), h('span', { class: 'dg-edit' }, 'Festlegen')),
+        h('span', { class: 'muted' }, 'Heute ' + t.count + ' ' + (t.count === 1 ? 'Vertrag' : 'Verträge') + '. Tippe hier, um dein Ziel für heute festzulegen, z. B. 6 Verträge.'));
+    }
+    const rows = [...t.team].sort((a, b) => b.today - a.today || b.month - a.month || a.name.localeCompare(b.name, 'de'));
+    const maxM = Math.max(1, ...rows.map(u => u.month));
+    teamToday = h('div', { class: 'card', id: 'teamToday' }, h('b', {}, 'Teamvergleich heute'), h('span', { class: 'muted', style: 'margin-top:-6px' }, 'Tagesziel, heutige Verträge und Monatszahl'),
+      h('div', { class: 'tvs' }, rows.map(u => {
+        const mine = u.id === me.id, hit = u.goal && u.today >= u.goal;
+        return h('div', { class: 'tv' + (mine ? ' me' : ''), 'data-name': u.name }, av(u), h('b', {}, u.name + (mine ? ' (du)' : '')),
+          h('span', { class: 'l' }, 'Heute: ', h('strong', {}, u.goal ? u.today + ' / ' + u.goal : String(u.today)), ' ' + ((u.goal || u.today) === 1 ? 'Vertrag' : 'Verträge') + (hit ? ' 🏆' : '') + (u.goal ? '' : ' (kein Ziel)')),
+          h('span', { class: 'l' }, 'Monat: ', h('strong', {}, String(u.month)), ' ' + (u.month === 1 ? 'Vertrag' : 'Verträge')));
+      })));
+  }
+  put(v, nav, myCard, goalCard, teamToday, rank, callCard());
   // Dashboard gesehen: Hinweis auf neue Verträge der Kollegen zurücksetzen
   if (notes && notes.dash) { await api.markRead('dash').catch(() => {}); notes.dash = 0; showNotes(notes); }
+}
+function dayGoalEditor(t) {
+  let s;
+  const inp = h('input', { id: 'dayGoalInput', type: 'number', inputmode: 'numeric', min: 1, max: 99, step: 1, value: t.goal || t.lastGoal || '', placeholder: 'z. B. 6' });
+  const quick = h('div', { class: 'row' }, [3, 4, 5, 6, 8, 10].map(n => h('button', { class: 'btn ghost', type: 'button', style: 'min-width:48px', onclick: () => { inp.value = n; } }, String(n))));
+  const err = h('p', { class: 'muted', role: 'alert', style: 'color:var(--danger);margin:0' });
+  const form = h('form', { style: 'display:flex;flex-direction:column;gap:12px' }, h('h2', {}, 'Mein Tagesziel für heute'),
+    h('label', { class: 'f' }, 'Wie viele Verträge willst du heute schaffen?', inp), quick, err,
+    h('div', { class: 'row' }, h('button', { class: 'btn green', type: 'submit', id: 'dayGoalSave' }, 'Speichern'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen'),
+      t.goal ? h('button', { class: 'btn ghost', type: 'button', style: 'margin-left:auto;color:var(--danger)', onclick: async () => { await api.setDayGoal(0).catch(() => {}); s.remove(); toast('Tagesziel entfernt.'); renderDashboard(); } }, 'Ziel entfernen') : null),
+    h('p', { class: 'muted', style: 'margin:0' }, 'Gilt nur für heute. Morgen startest du wieder bei 0. Dein Team sieht dein Ziel und deinen Stand.'));
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const g = Number(inp.value);
+    if (!Number.isInteger(g) || g < 1 || g > 99) return err.textContent = 'Bitte eine Zahl zwischen 1 und 99 eingeben.';
+    try { await api.setDayGoal(g); s.remove(); toast('Tagesziel: ' + g + ' ' + (g === 1 ? 'Vertrag' : 'Verträge') + ' – viel Erfolg!'); renderDashboard(); } catch (x) { err.textContent = x.message; }
+  };
+  s = sheet(form);
 }
 function goalEditor(d) {
   const inp = h('input', { id: 'goal', type: 'number', min: 0, step: 1, value: d.goal || '', placeholder: 'z. B. 60' });

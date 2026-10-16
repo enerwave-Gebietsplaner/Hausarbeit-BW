@@ -18,10 +18,13 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   CREATE TABLE IF NOT EXISTS goals (month TEXT PRIMARY KEY, goal INTEGER NOT NULL);
   CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
   CREATE TABLE IF NOT EXISTS former_users (id TEXT PRIMARY KEY, name TEXT NOT NULL, deleted_at TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS day_goals (uid TEXT NOT NULL, day TEXT NOT NULL, goal INTEGER NOT NULL, PRIMARY KEY (uid, day));
   CREATE TABLE IF NOT EXISTS reads (uid TEXT NOT NULL, key TEXT NOT NULL, val INTEGER NOT NULL, PRIMARY KEY (uid, key));
   `);
   const now = () => new Date().toISOString();
   const curMonth = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' }).slice(0, 7);
+  const curDay = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+  const dayOf = iso => new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
   const err = (res, code, message) => send(res, code, { message });
   const userRow = id => db.prepare('SELECT id, name, admin, active FROM users WHERE id = ?').get(id);
   const pub = u => ({ id: u.id, name: u.name, admin: !!u.admin, active: !!u.active });
@@ -205,7 +208,26 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
         const counts = {}; for (const c of list) counts[c.uid] = (counts[c.uid] || 0) + 1;
         users = db.prepare('SELECT id, name, active FROM users').all().map(u => ({ id: u.id, name: u.name, active: !!u.active, count: counts[u.id] || 0 })).filter(u => u.active || u.count);
       }
-      return send(res, 200, { month, total: list.length, goal, myCount: mine.length, mine: mine.map(c => ({ id: c.id, at: c.at, note: c.note || '' })), users, first, months: [...new Set([...months, curMonth()])].sort() });
+      // Heute: aus denselben Verträgen des laufenden Monats berechnet (keine eigene Zählung, keine Doppelzählung)
+      const today = (() => {
+        const day = curDay(), cm = curMonth();
+        const curList = month === cm ? list : db.prepare('SELECT id, uid, at FROM contracts WHERE month = ? AND deleted = 0').all(cm);
+        const dayCnt = {}, monCnt = {};
+        for (const c of curList) { monCnt[c.uid] = (monCnt[c.uid] || 0) + 1; if (dayOf(c.at) === day) dayCnt[c.uid] = (dayCnt[c.uid] || 0) + 1; }
+        const goals = Object.fromEntries(db.prepare('SELECT uid, goal FROM day_goals WHERE day = ?').all(day).map(r => [r.uid, r.goal]));
+        const lastGoal = (db.prepare('SELECT goal FROM day_goals WHERE uid = ? ORDER BY day DESC LIMIT 1').get(me.uid) || {}).goal || 0;
+        const team = db.prepare('SELECT id, name FROM users WHERE active = 1').all().map(u => ({ id: u.id, name: u.name, today: dayCnt[u.id] || 0, goal: goals[u.id] || 0, month: monCnt[u.id] || 0 }));
+        return { day, count: dayCnt[me.uid] || 0, goal: goals[me.uid] || 0, lastGoal, team };
+      })();
+      return send(res, 200, { month, total: list.length, goal, myCount: mine.length, mine: mine.map(c => ({ id: c.id, at: c.at, note: c.note || '' })), users, first, months: [...new Set([...months, curMonth()])].sort(), today });
+    }
+    // Persönliches Tagesziel: nur für sich selbst und nur für heute
+    if (p === 'daygoal' && M === 'POST') {
+      const b = await readBody(req) || {}, g = Number(b.goal);
+      if (!Number.isInteger(g) || g < 0 || g > 99) return err(res, 400, 'Bitte eine Zahl zwischen 1 und 99 eingeben.');
+      if (g === 0) db.prepare('DELETE FROM day_goals WHERE uid = ? AND day = ?').run(me.uid, curDay());
+      else db.prepare('INSERT INTO day_goals (uid, day, goal) VALUES (?, ?, ?) ON CONFLICT(uid, day) DO UPDATE SET goal = excluded.goal').run(me.uid, curDay(), g);
+      return send(res, 200, { ok: true, goal: g });
     }
     if (p === 'contracts' && M === 'POST') {
       const b = await readBody(req) || {};
