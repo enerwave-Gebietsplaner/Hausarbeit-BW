@@ -48,6 +48,10 @@ nav.tabs .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
 nav.tabs a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; color: rgba(255,255,255,.78); text-decoration: none; font-size: 12.5px; font-weight: 600; position: relative }
 nav.tabs a svg { width: 22px; height: 22px }
 nav.tabs a.on { background: rgba(255,255,255,.16); color: #fff }
+nav.tabs a.glow { color: #fff; background: rgba(255,184,0,.24); box-shadow: inset 0 0 0 1.5px rgba(255,196,0,.9); animation: hkglow 1.8s ease-in-out infinite }
+@keyframes hkglow { 50% { background: rgba(255,184,0,.45) } }
+@media (prefers-reduced-motion: reduce) { nav.tabs a.glow { animation: none } }
+.dot { position: absolute; top: 4px; right: calc(50% - 20px); width: 11px; height: 11px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 0 2px #173a34 }
 .badge { position: absolute; top: 2px; right: calc(50% - 22px); background: var(--danger); color: #fff; border-radius: 9px; font-size: 11px; min-width: 18px; height: 18px; line-height: 18px; text-align: center; padding: 0 4px; box-sizing: border-box }
 .demo-bar { background: #fff3cd; color: #5c4400; font-size: 12.5px }
 .demo-bar .wrap { padding-block: 6px }
@@ -166,7 +170,7 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
       <a href="./" id="tab-map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Hauskarte</a>
       <a href="#chat" id="tab-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Team-Chat<span class="badge" id="unread" hidden></span></a>
       <a href="#team" id="tab-team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/></svg>Mitarbeiter</a>
-      <a href="#dashboard" id="tab-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard</a>
+      <a href="#dashboard" id="tab-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard<span class="dot" id="dashDot" hidden></span></a>
     </div>
   </nav>
 </header>
@@ -249,6 +253,8 @@ const realApi = {
   addUser: d => call('POST', 'users', d),
   updateUser: (id, d) => call('POST', 'users/' + encodeURIComponent(id), d),
   channels: () => call('GET', 'channels'),
+  notify: d => call('POST', 'notify', d),
+  markRead: (key, val) => call('POST', 'read', { key, val }),
   messages: (ch, after) => call('GET', 'messages?channel=' + encodeURIComponent(ch) + '&after=' + (after || 0)),
   send: async (ch, text, file, onProgress) => {
     let attachment = null;
@@ -322,6 +328,8 @@ const demoApi = (() => {
     updateUser: (id, d) => { const u = users.find(x => x.id === id); if (d.active !== undefined) u.active = d.active; if (d.admin !== undefined) u.admin = d.admin; return wait(u); },
     deleteUser: id => { const i = users.findIndex(x => x.id === id); if (i >= 0) users[i] = { ...users[i], active: false, deleted: true }; return wait({ ok: true }); },
     mediaUrl: f => { const x = files[f.id]; return x.url || (x.obj || (x.obj = URL.createObjectURL(x.blob))); },
+    notify: () => wait({ chat: 0, chats: {}, dash: 0 }),
+    markRead: () => wait({ ok: true }),
     channels: () => {
       const mine = msgs.filter(m => m.ch === 'team' || m.ch.slice(3).split('~').includes(meId));
       const chs = {};
@@ -361,10 +369,11 @@ async function boot() {
     [users, settings] = await Promise.all([api.users(), api.settings()]);
   } catch (e) { if (e.auth) return showLogin(e.message); return fatal(e.message); }
   renderMe();
+  await pollUnread();  // erst Benachrichtigungen laden, dann Bereich anzeigen (Dashboard setzt sie dann zurück)
   route();
   if (!DEMO && window.HauskarteMotivation) window.HauskarteMotivation.greet();
-  pollUnread();
-  setInterval(pollUnread, 30000);
+  setInterval(() => pollUnread(true), 30000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && me) pollUnread(true); });
 }
 function fatal(t) { for (const s of document.querySelectorAll('.view')) s.hidden = true; const v = $('view-login'); v.hidden = false; v.replaceChildren(h('div', { class: 'card' }, h('h2', {}, 'Team-Bereich nicht erreichbar'), h('p', { class: 'muted' }, t), h('button', { class: 'btn', onclick: () => location.reload() }, 'Erneut versuchen'))); }
 
@@ -417,13 +426,27 @@ $('tab-map').onclick = e => {
 
 /* ================= Team-Chat ================= */
 let openCh = null, lastId = 0, chatTimer = 0, pendingFile = null;
-async function pollUnread() {
+let notes = null;  // Benachrichtigungen vom Server: { chat, chats: {Kanal: Anzahl}, dash }
+async function pollUnread(fromTimer) {
   try {
-    const chs = await api.channels(), read = store.get(readKey(), {});
-    const n = chs.filter(c => c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0)).length;
-    $('unread').hidden = !n; $('unread').textContent = n;
+    const [chs, nt] = await Promise.all([api.channels(), api.notify({ local: store.get(readKey(), {}) }).catch(() => null)]);
+    const read = store.get(readKey(), {});
+    const before = notes;
+    notes = nt || { chat: chs.filter(c => c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0)).length, chats: Object.fromEntries(chs.filter(c => c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0)).map(c => [c.id, 1])), dash: 0 };
+    showNotes(before, fromTimer);
     return chs;
   } catch (e) { return []; }
+}
+function showNotes(before, fromTimer) {
+  const n = notes.chat || 0, d = notes.dash || 0;
+  $('unread').hidden = !n; $('unread').textContent = n > 99 ? '99+' : n;
+  $('tab-chat').classList.toggle('glow', n > 0);
+  $('dashDot').hidden = !d;
+  $('tab-dashboard').classList.toggle('glow', d > 0);
+  // Wer gerade im Dashboard ist, sieht neue Zahlen sofort (außer er tippt gerade etwas ein)
+  if (fromTimer && view === 'dashboard' && d > 0 && !document.activeElement?.matches?.('input, textarea')) renderDashboard();
+  // Chat-Übersicht offen: „neu“-Markierungen auffrischen
+  else if (fromTimer && view === 'chat' && !openCh && before && before.chat !== n && !document.querySelector('.sheet')) renderChat();
 }
 const chName = id => id === 'team' ? 'Team-Chat (alle)' : userById(id.slice(3).split('~').find(x => x !== me.id)).name;
 const zoomBtn = () => settings.zoom ? h('a', { class: 'btn zoom', href: settings.zoom, target: '_blank', rel: 'noopener' }, svg(I.video), 'Zoom-Call beitreten') : null;
@@ -524,7 +547,7 @@ async function renderChat() {
   const team = chs.find(c => c.id === 'team') || { id: 'team' };
   const item = c => {
     const other = c.id === 'team' ? null : userById(c.id.slice(3).split('~').find(x => x !== me.id));
-    const unread = c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0);
+    const unread = notes ? !!(notes.chats || {})[c.id] : c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0);
     return h('button', { class: 'ch', onclick: () => { location.hash = '#chat/' + encodeURIComponent(c.id); } },
       other ? av(other) : h('span', { class: 'av', style: 'background:var(--brand-2)' }, svg(I.msg)),
       h('span', { class: 't' }, h('b', {}, chName(c.id)), h('span', {}, c.last ? (c.last.from === me.id ? 'Du: ' : userById(c.last.from).name + ': ') + c.last.text : 'Noch keine Nachrichten')),
@@ -620,9 +643,10 @@ async function openConversation(ch) {
       msgs.append(b);
       lastId = Math.max(lastId, m.id);
     }
-    const read = store.get(readKey(), {}); read[ch] = lastId; store.set(readKey(), read);
+    const read = store.get(readKey(), {}); const was = read[ch] || 0; read[ch] = lastId; store.set(readKey(), read);
     if (atBottom || list.length) msgs.scrollTop = msgs.scrollHeight;
-    pollUnread();
+    if (lastId > was || (notes && (notes.chats || {})[ch])) await api.markRead(ch, lastId).catch(() => {});
+    if (list.length || (notes && (notes.chats || {})[ch])) pollUnread();
   }
   await loadMsgs();
   chatTimer = setInterval(() => { if (openCh === ch && document.visibilityState === 'visible') loadMsgs(); }, 5000);
@@ -784,6 +808,8 @@ async function renderDashboard() {
     rank = h('div', { class: 'card' }, h('b', {}, 'Team im ' + monthName(dashMonth)), h('span', { class: 'muted' }, 'Verträge pro Mitarbeiter' + (isCur ? ' – der Monat läuft noch' : '')), grid);
   }
   put(v, nav, myCard, rank, callCard());
+  // Dashboard gesehen: Hinweis auf neue Verträge der Kollegen zurücksetzen
+  if (notes && notes.dash) { await api.markRead('dash').catch(() => {}); notes.dash = 0; showNotes(notes); }
 }
 function goalEditor(d) {
   const inp = h('input', { id: 'goal', type: 'number', min: 0, step: 1, value: d.goal || '', placeholder: 'z. B. 60' });

@@ -18,6 +18,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   CREATE TABLE IF NOT EXISTS goals (month TEXT PRIMARY KEY, goal INTEGER NOT NULL);
   CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
   CREATE TABLE IF NOT EXISTS former_users (id TEXT PRIMARY KEY, name TEXT NOT NULL, deleted_at TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS reads (uid TEXT NOT NULL, key TEXT NOT NULL, val INTEGER NOT NULL, PRIMARY KEY (uid, key));
   `);
   const now = () => new Date().toISOString();
   const curMonth = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' }).slice(0, 7);
@@ -108,6 +109,35 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       if (b.active === false) { db.prepare('UPDATE users SET active = 0 WHERE id = ?').run(u.id); db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id); log('Mitarbeiter blockiert:', u.name, 'von', meRow.name); }
       if (b.active === true) { db.prepare('UPDATE users SET active = 1 WHERE id = ?').run(u.id); log('Mitarbeiter freigegeben:', u.name, 'von', meRow.name); }
       return send(res, 200, pub(userRow(u.id)));
+    }
+
+    /* ---------- Benachrichtigungen (gelesen/ungelesen je Mitarbeiter, zentral gespeichert) ---------- */
+    const myChannels = () => db.prepare("SELECT DISTINCT channel FROM messages WHERE channel = 'team' OR channel LIKE ? OR channel LIKE ?").all('dm:' + me.uid + '~%', 'dm:%~' + me.uid).map(r => r.channel).filter(c => canAccess(me, c));
+    const setRead = db.prepare('INSERT INTO reads (uid, key, val) VALUES (?, ?, ?) ON CONFLICT(uid, key) DO UPDATE SET val = MAX(val, excluded.val)');
+    const maxContract = () => (db.prepare('SELECT MAX(id) m FROM contracts').get() || {}).m || 0;
+    if (p === 'notify' && M === 'POST') {
+      const b = await readBody(req) || {};
+      if (!db.prepare("SELECT 1 FROM reads WHERE uid = ? AND key = '_init'").get(me.uid)) {
+        // Erster Aufruf: bisherigen Lesestand des Geräts übernehmen, Dashboard ab jetzt zählen
+        const local = b.local && typeof b.local === 'object' ? b.local : {};
+        for (const ch of myChannels()) { const v = parseInt(local[ch], 10); if (v > 0) setRead.run(me.uid, ch, v); }
+        setRead.run(me.uid, 'dash', maxContract()); setRead.run(me.uid, '_init', 1);
+      }
+      const reads = Object.fromEntries(db.prepare('SELECT key, val FROM reads WHERE uid = ?').all(me.uid).map(r => [r.key, r.val]));
+      const chats = {}; let chat = 0;
+      for (const ch of myChannels()) {
+        const n = db.prepare('SELECT COUNT(*) n FROM messages WHERE channel = ? AND seq > ? AND uid != ?').get(ch, reads[ch] || 0, me.uid).n;
+        if (n) { chats[ch] = n; chat += n; }
+      }
+      const dash = db.prepare('SELECT COUNT(*) n FROM contracts WHERE id > ? AND uid != ? AND deleted = 0').get(reads.dash || 0, me.uid).n;
+      return send(res, 200, { chat, chats, dash });
+    }
+    if (p === 'read' && M === 'POST') {
+      const b = await readBody(req) || {}, key = String(b.key || '');
+      if (key === 'dash') setRead.run(me.uid, 'dash', maxContract());
+      else if (canAccess(me, key)) { const v = parseInt(b.val, 10); if (v > 0) setRead.run(me.uid, key, v); }
+      else return err(res, 403, 'Kein Zugriff auf diesen Chat.');
+      return send(res, 200, { ok: true });
     }
 
     /* ---------- Chat ---------- */
