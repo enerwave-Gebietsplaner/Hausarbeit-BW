@@ -25,6 +25,17 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   const userRow = id => db.prepare('SELECT id, name, admin, active FROM users WHERE id = ?').get(id);
   const pub = u => ({ id: u.id, name: u.name, admin: !!u.admin, active: !!u.active });
 
+  // Erster Administrator ohne Admin-ZIP: Solange es noch gar keinen aktiven Admin gibt,
+  // bekommt der Mitarbeiter „Neki“ die Admin-Rechte automatisch. Gibt es schon einen Admin, passiert nichts.
+  function ensureAdmin() {
+    try {
+      if (db.prepare('SELECT 1 FROM users WHERE admin = 1 AND active = 1').get()) return;
+      const n = db.prepare("SELECT id, name FROM users WHERE active = 1 AND (name = 'Neki' COLLATE NOCASE OR name LIKE 'Neki %') ORDER BY created_at LIMIT 1").get();
+      if (n) { db.prepare('UPDATE users SET admin = 1 WHERE id = ?').run(n.id); log('Administrator automatisch festgelegt:', n.name); }
+    } catch (e) { log('Admin-Prüfung fehlgeschlagen:', e.message); }
+  }
+  ensureAdmin();
+
   // Kanäle: "team" = alle; "dm:<id>~<id>" = privat zwischen genau zwei Personen
   function canAccess(me, ch) {
     if (ch === 'team') return true;
@@ -49,7 +60,9 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   async function handle(req, res, url) {
     const me = userFromToken(req);
     if (!me) return err(res, 401, 'Nicht angemeldet');
+    if (url.pathname === '/api/me') ensureAdmin();
     const meRow = userRow(me.uid);
+    if (!meRow) return err(res, 401, 'Nicht angemeldet');
     const isAdmin = !!meRow.admin;
     const p = url.pathname.slice(5);  // ohne "/api/"
     const M = req.method;

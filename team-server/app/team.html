@@ -107,6 +107,8 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .person { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; width: 100%; text-align: left }
 .person .t { flex: 1; min-width: 0 }
 .pill { font-size: 11.5px; font-weight: 700; border-radius: 8px; padding: 2px 7px; background: rgba(29,78,216,.12); color: var(--info) }
+.access { display: flex; gap: 22px; flex-wrap: wrap } .access > div { display: flex; flex-direction: column; gap: 2px } .access b { font-size: 18px } .access .pinbig { font-size: 26px; letter-spacing: 4px; font-variant-numeric: tabular-nums }
+.steps { margin: 4px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px }
 .pill.off { background: rgba(189,33,33,.12); color: var(--danger) }
 .sheet { position: fixed; inset: 0; background: rgba(10,30,25,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 20 }
 .sheet .panel { background: var(--bg); width: 100%; max-width: 560px; border-radius: 18px 18px 0 0; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 10px; max-height: 88%; overflow-y: auto; box-sizing: border-box }
@@ -152,7 +154,7 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
     <div class="wrap">
       <a href="./" id="tab-map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Hauskarte</a>
       <a href="#chat" id="tab-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Team-Chat<span class="badge" id="unread" hidden></span></a>
-      <a href="#team" id="tab-team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/></svg>Team</a>
+      <a href="#team" id="tab-team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/></svg>Mitarbeiter</a>
       <a href="#dashboard" id="tab-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard</a>
     </div>
   </nav>
@@ -436,7 +438,7 @@ async function renderChat() {
   const dms = chs.filter(c => c.id !== 'team').sort((a, b) => b.last.at.localeCompare(a.last.at));
   list.append(h('h2', { style: 'margin-top:8px;font-size:16px' }, 'Private Chats'));
   if (dms.length) list.append(...dms.map(item));
-  else list.append(h('p', { class: 'muted' }, 'Noch keine privaten Chats. Im Bereich „Team“ einen Mitarbeiter antippen und „Nachricht senden“ wählen.'));
+  else list.append(h('p', { class: 'muted' }, 'Noch keine privaten Chats. Im Bereich „Mitarbeiter“ einen Mitarbeiter antippen und „Nachricht senden“ wählen.'));
   v.replaceChildren(list);
 }
 
@@ -557,14 +559,14 @@ async function renderTeam() {
   const list = users.filter(u => u.active).sort((a, b) => a.name.localeCompare(b.name, 'de'));
   const blocked = me.admin ? users.filter(u => !u.active && !u.deleted).sort((a, b) => a.name.localeCompare(b.name, 'de')) : [];
   put(v, 
-    h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Team · ' + list.length + ' Mitarbeiter'), me.admin ? h('button', { class: 'btn green', onclick: addUserSheet }, svg(I.plus), 'Mitarbeiter') : null),
+    h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Mitarbeiter · ' + list.length + ' aktiv'), me.admin ? h('button', { class: 'btn green', id: 'btnAddUser', onclick: addUserSheet }, svg(I.plus), 'Neuer Mitarbeiter') : null),
     ...list.map(u => h('button', { class: 'person', onclick: () => personSheet(u, countOf(u.id)) }, av(u),
       h('span', { class: 't' }, h('b', {}, u.name + (u.id === me.id ? ' (du)' : '')), h('div', { class: 'muted' }, countOf(u.id) !== null ? countOf(u.id) + ' Verträge im ' + MONTHS[new Date().getMonth()] : 'Mitarbeiter')),
       u.admin ? h('span', { class: 'pill' }, 'Admin') : null)),
     blocked.length ? h('h2', { style: 'font-size:16px;margin-top:8px' }, 'Blockiert · ' + blocked.length) : null,
     ...blocked.map(u => h('button', { class: 'person', style: 'opacity:.75', onclick: () => personSheet(u, countOf(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name), h('div', { class: 'muted' }, 'Zugang gesperrt')), h('span', { class: 'pill off' }, 'Blockiert'))),
     me.admin ? zoomCard() : null,
-    me.admin ? h('p', { class: 'muted' }, 'Neue Tablets brauchen zusätzlich die Tailscale-App, angemeldet mit eurem gemeinsamen Konto. Ohne Tailscale ist die Hauskarte von außen nicht erreichbar.') : null
+    me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet die Hauskarte öffnen und mit Name und PIN anmelden – fertig.'))) : null
   );
 }
 function sheet(...content) {
@@ -583,7 +585,7 @@ function personSheet(u, count) {
   if (me.admin) {
     const pin = h('input', { id: 'newPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' });
     admin.append(h('b', {}, 'Verwalten'),
-      h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Neue PIN', pin), h('button', { class: 'btn', onclick: async () => { if (pin.value.length < 4) return toast('Die PIN braucht mindestens 4 Ziffern.'); try { await api.updateUser(u.id, { pin: pin.value }); toast('PIN für ' + u.name + ' geändert.'); close(); } catch (e) { toast(e.message); } } }, 'PIN speichern')));
+      h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Neue PIN', pin), h('button', { class: 'btn ghost', type: 'button', onclick: () => { pin.value = genPin(); } }, 'PIN erzeugen'), h('button', { class: 'btn', id: 'savePin', onclick: async () => { if (!/^\d{4,}$/.test(pin.value)) return toast('Die PIN braucht mindestens 4 Ziffern.'); try { await api.updateUser(u.id, { pin: pin.value }); close(); if (u.id === me.id) toast('Deine PIN wurde geändert.'); else accessSheet(u.name, pin.value, true); } catch (e) { toast(e.message); } } }, 'PIN speichern')));
     if (u.id !== me.id) {
       const act = async (fn, msg) => { try { await fn(); toast(msg); close(); renderTeam(); } catch (e) { toast(e.message); } };
       const confirmBox = (text, label, fn, msg) => { const c = h('div', { class: 'confirm', hidden: true }, h('span', {}, text), h('div', { class: 'row' }, h('button', { class: 'btn danger', onclick: () => act(fn, msg) }, label), h('button', { class: 'btn ghost', onclick: () => { c.hidden = true; } }, 'Abbrechen'))); return c; };
@@ -592,7 +594,7 @@ function personSheet(u, count) {
         const cb = confirmBox(u.name + ' blockieren? Die Anmeldung wird sofort gesperrt. Nachrichten, Hausmarkierungen und Vertragszahlen bleiben erhalten. Du kannst den Zugang jederzeit wieder freigeben.', 'Ja, blockieren', () => api.updateUser(u.id, { active: false }), u.name + ' ist blockiert.');
         admin.append(h('button', { class: 'btn ghost', style: 'color:var(--danger)', onclick: () => { cb.hidden = false; } }, 'Blockieren'), cb);
       } else {
-        admin.append(h('button', { class: 'btn green', onclick: () => act(() => api.updateUser(u.id, { active: true }), u.name + ' ist wieder freigegeben.') }, 'Wieder freigeben'));
+        admin.append(h('button', { class: 'btn green', onclick: () => act(() => api.updateUser(u.id, { active: true }), u.name + ' ist wieder freigegeben.') }, 'Aktivieren / freigeben'));
       }
       const cd = confirmBox(u.name + ' endgültig löschen? Der Zugang wird entfernt und kann nicht wiederhergestellt werden. Bereits geschriebene Nachrichten und gezählte Verträge bleiben in der Statistik erhalten.', 'Endgültig löschen', () => api.deleteUser(u.id), u.name + ' wurde gelöscht.');
       admin.append(h('button', { class: 'btn ghost', style: 'color:var(--danger)', onclick: () => { cd.hidden = false; } }, 'Endgültig löschen'), cd);
@@ -604,25 +606,45 @@ function personSheet(u, count) {
 function addUserSheet() {
   let s;
   const name = h('input', { id: 'addName', autocomplete: 'off', placeholder: 'z. B. Max Müller' });
-  const pin = h('input', { id: 'addPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' });
+  const pin = h('input', { id: 'addPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern', value: genPin() });
   const adm = h('input', { id: 'addAdmin', type: 'checkbox' });
   const err = h('p', { class: 'muted', role: 'alert' });
   const form = h('form', { style: 'display:flex;flex-direction:column;gap:10px' }, h('h2', {}, 'Mitarbeiter hinzufügen'),
-    h('label', { class: 'f' }, 'Name (damit meldet er sich an)', name), h('label', { class: 'f' }, 'PIN', pin), h('label', { class: 'chk' }, adm, 'Administrator (darf Mitarbeiter verwalten und alle Zahlen sehen)'),
+    h('label', { class: 'f' }, 'Name (damit meldet er sich an)', name), h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Persönliche PIN', pin), h('button', { class: 'btn ghost', type: 'button', onclick: () => { pin.value = genPin(); } }, 'Neue PIN erzeugen')), h('label', { class: 'chk' }, adm, 'Administrator (darf selbst Mitarbeiter verwalten)'),
     err, h('div', { class: 'row' }, h('button', { class: 'btn green', type: 'submit' }, 'Hinzufügen'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen')),
-    h('p', { class: 'muted' }, 'Das Tablet braucht zusätzlich die Tailscale-App mit eurem gemeinsamen Konto.'));
+    h('p', { class: 'muted' }, 'Der Zugang ist sofort aktiv. Das Tablet muss mit Tailscale im Team-Netzwerk verbunden sein.'));
   form.onsubmit = async e => {
     e.preventDefault();
     if (!name.value.trim()) return err.textContent = 'Bitte einen Namen eingeben.';
-    if (pin.value.length < 4) return err.textContent = 'Die PIN braucht mindestens 4 Ziffern.';
-    try { await api.addUser({ name: name.value.trim(), pin: pin.value, admin: adm.checked }); s.remove(); toast(name.value.trim() + ' wurde hinzugefügt.'); renderTeam(); }
+    if (!/^\d{4,}$/.test(pin.value)) return err.textContent = 'Die PIN braucht mindestens 4 Ziffern (nur Zahlen).';
+    try { const nm = name.value.trim(); await api.addUser({ name: nm, pin: pin.value, admin: adm.checked }); s.remove(); renderTeam(); accessSheet(nm, pin.value, false); }
     catch (x) { err.textContent = x.message; }
   };
   s = sheet(form);
 }
+/* Zufällige 4-stellige PIN (keine leicht zu ratenden wie 1111 oder 1234) */
+function genPin() {
+  for (;;) {
+    const a = new Uint32Array(1); crypto.getRandomValues(a);
+    const p = String(a[0] % 10000).padStart(4, '0');
+    if (/^(\d)\1+$/.test(p) || '0123456789'.includes(p) || '9876543210'.includes(p)) continue;
+    return p;
+  }
+}
+/* Zugangsdaten zum Weitergeben an den Mitarbeiter */
+function accessSheet(name, pin, changed) {
+  let s;
+  const text = 'Hauskarte BW – deine Anmeldung\nName: ' + name + '\nPIN: ' + pin + '\n\nTailscale auf dem Tablet einschalten, die Hauskarte öffnen und mit Name und PIN anmelden.';
+  s = sheet(h('div', { style: 'display:flex;flex-direction:column;gap:12px' },
+    h('h2', {}, changed ? 'Neue PIN für ' + name : name + ' ist angelegt'),
+    h('div', { class: 'card access' }, h('div', {}, h('span', { class: 'muted' }, 'Name'), h('b', { id: 'accName' }, name)), h('div', {}, h('span', { class: 'muted' }, 'PIN'), h('b', { id: 'accPin', class: 'pinbig' }, pin))),
+    h('p', { class: 'muted', style: 'margin:0' }, changed ? 'Die alte PIN gilt ab sofort nicht mehr. ' + name + ' muss sich auf seinem Tablet einmal neu anmelden.' : 'Auf dem Tablet von ' + name + ': Tailscale einschalten, die Hauskarte öffnen und mit diesem Namen und dieser PIN anmelden. Vertragszahlen, private Nachrichten und Motivation gehören dann automatisch zu seinem Profil.'),
+    h('p', { class: 'muted', style: 'margin:0' }, 'Die PIN wird nur jetzt angezeigt – bitte notieren oder direkt weitergeben.'),
+    h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: async () => { try { await navigator.clipboard.writeText(text); toast('Zugangsdaten kopiert.'); } catch (e) { toast('Kopieren nicht möglich – bitte abschreiben.'); } } }, 'Kopieren'), h('button', { class: 'btn green', type: 'button', onclick: () => s.remove() }, 'Fertig'))));
+}
 function zoomCard() {
   const inp = h('input', { id: 'zoomLink', type: 'url', value: settings.zoom || '', placeholder: 'https://zoom.us/j/…' });
-  return h('div', { class: 'card' }, h('b', {}, 'Zoom-Teamcall'), h('p', { class: 'muted', style: 'margin:0' }, 'Dieser Link öffnet sich bei allen über „Teamcall beitreten“ im Team-Chat und im Dashboard.'),
+  return h('div', { class: 'card' }, h('b', {}, 'Zoom-Teamcall'), h('p', { class: 'muted', style: 'margin:0' }, 'Dieser Link öffnet sich bei allen über „Zoom-Call beitreten“ im Team-Chat und im Dashboard.'),
     h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Zoom-Link', inp), h('button', { class: 'btn', onclick: async () => { const z = inp.value.trim(); if (z && !/^https:\/\//.test(z)) return toast('Bitte einen Link beginnend mit https:// eingeben.'); await api.setZoom(z); settings.zoom = z; toast(z ? 'Zoom-Link gespeichert.' : 'Zoom-Link entfernt.'); } }, 'Speichern')));
 }
 
