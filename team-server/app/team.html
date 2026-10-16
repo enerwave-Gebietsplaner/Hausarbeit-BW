@@ -1,244 +1,146 @@
 <title>Hauskarte BW Team</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="theme-color" content="#eef3f0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<meta name="theme-color" content="#173a34">
 <style>
-/* Layout: Team-Plattform. Breit (Tablet quer/PC): links Hauptbereich + Navigation, rechts Seitenleiste mit Chat, Teamcall, Verträgen.
-   Schmal (Handy/Tablet hoch): ein Bereich, Navigation unten. Karten-Kacheln weiß mit weichem Schatten auf hellem Grün-Grau. */
+/* Layout: App-Rahmen wie die Hauskarte – grüne Kopfzeile, Reiter darunter, Inhalt in einer Spalte (max. 760px) */
 :root {
-  --bg: #eaf0ed; --bg-2: #f4f7f5; --card: #ffffff; --soft: #f3f6f4; --fg: #12302a; --muted: #62756f; --line: #e1e8e4;
-  --green: #1e9e5a; --green-ink: #13784a; --green-soft: #e3f4ea; --blue: #3b82f6; --blue-soft: #e6efff; --zoom: #2d8cff;
-  --red: #ef4444; --red-soft: #fde8e8; --amber: #f59e0b; --violet: #8b5cf6;
-  --shadow: 0 1px 2px rgba(18,48,42,.05), 0 8px 28px rgba(18,48,42,.07);
-  --r: 20px; --r-sm: 14px;
-  --font: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --brand: #173a34; --brand-2: #1f5a4f; --accent: #22ba57; --accent-ink: #087b35;
+  --bg: #e9eeeb; --card: #ffffff; --fg: #18342d; --muted: #5d716b; --line: #d3ddd8;
+  --bubble-me: #d9f2e3; --bubble: #ffffff; --warn: #b45309; --danger: #bd2121; --info: #1d4ed8;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --radius: 12px;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0d1916; --bg-2: #101f1b; --card: #15261f; --soft: #1b2f28; --fg: #e4efe9; --muted: #98aea6; --line: #253a33;
-  --green-soft: #173f2c; --blue-soft: #1a2a48; --red-soft: #3d1c1c; --green-ink: #4fd18a; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25); color-scheme: dark } }
+  --bg: #0f1d1a; --card: #172925; --fg: #e3eee9; --muted: #9db3ab; --line: #2a403a;
+  --bubble-me: #1d4a38; --bubble: #1d322d; --accent-ink: #5fd68a; --warn: #f0a24b; --danger: #ff7a7a; --info: #8fb2ff; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #0d1916; --bg-2: #101f1b; --card: #15261f; --soft: #1b2f28; --fg: #e4efe9; --muted: #98aea6; --line: #253a33;
-  --green-soft: #173f2c; --blue-soft: #1a2a48; --red-soft: #3d1c1c; --green-ink: #4fd18a; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25); color-scheme: dark }
+  --bg: #0f1d1a; --card: #172925; --fg: #e3eee9; --muted: #9db3ab; --line: #2a403a;
+  --bubble-me: #1d4a38; --bubble: #1d322d; --accent-ink: #5fd68a; --warn: #f0a24b; --danger: #ff7a7a; --info: #8fb2ff; color-scheme: dark }
 html, body { height: 100% }
-body { background: radial-gradient(1200px 600px at 10% -10%, var(--bg-2), transparent 60%), var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; overflow: hidden }
-button, input, textarea, select { font: inherit; color: inherit }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; display: flex; flex-direction: column }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--brand) }
+button, input, select, textarea { font: inherit; color: inherit }
 button { cursor: pointer }
-:focus-visible { outline: 3px solid var(--green); outline-offset: 2px }
-svg.i { width: 22px; height: 22px; flex: 0 0 auto }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
+.wrap { width: 100%; max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); box-sizing: border-box }
 
-.app { height: 100%; display: grid; grid-template-rows: auto 1fr; gap: 12px; padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); box-sizing: border-box; max-width: 1600px; margin: 0 auto }
-.card { background: var(--card); border-radius: var(--r); box-shadow: var(--shadow) }
+/* Kopf + Navigation */
+header.top { background: var(--brand); color: #fff; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5 }
+header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: 10px 6px }
+.title { font-weight: 750; font-size: 17px; white-space: nowrap }
+.title small { font-weight: 400; opacity: .75; font-size: 12px; margin-left: 4px }
+.me { display: flex; align-items: center; gap: 8px; font-size: 13px; min-width: 0 }
+.me select { background: rgba(255,255,255,.14); border: 0; border-radius: 10px; padding: 4px 8px; color: #fff; max-width: 170px }
+.me select option { color: #000 }
+nav.tabs .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding-block: 0 6px }
+nav.tabs a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; color: rgba(255,255,255,.78); text-decoration: none; font-size: 12.5px; font-weight: 600; position: relative }
+nav.tabs a svg { width: 22px; height: 22px }
+nav.tabs a.on { background: rgba(255,255,255,.16); color: #fff }
+.badge { position: absolute; top: 2px; right: calc(50% - 22px); background: var(--danger); color: #fff; border-radius: 9px; font-size: 11px; min-width: 18px; height: 18px; line-height: 18px; text-align: center; padding: 0 4px; box-sizing: border-box }
+.demo-bar { background: #fff3cd; color: #5c4400; font-size: 12.5px }
+.demo-bar .wrap { padding-block: 6px }
 
-/* Kopfzeile */
-.top { display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 18px }
-.logo { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 }
-.logo .mark { width: 42px; height: 42px; color: var(--green); flex: 0 0 auto }
-.logo b { display: block; font-size: 21px; font-weight: 800; letter-spacing: -.01em; white-space: nowrap }
-.logo small { display: block; font-size: 11.5px; font-weight: 600; letter-spacing: .14em; color: var(--muted); white-space: nowrap }
-.bell { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; color: var(--fg) }
-.bell .n { position: absolute; top: 4px; right: 4px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; padding: 0 4px; box-sizing: border-box }
-.user { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; padding: 4px 6px; border-radius: 14px; text-align: left; position: relative }
-.user .nm b { display: block; font-weight: 700; white-space: nowrap }
-.user .nm span { display: block; font-size: 13px; color: var(--muted) }
-.user select { position: absolute; inset: 0; opacity: 0; cursor: pointer }
-
-/* Hauptbereich */
-.body { min-height: 0; display: grid; gap: 12px; grid-template-columns: 1fr }
-.left { min-height: 0; display: grid; grid-template-rows: 1fr auto; gap: 12px }
-.main { min-height: 0; overflow: hidden; display: flex; flex-direction: column }
-.side { display: none }
-@media (min-width: 1000px) {
-  .body { grid-template-columns: minmax(0, 1fr) 420px }
-  .side { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; padding-bottom: 2px }
-}
-@media (min-width: 1300px) { .body { grid-template-columns: minmax(0, 1fr) 520px } }
-
-/* Navigation */
-.nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px }
-.nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 14px; text-decoration: none; color: var(--fg); font-weight: 600; font-size: 14px; position: relative }
-.nav a .ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center }
-.nav a.on { background: var(--green-soft) }
-.nav a.on .ic { background: var(--green); color: #fff }
-.nav a .n { position: absolute; top: 6px; left: calc(50% + 10px); background: var(--red); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: grid; place-items: center; padding: 0 4px; box-sizing: border-box }
-
-/* Karte (Vorschau-Bild) */
-.mapcard { position: relative; overflow: hidden; height: 100% }
-.mapcard canvas { width: 100%; height: 100%; display: block }
-.mapcard iframe { border: 0; width: 100%; height: 100%; display: block }
-.maptag { position: absolute; left: 16px; bottom: 16px; background: rgba(255,255,255,.94); color: #12302a; border-radius: 12px; padding: 8px 12px; font-size: 13px; font-weight: 600; box-shadow: var(--shadow); max-width: calc(100% - 32px) }
-
-/* Kopf einer Kachel */
-.hd { display: flex; align-items: center; gap: 12px; padding: 16px 18px 10px }
-.hd .ic { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: #fff; flex: 0 0 auto }
-.hd h2 { margin: 0; font-size: 21px; font-weight: 800; flex: 1; min-width: 0; letter-spacing: -.01em }
-.hd .link { border: 0; background: transparent; color: var(--blue); font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 14px; white-space: nowrap }
-.pad { padding: 0 18px 18px }
-
-/* Avatare */
-.av { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; flex: 0 0 auto; font-size: 16px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.6) }
-.av.s { width: 36px; height: 36px; font-size: 14px }
+main { flex: 1; min-height: 0; overflow-y: auto }
+section.view { padding-block: 14px 24px; display: flex; flex-direction: column; gap: 12px }
+h2 { margin: 0; font-size: 19px; text-wrap: balance }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; flex-direction: column; gap: 10px }
+.muted { color: var(--muted); font-size: 13px }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap }
+.btn { border: 0; border-radius: 10px; padding: 11px 14px; font-weight: 650; background: var(--brand-2); color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none }
+.btn.big { padding: 15px; font-size: 16px; width: 100% }
+.btn.green { background: var(--accent-ink) }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line) }
+.btn.danger { background: var(--danger) }
+.btn.zoom { background: #2d8cff }
+.btn:disabled { opacity: .5; cursor: default }
+.btn svg { width: 20px; height: 20px }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); flex: 1; min-width: 140px }
+label.f input, label.f select { font-size: 16px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--card); color: var(--fg) }
+label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
+.empty { text-align: center; color: var(--muted); padding: 26px 10px }
+.av { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; flex: 0 0 auto; font-size: 15px }
 
 /* Chat */
-.msgs { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; padding: 4px 12px 8px; flex: 1; min-height: 0 }
-.msg { display: flex; gap: 10px; padding: 8px; border-radius: 16px; align-items: flex-start }
-.msg .b { min-width: 0; flex: 1 }
-.msg .who { display: flex; gap: 8px; align-items: baseline }
-.msg .who b { font-weight: 700 }
-.msg .who time { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums }
-.msg .txt { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.4 }
-.msg.me .bub { background: var(--green-soft); border-radius: 14px; padding: 8px 12px; display: inline-flex; flex-direction: column; gap: 6px; max-width: 100% }
-.msg .bub { display: flex; flex-direction: column; gap: 6px }
-.msg img { max-width: min(320px, 100%); max-height: 220px; border-radius: 12px; object-fit: cover; cursor: zoom-in; background: var(--soft) }
-.mini .msgs { background: var(--soft); margin: 0 12px; border-radius: 16px; padding: 6px; max-height: 300px }
-.file { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; text-decoration: none; color: var(--fg); max-width: 320px }
-.file .fi { width: 34px; height: 40px; border-radius: 6px; background: var(--red-soft); color: var(--red); display: grid; place-items: center; font-size: 10px; font-weight: 800; flex: 0 0 auto }
-.file span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600 }
-.file small { color: var(--muted); white-space: nowrap; margin-left: auto }
-.day { align-self: center; font-size: 12px; color: var(--muted); background: var(--soft); border-radius: 10px; padding: 3px 10px; margin: 8px 0 4px }
-.composer { display: flex; gap: 10px; align-items: flex-end; padding: 12px 12px 14px }
-.composer .box { flex: 1; display: flex; align-items: flex-end; gap: 4px; background: var(--soft); border-radius: 26px; padding: 4px 6px; min-width: 0 }
-.composer textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; padding: 10px 6px; font-size: 16px; max-height: 120px; outline: none }
-.ib { width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; color: var(--muted); flex: 0 0 auto }
-.ib.go { background: var(--green); color: #fff; width: 52px; height: 52px; box-shadow: 0 6px 16px rgba(30,158,90,.35) }
-.ib:disabled { opacity: .5 }
-.attach-prev { display: flex; align-items: center; gap: 10px; margin: 0 12px; padding: 8px 10px; background: var(--soft); border-radius: 14px; font-size: 13px }
-.attach-prev img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px }
-
-.chatfull { display: grid; grid-template-columns: 1fr; height: 100%; min-height: 0 }
-.chatfull .list { overflow-y: auto; padding: 6px 10px 12px; display: flex; flex-direction: column; gap: 4px }
-.chatfull .conv { display: flex; flex-direction: column; min-height: 0; height: 100% }
-.ch { display: flex; align-items: center; gap: 12px; border: 0; background: transparent; padding: 10px; border-radius: 16px; text-align: left; width: 100% }
-.ch.on, .ch:hover { background: var(--soft) }
+#view-chat { height: 100%; padding-block: 0; gap: 0 }
+.chat-list { display: flex; flex-direction: column; gap: 8px; padding-block: 14px }
+.ch { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; text-align: left; width: 100% }
 .ch .t { flex: 1; min-width: 0 }
 .ch .t b { display: block }
-.ch .t span { display: block; color: var(--muted); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-.ch .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green) }
-.sec { font-size: 12px; font-weight: 700; letter-spacing: .1em; color: var(--muted); padding: 12px 10px 4px }
-@media (min-width: 760px) { .chatfull { grid-template-columns: 300px 1fr } .chatfull .list { border-right: 1px solid var(--line) } .chatfull .back { display: none } }
-@media (max-width: 759px) { .chatfull.open .list { display: none } .chatfull:not(.open) .conv { display: none } }
-
-/* Teamcall */
-.zoom { display: flex; align-items: center; gap: 14px; padding: 16px 18px; flex-wrap: wrap }
-.zoom .ic { width: 58px; height: 58px; border-radius: 50%; background: #2563eb; color: #fff; display: grid; place-items: center; flex: 0 0 auto }
-.zoom .t { flex: 1; min-width: 160px }
-.zoom .t b { display: block; font-size: 19px; font-weight: 800 }
-.zoom .t span { display: block; color: var(--muted) }
-.zoom .t small { display: flex; align-items: center; gap: 6px; color: var(--muted); margin-top: 4px; font-size: 13.5px }
-.btn { border: 0; border-radius: 14px; padding: 12px 18px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; background: var(--green); color: #fff; font-size: 15px }
-.btn.zm { background: #5b9cf6 }
-.btn.ghost { background: var(--soft); color: var(--fg) }
-.btn.red { background: var(--red) }
-.btn.full { width: 100%; box-sizing: border-box }
-.btn:disabled { opacity: .5 }
-
-/* Verträge */
-.month { display: flex; align-items: center; gap: 4px }
-.month .ib { width: 36px; height: 36px; color: var(--fg) }
-.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 18px }
-.kpi { border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0 }
-.kpi.g { background: var(--green-soft); flex-direction: row; align-items: center; gap: 12px }
-.kpi.g .num { font-size: 32px; font-weight: 800; color: var(--green-ink); line-height: 1; font-variant-numeric: tabular-nums }
-.kpi.g span { color: var(--green-ink); font-weight: 600; font-size: 14px }
-.kpi.w { background: var(--soft) }
-.kpi .row { display: flex; justify-content: space-between; align-items: baseline; font-variant-numeric: tabular-nums }
-.kpi .row b { color: var(--green-ink); font-size: 17px }
-.bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden }
-.bar i { display: block; height: 100%; border-radius: 4px; background: var(--green); transition: width .4s }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; padding: 12px 14px 16px }
-.tile { border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 4px; position: relative; min-width: 0 }
-.tile .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px }
-.tile .ct { font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums }
-.tile .lb { color: var(--muted); font-size: 13.5px }
-.tile .bar { margin-top: 8px; height: 5px }
-.tile .numrow { display: flex; align-items: center; justify-content: space-between; gap: 6px }
-.tile .plus { width: 38px; height: 38px; border-radius: 50%; border: 0; background: #7fdcb0; color: #fff; display: grid; place-items: center; flex: 0 0 auto }
-.tile .plus:hover { background: var(--green) }
-.tile.me { outline: 2px solid var(--green); outline-offset: -2px }
-.mine { list-style: none; margin: 0; padding: 0 18px 16px; display: flex; flex-direction: column }
-.mine li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums }
-.note { display: flex; gap: 8px; padding: 0 18px 14px; flex-wrap: wrap }
-.note input { flex: 1; min-width: 160px; border: 1px solid var(--line); background: var(--soft); border-radius: 12px; padding: 11px 12px; font-size: 16px }
+.ch .t span { display: block; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.ch .n { background: var(--accent-ink); color: #fff; border-radius: 10px; font-size: 12px; padding: 2px 7px; font-weight: 700 }
+.conv { display: flex; flex-direction: column; height: 100% }
+.conv-head { display: flex; align-items: center; gap: 10px; padding-block: 10px; border-bottom: 1px solid var(--line) }
+.conv-head b { flex: 1; min-width: 0 }
+.msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-block: 12px }
+.day { align-self: center; font-size: 12px; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 2px 10px; margin: 6px 0 }
+.m { max-width: 82%; align-self: flex-start; background: var(--bubble); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 7px 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0 }
+.m.me { align-self: flex-end; background: var(--bubble-me); border-radius: 14px 14px 4px 14px }
+.m .who { font-size: 12.5px; font-weight: 700; display: flex; gap: 8px; justify-content: space-between }
+.m .who time { font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums }
+.m .txt { white-space: pre-wrap; overflow-wrap: anywhere }
+.m img { border-radius: 9px; max-height: 240px; object-fit: cover; cursor: zoom-in; background: var(--line) }
+.file { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,.05); border-radius: 9px; padding: 8px; text-decoration: none; color: var(--fg) }
+.file svg { width: 26px; height: 26px; flex: 0 0 auto; color: var(--danger) }
+.file span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.file small { color: var(--muted); white-space: nowrap }
+.composer { display: flex; gap: 8px; align-items: flex-end; padding-block: 8px calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line) }
+.composer textarea { flex: 1; min-width: 0; resize: none; border: 1px solid var(--line); border-radius: 20px; padding: 10px 14px; font-size: 16px; max-height: 120px; background: var(--card) }
+.icon-btn { width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; background: var(--card); color: var(--fg); border: 1px solid var(--line); flex: 0 0 auto }
+.icon-btn.send { background: var(--accent-ink); color: #fff; border: 0 }
+.icon-btn svg { width: 22px; height: 22px }
+.pending { display: flex; align-items: center; gap: 8px; font-size: 13px; padding-top: 8px }
+.pending img { width: 48px; height: 48px; object-fit: cover; border-radius: 8px }
 
 /* Team */
-.people { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; padding: 4px 18px 18px; overflow-y: auto }
-.person { display: flex; align-items: center; gap: 12px; background: var(--soft); border: 0; border-radius: 18px; padding: 12px; text-align: left; width: 100% }
+.person { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; width: 100%; text-align: left }
 .person .t { flex: 1; min-width: 0 }
-.person .t b { display: block }
-.person .t span { color: var(--muted); font-size: 13.5px }
-.pill { font-size: 12px; font-weight: 700; border-radius: 8px; padding: 3px 8px; background: var(--blue-soft); color: var(--blue) }
-.scroll { overflow-y: auto; min-height: 0; flex: 1 }
-label.f { display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--muted); font-weight: 600 }
-label.f input { font-size: 16px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); color: var(--fg); font-weight: 400 }
-label.chk { display: flex; align-items: center; gap: 10px; font-size: 14.5px }
-.muted { color: var(--muted); font-size: 13.5px; margin: 0 }
-.empty { color: var(--muted); text-align: center; padding: 30px 12px }
+.pill { font-size: 11.5px; font-weight: 700; border-radius: 8px; padding: 2px 7px; background: rgba(29,78,216,.12); color: var(--info) }
+.pill.off { background: rgba(189,33,33,.12); color: var(--danger) }
+.sheet { position: fixed; inset: 0; background: rgba(10,30,25,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 20 }
+.sheet .panel { background: var(--bg); width: 100%; max-width: 560px; border-radius: 18px 18px 0 0; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 10px; max-height: 88%; overflow-y: auto; box-sizing: border-box }
+.confirm { background: rgba(189,33,33,.08); border: 1px solid var(--danger); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px }
 
-.sheet { position: fixed; inset: 0; background: rgba(10,30,25,.4); display: flex; align-items: flex-end; justify-content: center; z-index: 30 }
-@media (min-width: 700px) { .sheet { align-items: center } .sheet .panel { border-radius: 22px !important } }
-.sheet .panel { background: var(--card); width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 20px max(20px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; max-height: 90%; overflow-y: auto; box-sizing: border-box }
-.sheet h3 { margin: 0; font-size: 20px }
-.confirm { background: var(--red-soft); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px }
-.toast { position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: #12302a; color: #fff; padding: 12px 16px; border-radius: 14px; font-size: 14.5px; z-index: 40; display: flex; gap: 14px; align-items: center; box-shadow: var(--shadow); max-width: calc(100% - 32px) }
-.toast button { border: 0; background: transparent; color: #7ee2ad; font-weight: 700 }
-.viewer { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: grid; place-items: center; z-index: 50 }
-.viewer img { max-width: 94%; max-height: 90% }
-.demo { background: #fff7e0; color: #5c4400; font-size: 12.5px; padding: 6px 12px; border-radius: 10px; max-width: 360px; line-height: 1.35 }
-@media (max-width: 1100px) { .demo { display: none } }
-/* Suche oben */
-.search { flex: 1; max-width: 560px; display: flex; align-items: center; gap: 10px; background: var(--soft); border-radius: 26px; padding: 0 16px; margin: 0 8px; color: var(--muted) }
-.search input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 13px 0; font-size: 16px; outline: none; color: var(--fg) }
-.user .chev { color: var(--muted) }
-.av svg { width: 100%; height: 100%; border-radius: 50%; display: block }
-.av.photo { background: transparent !important; box-shadow: 0 0 0 2px var(--card), 0 1px 4px rgba(0,0,0,.15) }
-/* Kartenbedienung (schwebend) */
-.mctl { position: absolute; display: flex; flex-direction: column; gap: 10px; z-index: 2 }
-.mbtn { width: 50px; height: 50px; border-radius: 14px; border: 0; background: #fff; color: #12302a; display: grid; place-items: center; box-shadow: 0 2px 10px rgba(0,0,0,.18) }
-.mgroup { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.18); display: flex; flex-direction: column; overflow: hidden }
-.mgroup .mbtn { box-shadow: none; border-radius: 0 }
-.mgroup .mbtn + .mbtn { border-top: 1px solid #e6ece9 }
-.seg { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 26px; padding: 5px; display: flex; gap: 4px; box-shadow: 0 2px 10px rgba(0,0,0,.18); z-index: 2 }
-.seg button { border: 0; background: transparent; color: #12302a; border-radius: 22px; padding: 9px 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 15px }
-.seg button.on { background: var(--green); color: #fff }
-.tools { position: absolute; right: 16px; top: 16px; background: #fff; border-radius: 18px; padding: 10px 6px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 2px 12px rgba(0,0,0,.18); z-index: 2; max-height: calc(100% - 32px); overflow-y: auto }
-.tools button { border: 0; background: transparent; color: #12302a; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; padding: 6px 4px; border-radius: 12px; width: 76px }
-.tools button .c { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center }
-.tools button.on { background: #e3f4ea }
-.scale { position: absolute; left: 20px; bottom: 18px; color: #fff; font-weight: 600; font-size: 14px; text-shadow: 0 1px 3px rgba(0,0,0,.6); z-index: 2 }
-.scale i { display: block; width: 160px; height: 8px; border: 2px solid #fff; border-top: 0; margin-top: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.4) }
-/* Emoji-Auswahl */
-.emo { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 12px 0 }
-.emo button { border: 0; background: transparent; font-size: 22px; width: 40px; height: 40px; border-radius: 10px }
-.emo button:hover { background: var(--soft) }
-@media (max-width: 900px) { .search { display: none } }
-@media (max-width: 640px) { .seg { top: auto; bottom: 16px } .scale { display: none } .logo small { display: none } .logo b { font-size: 18px } .user .nm, .user .chev { display: none } .demo { display: none } .seg button span { display: none } .tools button { width: 62px; font-size: 11px } .tools button .c { width: 38px; height: 38px } .mbtn { width: 44px; height: 44px } }
+/* Dashboard */
+.month { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.month b { font-size: 17px }
+.total { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap }
+.total .big { font-size: 44px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1 }
+.bar { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 6px; transition: width .4s }
+.rank { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 10px; align-items: center }
+.rank .nm { font-weight: 600; min-width: 0 }
+.rank .ct { font-variant-numeric: tabular-nums; font-weight: 750; text-align: right }
+.rank .bar { grid-column: 2 / 4; height: 6px; margin-top: -4px }
+.mine li { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line) }
+.mine { list-style: none; margin: 0; padding: 0 }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--brand); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px; z-index: 30; max-width: calc(100% - 32px) }
+.viewer { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: grid; place-items: center; z-index: 40 }
+.viewer img { max-width: 96%; max-height: 92% }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none } }
 </style>
 
-<div class="app">
-  <header class="top card">
-    <div class="logo">
-      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 3 22.5l3.5 4L10 23.6V42h28V23.6l3.5 2.9 3.5-4z" fill="currentColor"/><path d="M19 42V31a5 5 0 0 1 10 0v11z" fill="#fff"/><circle cx="24" cy="31" r="2" fill="currentColor"/></svg>
-      <div><b>Hauskarte BW</b><small>TEAM PLATTFORM</small></div>
-    </div>
-    <form class="search" id="search" role="search"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Adresse oder Ort suchen …" autocomplete="off" aria-label="Adresse oder Ort suchen"></form>
-    <span class="demo" id="demo" hidden>Vorschau mit Beispieldaten · nichts wird gespeichert · Person wechseln: auf deinen Namen tippen</span>
-    <button class="bell" id="bell" aria-label="Neue Nachrichten"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="n" id="bellN" hidden></span></button>
-    <div class="user" id="user"></div>
-  </header>
-  <div class="body">
-    <div class="left">
-      <section class="main card" id="main"></section>
-      <nav class="nav card" aria-label="Hauptnavigation">
-        <a href="#karte" id="nav-karte"><span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span>Karte</a>
-        <a href="#chat" id="nav-chat"><span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 4c4.7 0 8.5 3.1 8.5 7s-3.8 7-8.5 7c-1 0-2-.1-2.9-.4L4.5 20l1-3.7C4.3 15 3.5 13.1 3.5 11c0-3.9 3.8-7 8.5-7z"/></svg></span>Team-Chat<span class="n" id="navN" hidden></span></a>
-        <a href="#team" id="nav-team"><span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/></svg></span>Team</a>
-        <a href="#dashboard" id="nav-dashboard"><span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-6M10 20V9M15 20v-9M20 20V5"/></svg></span>Dashboard</a>
-      </nav>
-    </div>
-    <aside class="side" id="side" aria-label="Team-Übersicht"></aside>
+<header class="top">
+  <div class="wrap">
+    <span class="title">Hauskarte BW <small>Team</small></span>
+    <span class="me" id="me"></span>
   </div>
-</div>
+  <nav class="tabs" aria-label="Hauptnavigation">
+    <div class="wrap">
+      <a href="./" id="tab-map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Hauskarte</a>
+      <a href="#chat" id="tab-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Team-Chat<span class="badge" id="unread" hidden></span></a>
+      <a href="#team" id="tab-team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/></svg>Team</a>
+      <a href="#dashboard" id="tab-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard</a>
+    </div>
+  </nav>
+</header>
+<div class="demo-bar" id="demoBar" hidden><div class="wrap">Vorschau mit Beispieldaten. Nichts hier wird gespeichert oder an euren Server gesendet. Oben rechts kannst du wechseln, als wer du angemeldet bist.</div></div>
+<main id="main">
+  <section class="view wrap" id="view-map" hidden></section>
+  <section class="view wrap" id="view-chat" hidden></section>
+  <section class="view wrap" id="view-team" hidden></section>
+  <section class="view wrap" id="view-dashboard" hidden></section>
+  <section class="view wrap" id="view-login" hidden></section>
+</main>
 <input type="file" id="filePick" hidden>
 
 <script>
@@ -246,47 +148,39 @@ label.chk { display: flex; align-items: center; gap: 10px; font-size: 14.5px }
 'use strict';
 const $ = id => document.getElementById(id);
 const h = (tag, props = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(props)) { if (k === 'class') e.className = v; else if (k.startsWith('on')) e[k] = v; else if (v !== undefined && v !== null && v !== false) e.setAttribute(k, v === true ? '' : v); } e.append(...kids.flat().filter(x => x !== null && x !== undefined && x !== false)); return e; };
-const ico = (p, sw = 2) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', 'i'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', sw); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.innerHTML = p; return s; };
-const P = {
-  chat: '<path d="M12 4c4.7 0 8.5 3.1 8.5 7s-3.8 7-8.5 7c-1 0-2-.1-2.9-.4L4.5 20l1-3.7C4.3 15 3.5 13.1 3.5 11c0-3.9 3.8-7 8.5-7z"/>',
-  send: '<path d="M21 3 10 14"/><path d="M21 3 14 21l-4-7-7-4z"/>', clip: '<path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/>',
-  video: '<rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="m15.5 10.5 6-3.5v10l-6-3.5"/>', cal: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
-  chartUp: '<path d="M5 20v-6M10 20V9M15 20v-9M20 20V5"/>', left: '<path d="M15 5 8 12l7 7"/>', right: '<path d="m9 5 7 7-7 7"/>', plus: '<path d="M12 5v14M5 12h14"/>',
-  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/>',
-  x: '<path d="M6 6l12 12M18 6 6 18"/>', smile: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1.8 2 5.2 2 7 0M9 9.5h.01M15 9.5h.01"/>'
+const svg = path => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.innerHTML = path; return s; };
+const I = {
+  clip: '<path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/>',
+  send: '<path d="M4 12 20 4l-4 16-4-7z"/><path d="m12 13 8-9"/>',
+  back: '<path d="M15 5 8 12l7 7"/>',
+  video: '<rect x="2.5" y="6" width="13" height="12" rx="2"/><path d="m15.5 10 6-3v10l-6-3"/>',
+  file: '<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  msg: '<path d="M4 5h16v11H9l-5 4z"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>'
 };
-const COLORS = ['#1e9e5a', '#e85d75', '#3b82f6', '#22b07d', '#8b5cf6', '#f59e0b', '#0ea5a4', '#d946ef'];
-const colorOf = id => COLORS[[...String(id)].reduce((a, c) => a * 31 + c.charCodeAt(0) >>> 0, 7) % COLORS.length];
-const initials = n => String(n).split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
-const hashOf = s => [...String(s)].reduce((a, c) => a * 31 + c.charCodeAt(0) >>> 0, 7);
-const PASTEL = ['#cfe8dc', '#f7d9de', '#d6e4fb', '#fde7c7', '#e5dcfa', '#d3efee'], SKIN = ['#f2c9a8', '#e3ad8a', '#c98e69', '#f4d6bf', '#b67a55'], HAIR = ['#2b1d14', '#5a3a22', '#b98436', '#1c1c1c', '#7b3f22', '#d3ac6a'], SHIRT = ['#1e3a5f', '#2f6b4f', '#7a2e3b', '#3d3d48', '#4b5f8a', '#6b4e2e'];
-function avatarSvg(u) {
-  const k = hashOf(u.id + u.name), long = /(a|e|ie|in|y)$/i.test(u.name) && !/^(neki|tom|max)$/i.test(u.name);
-  const bg = PASTEL[k % 6], sk = SKIN[(k >> 3) % 5], hr = HAIR[(k >> 6) % 6], sh = SHIRT[(k >> 9) % 6];
-  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="${bg}"/>` +
-    (long ? `<path d="M15 40c-2-14 3-27 17-27s19 13 17 27z" fill="${hr}"/>` : '') +
-    `<path d="M10 64c2-11 11-16 22-16s20 5 22 16z" fill="${sh}"/><rect x="27" y="40" width="10" height="10" rx="4" fill="${sk}"/>` +
-    `<ellipse cx="32" cy="30" rx="11" ry="13" fill="${sk}"/>` +
-    (long ? `<path d="M20 29c0-10 6-15 12-15s12 5 12 15c-3-5-8-8-12-8s-8 3-12 8z" fill="${hr}"/>` : `<path d="M20.5 28c-.5-9 4.5-13 11.5-13s12 4 11.5 13c-1.5-4-5.5-6.5-11.5-6.5S22 24 20.5 28z" fill="${hr}"/>`) +
-    (!long && k % 3 === 0 ? `<path d="M23 34c1 8 5 11 9 11s8-3 9-11c-2 4-5 5-9 5s-7-1-9-5z" fill="${hr}" opacity=".85"/>` : '') +
-    `<circle cx="27.5" cy="31" r="1.4" fill="#2a1d16"/><circle cx="36.5" cy="31" r="1.4" fill="#2a1d16"/><path d="M28.5 36.5c2 1.6 5 1.6 7 0" stroke="#8a4b3a" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;
-}
-const av = (u, cls = '') => { const e = h('span', { class: 'av photo ' + cls, 'aria-hidden': 'true', title: u.name }); e.innerHTML = avatarSvg(u); return e; };
+const COLORS = ['#1f7a45', '#1d4ed8', '#b45309', '#7c3aed', '#be185d', '#0f766e', '#a16207', '#4d7c0f'];
+const avColor = id => COLORS[[...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0) % COLORS.length];
+const initials = n => n.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const av = u => h('span', { class: 'av', style: 'background:' + avColor(u.id) }, initials(u.name || '?'));
 const pad = n => String(n).padStart(2, '0');
 const monthKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1);
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const monthName = k => { const [y, m] = k.split('-'); return MONTHS[+m - 1] + ' ' + y; };
 const shiftMonth = (k, n) => { const [y, m] = k.split('-').map(Number); return monthKey(new Date(y, m - 1 + n, 1)); };
 const time = iso => new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-const dayLabel = iso => { const d = new Date(iso), t = new Date(), y = new Date(); y.setDate(t.getDate() - 1); if (d.toDateString() === t.toDateString()) return 'Heute'; if (d.toDateString() === y.toDateString()) return 'Gestern'; return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }); };
+const dayLabel = iso => { const d = new Date(iso), t = new Date(); const y = new Date(); y.setDate(t.getDate() - 1); if (d.toDateString() === t.toDateString()) return 'Heute'; if (d.toDateString() === y.toDateString()) return 'Gestern'; return d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }); };
 const size = b => b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1).replace('.', ',') + ' MB';
 const store = { get(k, fb) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch (e) { return fb; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 let toastT = 0;
-function toast(t, undo) { document.querySelector('.toast')?.remove(); const e = h('div', { class: 'toast', role: 'status' }, h('span', {}, t), undo ? h('button', { onclick: () => { e.remove(); undo(); } }, 'Rückgängig') : null); document.body.append(e); clearTimeout(toastT); toastT = setTimeout(() => e.remove(), 4000); }
+function toast(t) { document.querySelector('.toast')?.remove(); const e = h('div', { class: 'toast', role: 'status' }, t); document.body.append(e); clearTimeout(toastT); toastT = setTimeout(() => e.remove(), 2600); }
 const MAX_FILE = 25 * 1048576;
 
-/* ================= Datenzugriff (Echtbetrieb: Büro-Server, Vorschau: Beispieldaten) ================= */
+/* ================= Datenzugriff =================
+   Echtbetrieb: Server auf dem Büro-Laptop (gleiche Anmeldung wie die Hauskarte).
+   Vorschau: Beispieldaten im Speicher, nichts verlässt das Gerät. */
 const DEMO = !/\.ts\.net$|^localhost$|^127\.0\.0\.1$/.test(location.hostname) || /[?&]demo\b/.test(location.search);
+
 const AUTHKEY = 'hauskarte-bw-sync-auth';
 let auth = store.get(AUTHKEY, null);
 async function token() {
@@ -295,466 +189,396 @@ async function token() {
     const r = await fetch('/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: auth.refresh }) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) { if (r.status < 500) { auth = null; store.set(AUTHKEY, null); throw Object.assign(Error('Anmeldung abgelaufen.'), { auth: true }); } throw Error('Server nicht erreichbar'); }
-    auth = { ...auth, access: j.access_token, refresh: j.refresh_token, exp: Date.now() + j.expires_in * 1000 }; store.set(AUTHKEY, auth);
+    auth = { ...auth, access: j.access_token, refresh: j.refresh_token, exp: Date.now() + j.expires_in * 1000 };
+    store.set(AUTHKEY, auth);
   }
   return auth.access;
 }
 async function call(method, path, body, raw) {
   let res;
-  try { res = await fetch('/api/' + path, { method, headers: { Authorization: 'Bearer ' + await token(), ...(raw ? raw.headers : body ? { 'Content-Type': 'application/json' } : {}) }, body: raw ? raw.body : body ? JSON.stringify(body) : undefined }); }
-  catch (e) { if (e.auth) throw e; throw Error('Keine Verbindung zum Server. Ist Tailscale an?'); }
+  try {
+    res = await fetch('/api/' + path, { method, headers: { Authorization: 'Bearer ' + await token(), ...(raw ? raw.headers : body ? { 'Content-Type': 'application/json' } : {}) }, body: raw ? raw.body : body ? JSON.stringify(body) : undefined });
+  } catch (e) { if (e.auth) throw e; throw Error('Keine Verbindung zum Server. Ist Tailscale an?'); }
   if (res.status === 401) { auth.exp = 0; store.set(AUTHKEY, auth); throw Object.assign(Error('Bitte erneut anmelden.'), { auth: true }); }
   const j = await res.json().catch(() => ({}));
   if (!res.ok) throw Error(j.message || 'Fehler ' + res.status);
   return j;
 }
 const realApi = {
-  me: () => call('GET', 'me'), users: () => call('GET', 'users'), addUser: d => call('POST', 'users', d), updateUser: (id, d) => call('POST', 'users/' + encodeURIComponent(id), d),
-  channels: () => call('GET', 'channels'), messages: (ch, after) => call('GET', 'messages?channel=' + encodeURIComponent(ch) + '&after=' + (after || 0)),
-  send: async (ch, text, file) => { let attachment = null; if (file) attachment = (await call('POST', 'files', null, { headers: { 'Content-Type': file.type || 'application/octet-stream', 'X-Filename': encodeURIComponent(file.name) }, body: file })).id; return call('POST', 'messages', { channel: ch, text, attachment }); },
-  fileBlob: async f => { const r = await fetch('/api/files/' + f.id, { headers: { Authorization: 'Bearer ' + await token() } }); if (!r.ok) throw Error('Datei nicht verfügbar'); return r.blob(); },
-  contracts: m => call('GET', 'contracts?month=' + m), addContract: (note, uid) => call('POST', 'contracts', { note, uid }), delContract: id => call('POST', 'contracts/' + id + '/delete'),
-  setGoal: (month, goal) => call('POST', 'goals', { month, goal }), settings: () => call('GET', 'settings'), setSettings: s => call('POST', 'settings', s)
+  me: () => call('GET', 'me'),
+  users: () => call('GET', 'users'),
+  addUser: d => call('POST', 'users', d),
+  updateUser: (id, d) => call('POST', 'users/' + encodeURIComponent(id), d),
+  channels: () => call('GET', 'channels'),
+  messages: (ch, after) => call('GET', 'messages?channel=' + encodeURIComponent(ch) + '&after=' + (after || 0)),
+  send: async (ch, text, file) => {
+    let attachment = null;
+    if (file) attachment = (await call('POST', 'files', null, { headers: { 'Content-Type': file.type || 'application/octet-stream', 'X-Filename': encodeURIComponent(file.name) }, body: file })).id;
+    return call('POST', 'messages', { channel: ch, text, attachment });
+  },
+  fileBlob: async att => { const r = await fetch('/api/files/' + att.id, { headers: { Authorization: 'Bearer ' + await token() } }); if (!r.ok) throw Error('Datei nicht verfügbar'); return r.blob(); },
+  contracts: month => call('GET', 'contracts?month=' + month),
+  addContract: note => call('POST', 'contracts', { note }),
+  delContract: id => call('POST', 'contracts/' + id + '/delete'),
+  setGoal: (month, goal) => call('POST', 'goals', { month, goal }),
+  settings: () => call('GET', 'settings'),
+  setZoom: zoom => call('POST', 'settings', { zoom })
 };
+
+/* ---------- Vorschau-Daten ---------- */
 const demoApi = (() => {
   const now = new Date(), cur = monthKey(now), prev = shiftMonth(cur, -1);
   const users = [
-    { id: 'u1', name: 'Neki', admin: true, active: true, role: 'Teamleiter' }, { id: 'u2', name: 'Max', admin: false, active: true }, { id: 'u3', name: 'Sarah', admin: false, active: true },
-    { id: 'u4', name: 'Tom', admin: false, active: true }, { id: 'u5', name: 'Lisa', admin: false, active: true }
+    { id: 'u1', name: 'Neki', admin: true, active: true },
+    { id: 'u2', name: 'Max', admin: false, active: true },
+    { id: 'u3', name: 'Sarah', admin: false, active: true },
+    { id: 'u4', name: 'Tom', admin: false, active: true },
+    { id: 'u5', name: 'Lisa', admin: false, active: true }
   ];
   let meId = 'u1', seq = 0, cseq = 0;
-  const at = (d, hh, mm) => { const x = new Date(); x.setDate(x.getDate() - d); x.setHours(hh, mm, 0, 0); return x.toISOString(); };
-  const img = (() => { const c = document.createElement('canvas'); c.width = 640; c.height = 420; drawMap(c.getContext('2d'), 640, 420, 3); return c.toDataURL('image/jpeg', .82); })();
-  const files = { f1: { id: 'f1', name: 'Gebiet-Sued.jpg', type: 'image/jpeg', size: 61211, url: img }, f2: { id: 'f2', name: 'Preisblatt-Oktober.pdf', type: 'application/pdf', size: 182344, blob: new Blob(['%PDF-1.4'], { type: 'application/pdf' }) } };
+  const at = (daysAgo, hh, mm) => { const d = new Date(); d.setDate(d.getDate() - daysAgo); d.setHours(hh, mm, 0, 0); return d.toISOString(); };
+  const img = (() => { const c = document.createElement('canvas'); c.width = 480; c.height = 320; const g = c.getContext('2d'); g.fillStyle = '#dfe8e3'; g.fillRect(0, 0, 480, 320); g.strokeStyle = '#ffffff'; g.lineWidth = 26; g.beginPath(); g.moveTo(0, 200); g.lineTo(480, 140); g.moveTo(170, 0); g.lineTo(230, 320); g.stroke(); const hs = [[40, 40, '#22ba57'], [300, 40, '#f24747'], [40, 240, '#3b82f6'], [320, 210, '#22ba57'], [380, 40, '#86919b']]; for (const [x, y, c2] of hs) { g.fillStyle = c2; g.fillRect(x, y, 70, 60); } g.fillStyle = '#173a34'; g.font = 'bold 22px system-ui'; g.fillText('Beispielfoto: Gebiet Waiblingen-Süd', 18, 305); return c.toDataURL('image/jpeg', .8); })();
+  const pdf = new Blob(['%PDF-1.4 Beispiel'], { type: 'application/pdf' });
+  const files = { f1: { id: 'f1', name: 'Gebiet-Sued.jpg', type: 'image/jpeg', size: 48211, url: img }, f2: { id: 'f2', name: 'Preisblatt-Oktober.pdf', type: 'application/pdf', size: 182344, blob: pdf } };
   const msgs = [
-    { ch: 'team', from: 'u3', text: 'Guten Morgen zusammen! Heute wieder ein starker Start. 💪', at: at(0, 8, 12) },
-    { ch: 'team', from: 'u4', text: 'Hat jemand Erfahrung mit dem neuen Gebiet in der Gemeinde?', at: at(0, 8, 34) },
-    { ch: 'team', from: 'u4', text: 'Hier das Gebiet, grün ist schon erledigt.', file: 'f1', at: at(0, 8, 40) },
-    { ch: 'team', from: 'u1', text: 'Neues Preisblatt für Oktober:', file: 'f2', at: at(0, 8, 55) },
-    { ch: 'team', from: 'u2', text: 'Wir besprechen das gleich im Zoom-Call. Link ist oben rechts. 👍', at: at(0, 9, 15) },
+    { ch: 'team', from: 'u2', text: 'Morgen zusammen! Ich übernehme heute die Bahnhofstraße bis Hausnummer 40.', at: at(1, 8, 12) },
+    { ch: 'team', from: 'u3', text: 'Ich mache die Fronackerstraße. Wer hat noch Flyer?', at: at(1, 8, 20) },
+    { ch: 'team', from: 'u1', text: 'Flyer liegen im Büro. Teamcall heute um 17 Uhr, Link ist oben.', at: at(1, 9, 2) },
+    { ch: 'team', from: 'u4', text: 'Hier das Gebiet für morgen, grün ist schon erledigt.', file: 'f1', at: at(0, 7, 48) },
+    { ch: 'team', from: 'u1', text: 'Neues Preisblatt für Oktober:', file: 'f2', at: at(0, 7, 55) },
+    { ch: 'team', from: 'u5', text: 'Danke! Bin ab 10 Uhr in der Karlstraße.', at: at(0, 8, 3) },
     { ch: 'dm:u1-u2', from: 'u2', text: 'Kannst du mir die Unterlagen für Herrn Meier schicken?', at: at(0, 7, 30) },
     { ch: 'dm:u1-u2', from: 'u1', text: 'Mache ich gleich.', at: at(0, 7, 41) }
   ].map(m => ({ ...m, id: ++seq }));
   const contracts = [];
-  const add = (uid, n, month) => { const [y, m] = month.split('-').map(Number); for (let i = 0; i < n; i++) { const d = new Date(y, m - 1, 1 + (i * 3) % 27, 9 + (i % 8), (i * 17) % 60); if (d > now) d.setTime(now.getTime() - (i + 1) * 5400e3); contracts.push({ id: ++cseq, uid, month, at: d.toISOString(), note: i % 4 === 0 ? 'Strom, Haushalt' : '' }); } };
-  add('u2', 12, cur); add('u3', 9, cur); add('u4', 15, cur); add('u5', 7, cur); add('u1', 4, cur);
-  add('u2', 14, prev); add('u3', 11, prev); add('u4', 13, prev); add('u5', 10, prev); add('u1', 6, prev);
-  const goals = { [cur]: 80, [prev]: 60 };
-  const settings = { zoom: 'https://zoom.us/j/1234567890', zoomNote: 'Täglich 10:00 – 11:00 Uhr' };
-  const wait = v => new Promise(r => setTimeout(() => r(structuredClone(v)), 90));
+  const add = (uid, n, month, d0 = 1) => { const [y, m] = month.split('-').map(Number); for (let i = 0; i < n; i++) { const d = new Date(y, m - 1, Math.min(d0 + (i % 14), 28), 10 + (i % 7), (i * 13) % 60); if (d > now) d.setTime(now.getTime() - (i + 1) * 3600e3); contracts.push({ id: ++cseq, uid, month, at: d.toISOString(), note: i % 3 === 0 ? 'Strom, Haushalt' : '' }); } };
+  add('u2', 12, cur); add('u3', 9, cur); add('u4', 15, cur); add('u5', 7, cur);
+  add('u2', 14, prev); add('u3', 11, prev); add('u4', 13, prev); add('u5', 10, prev); add('u1', 3, prev);
+  const goals = { [cur]: 60, [prev]: 55 };
+  let zoom = 'https://zoom.us/j/1234567890';
+  const dmId = (a, b) => 'dm:' + [a, b].sort().join('-');
+  const wait = v => new Promise(r => setTimeout(() => r(structuredClone(v)), 120));
   const me = () => users.find(u => u.id === meId);
   return {
     setMe: id => { meId = id; },
-    me: () => wait(me()), users: () => wait(users),
-    addUser: d => users.some(u => u.name.toLowerCase() === d.name.toLowerCase()) ? Promise.reject(Error('„' + d.name + '“ gibt es schon.')) : (users.push({ id: 'n' + Math.random().toString(36).slice(2, 7), name: d.name, admin: !!d.admin, active: true }), wait({ ok: true })),
-    updateUser: (id, d) => { const u = users.find(x => x.id === id); if (d.active === false) u.active = false; if (d.admin !== undefined) u.admin = d.admin; return wait(u); },
-    channels: () => { const chs = {}; for (const m of msgs) if (m.ch === 'team' || m.ch.split(/[:-]/).includes(meId)) chs[m.ch] = m; return wait(Object.entries(chs).map(([id, l]) => ({ id, last: { id: l.id, from: l.from, at: l.at, text: l.text || (l.file ? '📎 ' + files[l.file].name : '') } }))); },
-    messages: (ch, after) => wait(msgs.filter(m => m.ch === ch && m.id > (after || 0)).map(m => ({ id: m.id, from: m.from, text: m.text, at: m.at, file: m.file ? { id: m.file, name: files[m.file].name, type: files[m.file].type, size: files[m.file].size } : null }))),
-    send: (ch, text, file) => { let fid = null; if (file) { fid = 'f' + (Object.keys(files).length + 1); files[fid] = { id: fid, name: file.name, type: file.type, size: file.size, blob: file }; } msgs.push({ id: ++seq, ch, from: meId, text, at: new Date().toISOString(), file: fid }); return wait({ ok: true }); },
-    fileBlob: async f => { const x = files[f.id]; return x.blob || (await fetch(x.url)).blob(); },
-    contracts: month => {
-      const list = contracts.filter(c => c.month === month), mine = list.filter(c => c.uid === meId);
-      const per = users.map(u => ({ id: u.id, name: u.name, count: list.filter(c => c.uid === u.id).length, active: u.active })).filter(u => u.active || u.count);
-      return wait({ month, total: list.length, goal: goals[month] || 0, myCount: mine.length, mine: mine.sort((a, b) => b.at.localeCompare(a.at)), users: me().admin ? per : null, first: [...contracts.map(c => c.month), cur].sort()[0] });
+    me: () => wait(me()),
+    users: () => wait(users),
+    addUser: d => { if (users.some(u => u.name.toLowerCase() === d.name.toLowerCase())) return Promise.reject(Error('„' + d.name + '“ gibt es schon.')); const u = { id: 'u' + (users.length + 1 + Math.random()).toString(36).slice(2, 7), name: d.name, admin: !!d.admin, active: true }; users.push(u); return wait(u); },
+    updateUser: (id, d) => { const u = users.find(x => x.id === id); Object.assign(u, d.active === false ? { active: false } : {}, d.admin !== undefined ? { admin: d.admin } : {}); return wait(u); },
+    channels: () => {
+      const mine = msgs.filter(m => m.ch === 'team' || m.ch.split(/[:-]/).includes(meId));
+      const chs = {};
+      for (const m of mine) chs[m.ch] = m;
+      return wait(Object.entries(chs).map(([id, last]) => ({ id, last: { text: last.text || (last.file ? files[last.file].name : ''), from: last.from, at: last.at, id: last.id } })));
     },
-    addContract: (note, uid) => { const c = { id: ++cseq, uid: uid && me().admin ? uid : meId, by: meId, month: cur, at: new Date().toISOString(), note }; contracts.push(c); return wait({ id: c.id }); },
-    delContract: id => { const i = contracts.findIndex(c => c.id === id && (c.uid === meId || c.by === meId || me().admin)); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
-    setGoal: (m, g) => { goals[m] = g; return wait({ ok: true }); },
-    settings: () => wait(settings), setSettings: s => { Object.assign(settings, s); return wait({ ok: true }); }
+    messages: (ch, after) => wait(msgs.filter(m => m.ch === ch && m.id > (after || 0)).map(m => ({ id: m.id, from: m.from, text: m.text, at: m.at, file: m.file ? files[m.file] : null }))),
+    send: (ch, text, file) => { let f = null; if (file) { f = { id: 'f' + (Object.keys(files).length + 1), name: file.name, type: file.type, size: file.size, blob: file }; files[f.id] = f; } msgs.push({ id: ++seq, ch, from: meId, text, at: new Date().toISOString(), file: f && f.id }); return wait({ ok: true }); },
+    fileBlob: async att => { const f = files[att.id]; if (f.blob) return f.blob; return (await fetch(f.url)).blob(); },
+    contracts: month => {
+      const list = contracts.filter(c => c.month === month);
+      const isAdmin = me().admin;
+      const per = users.map(u => ({ id: u.id, name: u.name, active: u.active, count: list.filter(c => c.uid === u.id).length })).filter(u => u.active || u.count);
+      return wait({ month, total: list.length, goal: goals[month] || 0, mine: list.filter(c => c.uid === meId).sort((a, b) => b.at.localeCompare(a.at)), myCount: list.filter(c => c.uid === meId).length, users: isAdmin ? per : null, months: [...new Set(contracts.map(c => c.month).concat(cur))].sort() });
+    },
+    addContract: note => { contracts.push({ id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }); return wait({ ok: true }); },
+    delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
+    setGoal: (month, goal) => { goals[month] = goal; return wait({ ok: true }); },
+    settings: () => wait({ zoom }),
+    setZoom: z => { zoom = z; return wait({ ok: true }); },
+    dmId
   };
 })();
 const api = DEMO ? demoApi : realApi;
 const dmId = (a, b) => 'dm:' + [a, b].sort().join('-');
 
-/* ---------- Beispielkarte für die Vorschau (im Echtbetrieb läuft hier die unveränderte Hauskarte) ---------- */
-function drawMap(g, w, hgt, seed = 1) {
-  let s = seed * 9301; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  g.fillStyle = '#e7ece4'; g.fillRect(0, 0, w, hgt);
-  g.fillStyle = '#cfe3c4'; g.beginPath(); g.ellipse(w * .82, hgt * .2, w * .25, hgt * .2, .3, 0, 7); g.fill();
-  g.fillStyle = '#bcd8ea'; g.beginPath(); g.moveTo(0, hgt * .78); g.bezierCurveTo(w * .3, hgt * .7, w * .5, hgt * .95, w, hgt * .82); g.lineTo(w, hgt * .9); g.bezierCurveTo(w * .5, hgt * 1.02, w * .3, hgt * .78, 0, hgt * .86); g.fill();
-  const roads = [[[0, .35], [1, .2]], [[.3, 0], [.42, 1]], [[0, .62], [1, .55]], [[.68, 0], [.6, 1]], [[.12, 0], [.05, 1]]];
-  g.lineCap = 'round';
-  for (const [a, b] of roads) { g.strokeStyle = '#ffffff'; g.lineWidth = Math.max(10, w / 70); g.beginPath(); g.moveTo(a[0] * w, a[1] * hgt); g.lineTo(b[0] * w, b[1] * hgt); g.stroke(); }
-  const cols = ['#22c55e', '#22c55e', '#ef4444', '#3b82f6', '#8b5cf6', '#a6b0b8', '#a6b0b8', '#a6b0b8', '#f59e0b'];
-  const sz = Math.max(16, w / 38);
-  for (let y = sz; y < hgt * .75; y += sz * 1.9) for (let x = sz * .6; x < w - sz; x += sz * 1.8) {
-    if (rnd() < .25) continue;
-    const near = roads.some(([a, b]) => { const ax = a[0] * w, ay = a[1] * hgt, bx = b[0] * w, by = b[1] * hgt, t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2))); return Math.hypot(x - (ax + t * (bx - ax)), y - (ay + t * (by - ay))) < sz * 1.1; });
-    if (near) continue;
-    const c = cols[Math.floor(rnd() * cols.length)];
-    g.save(); g.translate(x, y); g.rotate((rnd() - .5) * .5); g.fillStyle = c; g.globalAlpha = .82; g.fillRect(-sz / 2, -sz / 2.6, sz, sz / 1.3); g.globalAlpha = 1; g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 1; g.strokeRect(-sz / 2, -sz / 2.6, sz, sz / 1.3); g.restore();
-  }
-  g.strokeStyle = '#ff8a00'; g.lineWidth = Math.max(3, w / 220); g.beginPath();
-  const cx = w * .46, cy = hgt * .44, r = Math.min(w, hgt) * .13;
-  for (let i = 0; i <= 12; i++) { const a = i / 12 * Math.PI * 2, rr = r * (0.85 + (i % 3) * .1); g[i ? 'lineTo' : 'moveTo'](cx + Math.cos(a) * rr * 1.3, cy + Math.sin(a) * rr); }
-  g.stroke();
-}
-
-/* ================= Zustand & Grundgerüst ================= */
-let me = null, users = [], settings = {}, view = 'karte';
-const wide = window.matchMedia('(min-width: 1000px)');
+/* ================= Zustand ================= */
+let me = null, users = [], settings = { zoom: '' }, view = 'chat';
 const userById = id => users.find(u => u.id === id) || { id, name: 'Ehemalig' };
-const roleOf = u => u.role || (u.admin ? 'Administrator' : 'Mitarbeiter');
 const readKey = () => 'hauskarte-team-read-' + (me ? me.id : '');
 
 async function boot() {
-  if (DEMO) $('demo').hidden = false;
-  try { me = await api.me(); [users, settings] = await Promise.all([api.users(), api.settings()]); }
-  catch (e) { return e.auth ? login(e.message) : fail(e.message); }
-  renderUser(); route(); unread(); setInterval(unread, 30000);
+  if (DEMO) $('demoBar').hidden = false;
+  try {
+    me = await api.me();
+    [users, settings] = await Promise.all([api.users(), api.settings()]);
+  } catch (e) { if (e.auth) return showLogin(e.message); return fatal(e.message); }
+  renderMe();
+  route();
+  pollUnread();
+  setInterval(pollUnread, 30000);
 }
-function fail(t) { $('main').replaceChildren(h('div', { class: 'empty' }, h('h2', {}, 'Team-Bereich nicht erreichbar'), h('p', {}, t), h('button', { class: 'btn', onclick: () => location.reload() }, 'Erneut versuchen'))); }
-function login(msg) {
-  const name = h('input', { id: 'lgName', autocomplete: 'username' }), pin = h('input', { id: 'lgPin', type: 'password', inputmode: 'numeric', autocomplete: 'current-password' }), err = h('p', { class: 'muted', role: 'alert' }, msg || '');
-  const f = h('form', { class: 'pad', style: 'display:flex;flex-direction:column;gap:12px;max-width:380px;margin:40px auto' }, h('h2', {}, 'Anmelden'), h('p', { class: 'muted' }, 'Mit demselben Namen und derselben PIN wie in der Hauskarte.'), h('label', { class: 'f' }, 'Dein Name', name), h('label', { class: 'f' }, 'PIN', pin), err, h('button', { class: 'btn full', type: 'submit' }, 'Anmelden'));
-  f.onsubmit = async e => {
+function fatal(t) { for (const s of document.querySelectorAll('.view')) s.hidden = true; const v = $('view-login'); v.hidden = false; v.replaceChildren(h('div', { class: 'card' }, h('h2', {}, 'Team-Bereich nicht erreichbar'), h('p', { class: 'muted' }, t), h('button', { class: 'btn', onclick: () => location.reload() }, 'Erneut versuchen'))); }
+
+function renderMe() {
+  const box = $('me');
+  if (DEMO) {
+    const sel = h('select', { id: 'demoUser', 'aria-label': 'Angemeldet als' }, users.filter(u => u.active).map(u => h('option', { value: u.id, selected: u.id === me.id }, u.name + (u.admin ? ' (Admin)' : ''))));
+    sel.onchange = async () => { demoApi.setMe(sel.value); me = await api.me(); route(); pollUnread(); };
+    box.replaceChildren(h('span', {}, 'Angemeldet als'), sel);
+  } else box.replaceChildren(h('span', {}, me.name + (me.admin ? ' · Admin' : '')));
+}
+
+/* ---------- Anmeldung (nur Echtbetrieb, gleiche Zugangsdaten wie die Hauskarte) ---------- */
+function showLogin(msg) {
+  for (const s of document.querySelectorAll('.view')) s.hidden = true;
+  const v = $('view-login'); v.hidden = false;
+  const name = h('input', { id: 'lgName', autocomplete: 'username' }), pin = h('input', { id: 'lgPin', type: 'password', inputmode: 'numeric', autocomplete: 'current-password' });
+  const err = h('p', { class: 'muted', role: 'alert' }, msg || '');
+  const form = h('form', { class: 'card' }, h('h2', {}, 'Anmelden'), h('p', { class: 'muted' }, 'Mit demselben Namen und derselben PIN wie in der Hauskarte.'),
+    h('label', { class: 'f' }, 'Dein Name', name), h('label', { class: 'f' }, 'PIN', pin), err, h('button', { class: 'btn big green', type: 'submit' }, 'Anmelden'));
+  form.onsubmit = async e => {
     e.preventDefault();
     const r = await fetch('/auth/v1/token?grant_type=password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: name.value.trim(), password: pin.value }) }).catch(() => null);
     const j = r ? await r.json().catch(() => ({})) : {};
     if (!r || !r.ok) { err.textContent = !r ? 'Server nicht erreichbar. Ist Tailscale an?' : /invalid/i.test(j.error_description || '') ? 'Name oder PIN falsch.' : (j.error_description || 'Anmeldung fehlgeschlagen.'); return; }
-    auth = { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + j.expires_in * 1000, uid: j.user.id, email: '', name: j.user.user_metadata.name }; store.set(AUTHKEY, auth); boot();
+    auth = { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + j.expires_in * 1000, uid: j.user.id, email: '', name: j.user.user_metadata.name };
+    store.set(AUTHKEY, auth); boot();
   };
-  $('main').replaceChildren(f);
+  v.replaceChildren(form);
 }
-function renderUser() {
-  const box = $('user');
-  box.replaceChildren(av(me), h('span', { class: 'nm' }, h('b', {}, me.name), h('span', {}, roleOf(me))), ico('<path d="m6 9 6 6 6-6"/>', 2.4));
-  box.lastChild.classList.add('chev');
-  if (DEMO) {
-    const sel = h('select', { id: 'demoUser', 'aria-label': 'Angemeldet als (Vorschau)' }, users.filter(u => u.active).map(u => h('option', { value: u.id, selected: u.id === me.id }, u.name + (u.admin ? ' (Admin)' : ''))));
-    sel.onchange = async () => { demoApi.setMe(sel.value); me = await api.me(); renderUser(); route(); unread(); toast('Jetzt angemeldet als ' + me.name + '.'); };
-    box.append(sel);
-  }
-}
-$('bell').onclick = () => { location.hash = '#chat'; };
 
+/* ================= Navigation ================= */
 function route() {
-  const v = (location.hash || '#karte').slice(1).split('/')[0];
-  view = ['karte', 'chat', 'team', 'dashboard'].includes(v) ? v : 'karte';
-  for (const k of ['karte', 'chat', 'team', 'dashboard']) $('nav-' + k).classList.toggle('on', k === view);
-  ({ karte: viewMap, chat: viewChat, team: viewTeam, dashboard: viewDash })[view]();
-  renderSide();
+  const v = (location.hash || '#chat').slice(1).split('/')[0];
+  view = ['chat', 'team', 'dashboard'].includes(v) ? v : 'chat';
+  for (const k of ['chat', 'team', 'dashboard']) { $('tab-' + k).classList.toggle('on', k === view); $('view-' + k).hidden = k !== view; }
+  $('view-login').hidden = true; $('view-map').hidden = true;
+  if (view === 'chat') renderChat(); else if (view === 'team') renderTeam(); else renderDashboard();
 }
 window.addEventListener('hashchange', () => { if (me) route(); });
-wide.addEventListener('change', () => { if (me) renderSide(); });
-async function renderSide() {
-  if (!wide.matches) return;
-  const side = $('side');
-  const parts = [];
-  if (view !== 'chat') parts.push(await chatMini());
-  parts.push(zoomCard());
-  if (view !== 'dashboard') parts.push(await contractsCard(true));
-  side.replaceChildren(...parts);
-}
-
-/* ================= Karte =================
-   Echtbetrieb: Die bestehende Hauskarte läuft unverändert in diesem Rahmen. Die schwebenden Knöpfe lösen
-   nur die vorhandenen Funktionen der Karte aus (Standort, Häuser finden, Skizzieren …). */
-let mapMode = 'luft';
-function drawAerial(g, w, hh) {
-  let s = 77; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  g.fillStyle = '#46612f'; g.fillRect(0, 0, w, hh);
-  const tex = ['#3a5428', '#4f6d36', '#5b7a3f', '#334b23', '#64813f'];
-  for (let i = 0; i < w * hh / 90; i++) { g.fillStyle = tex[i % 5]; g.globalAlpha = .55; g.beginPath(); g.arc(rnd() * w, rnd() * hh, 2 + rnd() * 7, 0, 7); g.fill(); }
-  g.globalAlpha = 1;
-  const field = (pts, c) => { g.fillStyle = c; g.beginPath(); pts.forEach(([x, y], i) => g[i ? 'lineTo' : 'moveTo'](x * w, y * hh)); g.closePath(); g.fill(); g.save(); g.clip(); g.strokeStyle = 'rgba(255,255,255,.08)'; g.lineWidth = 2; for (let x = -hh; x < w; x += 9) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + hh * .5, hh); g.stroke(); } g.restore(); };
-  field([[0, 0], [.3, 0], [.26, .2], [0, .26]], '#7e8f4e'); field([[.78, .28], [1, .22], [1, .55], [.82, .6]], '#a49a63'); field([[.86, .62], [1, .6], [1, .85], [.9, .9]], '#6f8e45');
-  g.fillStyle = '#6f7f55'; g.beginPath(); g.ellipse(w * .42, hh * .48, w * .36, hh * .4, -.2, 0, 7); g.fill();
-  g.strokeStyle = '#2f4a4b'; g.lineWidth = Math.max(10, w / 70); g.globalAlpha = .9; g.beginPath(); g.moveTo(0, hh * .86); g.bezierCurveTo(w * .25, hh * .78, w * .45, hh * .98, w * .7, hh * .9); g.bezierCurveTo(w * .85, hh * .86, w * .95, hh * .95, w, hh * .93); g.stroke(); g.globalAlpha = 1;
-  const roads = [
-    [[0, .42], [.2, .35], [.45, .6], [.62, .55]], [[.62, .55], [.7, .45], [.78, .25], [.85, 0]], [[.62, .55], [.75, .7], [.9, .75], [1, .8]],
-    [[.32, 0], [.36, .2], [.33, .3], [.38, .42]], [[.38, .42], [.5, .4], [.56, .32], [.6, .2]], [[.1, .55], [.2, .62], [.3, .75], [.45, .78]], [[.45, .6], [.5, .7], [.48, .8], [.45, .78]]
-  ];
-  const bez = (r, t) => { const [p0, p1, p2, p3] = r, u = 1 - t; return [u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0], u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]; };
-  g.lineCap = 'round';
-  for (const [wd, col] of [[Math.max(9, w / 85), '#6b6a63'], [Math.max(6, w / 120), '#9b988f']]) for (const r of roads) { g.strokeStyle = col; g.lineWidth = wd; g.beginPath(); for (let t = 0; t <= 1.001; t += .02) { const [x, y] = bez(r, t); g[t ? 'lineTo' : 'moveTo'](x * w, y * hh); } g.stroke(); }
-  const roofs = ['#7a6f66', '#8b5e4f', '#5f646b', '#9a7b62', '#6d6a64', '#8f8a85', '#a05d48'];
-  const sz = Math.max(13, w / 46);
-  for (const r of roads) for (let t = .03; t < 1; t += .045 + rnd() * .02) {
-    const [x, y] = bez(r, t), [x2, y2] = bez(r, Math.min(1, t + .01)), ang = Math.atan2((y2 - y) * hh, (x2 - x) * w);
-    for (const side of [-1, 1]) {
-      if (rnd() < .18) continue;
-      const off = sz * (1.25 + rnd() * .3), px = x * w + Math.cos(ang + Math.PI / 2) * off * side, py = y * hh + Math.sin(ang + Math.PI / 2) * off * side;
-      if (px < 0 || py < 0 || px > w || py > hh) continue;
-      g.save(); g.translate(px, py); g.rotate(ang + (rnd() - .5) * .25);
-      const bw = sz * (.8 + rnd() * .4), bh = sz * (.65 + rnd() * .25);
-      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(-bw / 2 + 2, -bh / 2 + 3, bw, bh);
-      g.fillStyle = roofs[Math.floor(rnd() * roofs.length)]; g.fillRect(-bw / 2, -bh / 2, bw, bh);
-      g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-bw / 2, 0); g.lineTo(bw / 2, 0); g.stroke();
-      const q = rnd(); if (q < .42) { g.fillStyle = q < .24 ? 'rgba(34,197,94,.72)' : 'rgba(239,68,68,.72)'; g.fillRect(-bw / 2, -bh / 2, bw, bh); g.strokeStyle = q < .24 ? '#15803d' : '#b91c1c'; g.lineWidth = 1.5; g.strokeRect(-bw / 2, -bh / 2, bw, bh); }
-      g.restore();
-    }
-  }
-  g.strokeStyle = '#ff8a00'; g.lineWidth = Math.max(3, w / 230); g.lineJoin = 'round'; g.beginPath();
-  [[.4, .53], [.47, .5], [.53, .52], [.56, .6], [.53, .66], [.45, .66], [.4, .6]].forEach(([x, y], i) => g[i ? 'lineTo' : 'moveTo'](x * w, y * hh)); g.closePath(); g.stroke();
-}
-function viewMap() {
-  const main = $('main');
-  const btn = (cls, label, path, extra) => h('button', { class: cls, 'aria-label': label, title: label, type: 'button', ...(extra || {}) }, ico(path, 2.2));
-  const PROXY = { loc: 'loc', find: 'load', draw: 'drawButton', erase: 'eraseButton', more: 'menuButton', zin: null, zout: null };
-  let frame = null;
-  const act = (what, label) => {
-    if (DEMO) return toast(label + ': In der echten App löst das die vorhandene Funktion der Hauskarte aus.');
-    try { const d = frame.contentDocument; if (what === 'zin' || what === 'zout') d.querySelector(what === 'zin' ? '.leaflet-control-zoom-in' : '.leaflet-control-zoom-out').click(); else d.getElementById(PROXY[what]).click(); } catch (e) { toast('Karte noch nicht bereit.'); }
-  };
-  const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Kartenansicht' },
-    h('button', { class: mapMode === 'luft' ? 'on' : '', type: 'button', onclick: () => { mapMode = 'luft'; viewMap(); } }, ico('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>'), h('span', {}, 'Luftbild')),
-    h('button', { class: mapMode === 'karte' ? 'on' : '', type: 'button', onclick: () => { mapMode = 'karte'; viewMap(); } }, ico('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>'), h('span', {}, 'Karte')),
-    btn('', 'Häuser in diesem Ausschnitt finden', '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>', { onclick: () => act('find', 'Häuser finden') }));
-  const left = h('div', { class: 'mctl', style: 'left:16px;top:16px' },
-    btn('mbtn', 'Mein Standort', '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/>', { onclick: () => act('loc', 'Mein Standort') }),
-    h('div', { class: 'mgroup' }, btn('mbtn', 'Vergrößern', P.plus, { onclick: () => act('zin', 'Vergrößern') }), btn('mbtn', 'Verkleinern', '<path d="M5 12h14"/>', { onclick: () => act('zout', 'Verkleinern') })),
-    btn('mbtn', 'Filter', '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>', { onclick: () => act('more', 'Filter und Einstellungen') }));
-  const tool = (label, color, path, what, fill) => h('button', { type: 'button', onclick: () => act(what, label) }, h('span', { class: 'c', style: color ? 'background:' + color + ';color:#fff' : '' }, fill ? (() => { const s = ico(path, 2.2); return s; })() : ico(path, 2.2)), label);
-  const tools = h('div', { class: 'tools', role: 'toolbar', 'aria-label': 'Kartenwerkzeuge' },
-    tool('Folgen', '#1e9e5a', '<path d="M21 3 3 10.5l7.5 3L14 21z"/>', 'loc'),
-    tool('Häuser', '', '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>', 'find'),
-    tool('Skizzieren', '', '<path d="M4 20l4-1L19 8a2.1 2.1 0 0 0-3-3L5 16z"/>', 'draw'),
-    tool('Radierer', '', '<path d="M20 20H9L4 15a2 2 0 0 1 0-3l8-8a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-8 8"/>', 'erase'),
-    tool('Mehr', '', '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>', 'more'));
-  const box = h('div', { class: 'mapcard' });
-  if (!DEMO) {
-    frame = h('iframe', { src: './index.html', title: 'Hauskarte', allow: 'geolocation' });
-    frame.onload = () => { try { const d = frame.contentDocument; d.head.append(Object.assign(d.createElement('style'), { textContent: 'header, nav.toolbar, .leaflet-control-zoom, #backupBar { display: none !important }' })); } catch (e) {} };
-    box.append(frame, seg, left, tools);
-    main.replaceChildren(box);
-    return;
-  }
-  const c = h('canvas');
-  box.append(c, seg, left, tools, h('div', { class: 'scale' }, '100 m', h('i')));
-  main.replaceChildren(box);
-  const paint = () => { const r = box.getBoundingClientRect(); if (!r.width) return; const dpr = window.devicePixelRatio || 1; c.width = r.width * dpr; c.height = r.height * dpr; const g = c.getContext('2d'); g.scale(dpr, dpr); if (mapMode === 'luft') drawAerial(g, r.width, r.height); else drawMap(g, r.width, r.height, 2); };
-  requestAnimationFrame(paint);
-  new ResizeObserver(() => paint()).observe(box);
-}
-$('search').onsubmit = e => {
+$('tab-map').onclick = e => {
+  if (!DEMO) return;  // Echtbetrieb: Link öffnet die Hauskarte
   e.preventDefault();
-  const q = $('q').value.trim(); if (!q) return;
-  location.hash = '#karte';
-  if (DEMO) return toast('Suche nach „' + q + '“: In der echten App springt die Karte dorthin.');
-  setTimeout(() => { try { const d = document.querySelector('.mapcard iframe').contentDocument; d.getElementById('searchInput').value = q; d.getElementById('searchForm').requestSubmit(); d.getElementById('searchBox').classList.add('open'); } catch (err) {} }, 400);
+  for (const s of document.querySelectorAll('.view')) s.hidden = true;
+  for (const k of ['chat', 'team', 'dashboard']) $('tab-' + k).classList.remove('on');
+  $('tab-map').classList.add('on');
+  const v = $('view-map'); v.hidden = false;
+  v.replaceChildren(h('div', { class: 'card' }, h('h2', {}, 'Hauskarte'), h('p', {}, 'Hier öffnet sich im echten Betrieb eure bestehende Hauskarte, genau so wie heute. An der Karte selbst wird nichts verändert.'), h('p', { class: 'muted' }, 'In der Hauskarte kommt oben nur diese Leiste mit den vier Bereichen dazu, damit man zwischen Karte und Team-Bereich wechseln kann.')));
 };
 
-/* ================= Chat ================= */
-let unreadCount = 0;
-async function unread() {
+/* ================= Team-Chat ================= */
+let openCh = null, lastId = 0, chatTimer = 0, pendingFile = null;
+async function pollUnread() {
   try {
     const chs = await api.channels(), read = store.get(readKey(), {});
-    unreadCount = chs.filter(c => c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0)).length;
-    for (const id of ['bellN', 'navN']) { $(id).hidden = !unreadCount; $(id).textContent = unreadCount; }
+    const n = chs.filter(c => c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0)).length;
+    $('unread').hidden = !n; $('unread').textContent = n;
     return chs;
   } catch (e) { return []; }
 }
-const chName = id => id === 'team' ? 'Team-Chat' : userById(id.slice(3).split('-').find(x => x !== me.id)).name;
-function msgEl(m) {
-  const u = userById(m.from), mine = m.from === me.id;
-  const bub = h('div', { class: 'bub' });
-  if (m.text) bub.append(h('div', { class: 'txt' }, m.text));
-  if (m.file) bub.append(fileEl(m.file));
-  return h('div', { class: 'msg' + (mine ? ' me' : '') }, av(u, 's'), h('div', { class: 'b' }, h('div', { class: 'who' }, h('b', {}, mine ? 'Du' : u.name), h('time', { datetime: m.at }, time(m.at))), bub));
-}
-function fileEl(f) {
-  if (f.type && f.type.startsWith('image/')) {
-    const im = h('img', { alt: f.name, width: 320, height: 210, loading: 'lazy' });
-    api.fileBlob(f).then(b => { im.src = URL.createObjectURL(b); }).catch(() => { im.alt = 'Bild nicht verfügbar'; });
-    im.onclick = () => { const v = h('div', { class: 'viewer', onclick: () => v.remove() }, h('img', { src: im.src, alt: f.name })); document.body.append(v); };
-    return im;
-  }
-  const ext = (f.name.split('.').pop() || 'DATEI').slice(0, 4).toUpperCase();
-  const a = h('a', { class: 'file', href: '#' }, h('span', { class: 'fi' }, ext), h('span', {}, f.name), h('small', {}, size(f.size)));
-  a.onclick = async e => { e.preventDefault(); try { const url = URL.createObjectURL(await api.fileBlob(f)); const x = h('a', { href: url, download: f.name, target: '_blank' }); document.body.append(x); x.click(); x.remove(); } catch (err) { toast(err.message); } };
-  return a;
-}
-function composer(ch, onSent) {
-  let file = null;
-  const prev = h('div', { class: 'attach-prev', hidden: true });
-  const ta = h('textarea', { rows: 1, placeholder: 'Nachricht schreiben …', 'aria-label': 'Nachricht' });
-  ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; };
-  const clip = h('button', { class: 'ib', type: 'button', title: 'Foto, PDF oder Datei anhängen', 'aria-label': 'Foto, PDF oder Datei anhängen' }, ico(P.clip));
-  const send = h('button', { class: 'ib go', type: 'button', 'aria-label': 'Senden' }, ico(P.send));
-  const emo = h('div', { class: 'emo', hidden: true }, ['👍', '😊', '😂', '💪', '🙏', '👏', '🎉', '✅', '❤️', '🔥', '📍', '☕'].map(x => h('button', { type: 'button', 'aria-label': x, onclick: () => { ta.value += x; ta.focus(); ta.oninput(); } }, x)));
-  const smile = h('button', { class: 'ib', type: 'button', 'aria-label': 'Emoji einfügen', title: 'Emoji', onclick: () => { emo.hidden = !emo.hidden; } }, ico(P.smile));
-  clip.onclick = () => { const fp = $('filePick'); fp.value = ''; fp.onchange = () => { const f = fp.files[0]; if (!f) return; if (f.size > MAX_FILE) return toast('Die Datei ist zu groß (höchstens 25 MB).'); file = f; prev.replaceChildren(f.type.startsWith('image/') ? h('img', { src: URL.createObjectURL(f), alt: '' }) : h('span', { class: 'file' }, h('span', { class: 'fi' }, (f.name.split('.').pop() || '').slice(0, 4).toUpperCase())), h('span', { style: 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, f.name + ' · ' + size(f.size)), h('button', { class: 'ib', type: 'button', 'aria-label': 'Anhang entfernen', onclick: () => { file = null; prev.hidden = true; } }, ico(P.x))); prev.hidden = false; }; fp.click(); };
-  const go = async () => { const t = ta.value.trim(); if (!t && !file) return; send.disabled = true; try { await api.send(ch, t, file); ta.value = ''; ta.oninput(); file = null; prev.hidden = true; onSent && onSent(); } catch (e) { toast(e.message); } finally { send.disabled = false; } };
-  send.onclick = go;
-  ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer:fine)').matches) { e.preventDefault(); go(); } };
-  return h('div', {}, prev, emo, h('div', { class: 'composer' }, h('div', { class: 'box' }, smile, ta, clip), send));
-}
-async function chatMini() {
-  const list = h('div', { class: 'msgs' });
-  const card = h('section', { class: 'card mini' },
-    h('div', { class: 'hd' }, h('span', { class: 'ic', style: 'background:var(--blue)' }, ico(P.chat)), h('h2', {}, 'Team-Chat'), h('button', { class: 'link', onclick: () => { location.hash = '#team'; } }, ico(P.users), users.filter(u => u.active).length + ' Mitglieder', ico(P.right))),
-    list, composer('team', () => fill()));
-  async function fill() {
-    const ms = (await api.messages('team', 0)).slice(-4);
-    list.replaceChildren(...(ms.length ? ms.map(msgEl) : [h('div', { class: 'empty' }, 'Noch keine Nachrichten.')]));
-    list.scrollTop = list.scrollHeight;
-  }
-  await fill();
-  list.onclick = e => { if (!e.target.closest('img,a')) location.hash = '#chat/team'; };
-  return card;
-}
-let chatTimer = 0;
-async function viewChat() {
-  clearInterval(chatTimer);
-  const sub = decodeURIComponent(location.hash.split('/')[1] || '');
-  const chs = await unread(), read = store.get(readKey(), {});
-  const open = sub || (wide.matches || matchMedia('(min-width:760px)').matches ? 'team' : '');
-  const list = h('div', { class: 'list' });
+const chName = id => id === 'team' ? 'Team-Chat (alle)' : userById(id.slice(3).split('-').find(x => x !== me.id)).name;
+const zoomBtn = () => settings.zoom ? h('a', { class: 'btn zoom', href: settings.zoom, target: '_blank', rel: 'noopener' }, svg(I.video), 'Teamcall beitreten') : null;
+
+async function renderChat() {
+  const sub = (location.hash.split('/')[1] || '');
+  if (sub) return openConversation(decodeURIComponent(sub));
+  clearInterval(chatTimer); openCh = null;
+  const v = $('view-chat');
+  v.replaceChildren(h('div', { class: 'chat-list' }, h('div', { class: 'empty' }, 'Chats werden geladen …')));
+  const chs = await pollUnread(), read = store.get(readKey(), {});
+  const list = h('div', { class: 'chat-list' });
+  const zb = zoomBtn(); if (zb) { zb.classList.add('big'); list.append(zb); }
+  const team = chs.find(c => c.id === 'team') || { id: 'team' };
   const item = c => {
     const other = c.id === 'team' ? null : userById(c.id.slice(3).split('-').find(x => x !== me.id));
-    const un = c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0);
-    return h('button', { class: 'ch' + (c.id === open ? ' on' : ''), onclick: () => { location.hash = '#chat/' + encodeURIComponent(c.id); } },
-      other ? av(other) : h('span', { class: 'av', style: 'background:var(--blue)' }, ico(P.chat)),
+    const unread = c.last && c.last.from !== me.id && c.last.id > (read[c.id] || 0);
+    return h('button', { class: 'ch', onclick: () => { location.hash = '#chat/' + encodeURIComponent(c.id); } },
+      other ? av(other) : h('span', { class: 'av', style: 'background:var(--brand-2)' }, svg(I.msg)),
       h('span', { class: 't' }, h('b', {}, chName(c.id)), h('span', {}, c.last ? (c.last.from === me.id ? 'Du: ' : userById(c.last.from).name + ': ') + c.last.text : 'Noch keine Nachrichten')),
-      un ? h('span', { class: 'dot', 'aria-label': 'neu' }) : null);
+      c.last ? h('span', { class: 'muted' }, time(c.last.at)) : null, unread ? h('span', { class: 'n' }, 'neu') : null);
   };
-  list.append(h('div', { class: 'hd', style: 'padding:10px 6px' }, h('h2', {}, 'Chats')), item(chs.find(c => c.id === 'team') || { id: 'team' }), h('div', { class: 'sec' }, 'PRIVATE CHATS'));
+  list.append(item(team));
   const dms = chs.filter(c => c.id !== 'team').sort((a, b) => b.last.at.localeCompare(a.last.at));
-  if (dms.length) list.append(...dms.map(item)); else list.append(h('p', { class: 'muted', style: 'padding:6px 10px' }, 'Noch keine. Im Bereich „Team“ eine Person antippen und „Nachricht senden“ wählen.'));
-  const conv = h('div', { class: 'conv' });
-  const wrap = h('div', { class: 'chatfull' + (sub ? ' open' : '') }, list, conv);
-  $('main').replaceChildren(wrap);
-  if (!open) return;
-  const msgs = h('div', { class: 'msgs' });
-  let last = 0, lastDay = '';
-  const load = async () => {
-    const ms = await api.messages(open, last);
-    if (!last && !ms.length) msgs.replaceChildren(h('div', { class: 'empty' }, 'Noch keine Nachrichten. Schreib die erste!'));
-    if (!ms.length) return;
-    if (!last) msgs.replaceChildren();
-    for (const m of ms) { const d = dayLabel(m.at); if (d !== lastDay) { msgs.append(h('div', { class: 'day' }, d)); lastDay = d; } msgs.append(msgEl(m)); last = Math.max(last, m.id); }
-    msgs.scrollTop = msgs.scrollHeight;
-    const r = store.get(readKey(), {}); r[open] = last; store.set(readKey(), r); unread();
+  list.append(h('h2', { style: 'margin-top:8px;font-size:16px' }, 'Private Chats'));
+  if (dms.length) list.append(...dms.map(item));
+  else list.append(h('p', { class: 'muted' }, 'Noch keine privaten Chats. Im Bereich „Team“ einen Mitarbeiter antippen und „Nachricht senden“ wählen.'));
+  v.replaceChildren(list);
+}
+
+async function openConversation(ch) {
+  clearInterval(chatTimer); openCh = ch; lastId = 0; pendingFile = null;
+  const v = $('view-chat');
+  const msgs = h('div', { class: 'msgs', 'aria-live': 'polite' });
+  const ta = h('textarea', { id: 'msgText', rows: 1, placeholder: 'Nachricht schreiben …', 'aria-label': 'Nachricht' });
+  ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; };
+  const pend = h('div', { class: 'pending', hidden: true });
+  const attach = h('button', { class: 'icon-btn', type: 'button', title: 'Datei oder Foto anhängen', 'aria-label': 'Datei oder Foto anhängen' }, svg(I.clip));
+  const send = h('button', { class: 'icon-btn send', type: 'button', title: 'Senden', 'aria-label': 'Senden' }, svg(I.send));
+  attach.onclick = () => { $('filePick').value = ''; $('filePick').click(); };
+  $('filePick').onchange = () => {
+    const f = $('filePick').files[0]; if (!f) return;
+    if (f.size > MAX_FILE) { toast('Datei ist zu groß (höchstens 25 MB).'); return; }
+    pendingFile = f;
+    const rm = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Anhang entfernen', onclick: () => { pendingFile = null; pend.hidden = true; } }, svg(I.x));
+    pend.replaceChildren(f.type.startsWith('image/') ? h('img', { src: URL.createObjectURL(f), alt: '' }) : svg(I.file), h('span', { style: 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, f.name + ' · ' + size(f.size)), rm);
+    pend.hidden = false;
   };
-  conv.append(
-    h('div', { class: 'hd' }, h('a', { class: 'ib back', href: '#chat', 'aria-label': 'Zur Chat-Liste' }, ico(P.left)), h('h2', {}, chName(open)), open === 'team' && settings.zoom ? h('a', { class: 'btn zm', href: settings.zoom, target: '_blank', rel: 'noopener' }, ico(P.video), 'Teamcall') : null),
-    open === 'team' ? null : h('p', { class: 'muted', style: 'padding:0 18px 6px' }, 'Privat: nur ihr beide könnt diese Nachrichten lesen.'),
-    msgs, composer(open, load));
-  await load();
-  chatTimer = setInterval(() => { if (view === 'chat' && document.visibilityState === 'visible') load(); }, 5000);
-}
-
-/* ================= Teamcall ================= */
-function zoomCard() {
-  const has = !!settings.zoom;
-  return h('section', { class: 'card zoom' }, h('span', { class: 'ic' }, ico(P.video)),
-    h('div', { class: 't' }, h('b', {}, 'Teamcall (Zoom)'), h('span', {}, 'Unser täglicher Team-Call'), settings.zoomNote ? h('small', {}, ico(P.cal), settings.zoomNote) : null),
-    has ? h('a', { class: 'btn zm', href: settings.zoom, target: '_blank', rel: 'noopener' }, ico(P.video), 'Jetzt beitreten') : h('span', { class: 'muted' }, me.admin ? 'Link im Bereich „Team“ festlegen.' : 'Noch kein Link hinterlegt.'));
-}
-
-/* ================= Verträge ================= */
-let month = monthKey(new Date());
-async function contractsCard(compact) {
-  const d = await api.contracts(month);
-  const isCur = month === monthKey(new Date());
-  const pct = d.goal ? Math.min(100, Math.round(d.total / d.goal * 100)) : 0;
-  const card = h('section', { class: 'card' });
-  const nav = h('div', { class: 'month' },
-    h('button', { class: 'ib', 'aria-label': 'Vorheriger Monat', disabled: month <= d.first, onclick: () => { month = shiftMonth(month, -1); rerender(); } }, ico(P.left)),
-    h('button', { class: 'ib', 'aria-label': 'Nächster Monat', disabled: isCur, onclick: () => { month = shiftMonth(month, 1); rerender(); } }, ico(P.right)));
-  const bars = h('span', { class: 'ic', style: 'background:transparent;width:40px' }); bars.innerHTML = '<svg viewBox="0 0 32 32" width="34" height="34" aria-hidden="true"><rect x="3" y="17" width="6" height="12" rx="2" fill="#1e9e5a"/><rect x="13" y="11" width="6" height="18" rx="2" fill="#1e9e5a"/><rect x="23" y="4" width="6" height="25" rx="2" fill="#1e9e5a"/></svg>';
-  nav.prepend(h('button', { class: 'ib', 'aria-label': 'Monat auswählen', title: 'Frühere Monate', onclick: () => monthSheet(d.first) }, ico(P.cal)));
-  card.append(h('div', { class: 'hd' }, bars, h('h2', {}, 'Verträge im ' + monthName(month)), nav));
-  card.append(h('div', { class: 'kpis' },
-    h('div', { class: 'kpi g' }, (() => { const s = ico(P.users, 2.4); s.style.width = '34px'; s.style.height = '34px'; s.style.color = 'var(--green)'; return s; })(), h('div', {}, h('span', {}, 'Team gesamt'), h('div', { class: 'num' }, d.total, h('span', { style: 'font-size:16px;font-weight:700;margin-left:6px' }, 'Verträge')))),
-    h('div', { class: 'kpi w' }, h('span', { class: 'muted', style: 'font-weight:600;color:var(--fg)' }, 'Monatsziel'), d.goal ? h('div', { class: 'row' }, h('span', {}, h('b', {}, d.total), ' / ' + d.goal), h('span', {}, pct + ' %')) : h('span', { class: 'muted' }, 'nicht festgelegt'), h('div', { class: 'bar', role: 'progressbar', 'aria-valuenow': pct, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('i', { style: 'width:' + pct + '%' })))));
-  const people = d.users || [{ id: me.id, name: me.name, count: d.myCount }];
-  const max = Math.max(1, ...people.map(p => p.count));
-  const tiles = h('div', { class: 'tiles' });
-  for (const p of [...people].sort((a, b) => (b.id === me.id) - (a.id === me.id) || b.count - a.count)) {
-    const c = colorOf(p.id), mine = p.id === me.id;
-    tiles.append(h('div', { class: 'tile' + (mine ? ' me' : ''), style: 'background:color-mix(in srgb, ' + c + ' 9%, var(--card))' },
-      av(p), h('span', { class: 'nm' }, mine ? p.name + ' (du)' : p.name),
-      h('div', { class: 'numrow' }, h('span', { class: 'ct' }, p.count), isCur && (mine || me.admin) ? h('button', { class: 'plus', 'aria-label': 'Vertrag für ' + p.name + ' eintragen', title: 'Vertrag für ' + p.name + ' eintragen', onclick: () => addContract('', p) }, ico(P.plus, 3)) : null),
-      h('span', { class: 'lb' }, p.count === 1 ? 'Vertrag' : 'Verträge'),
-      h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(p.count / max * 100) + '%;background:' + c }))));
-  }
-  card.append(tiles);
-  if (!d.users) card.append(h('p', { class: 'muted', style: 'padding:0 18px 16px' }, 'Die Zahlen der einzelnen Kollegen sieht nur der Administrator.'));
-  if (!compact) {
-    if (isCur) {
-      const note = h('input', { id: 'cNote', placeholder: 'Notiz (optional), z. B. Kunde oder Tarif', autocomplete: 'off' });
-      card.append(h('div', { class: 'note' }, note, h('button', { class: 'btn', onclick: () => addContract(note.value.trim()) }, ico(P.plus, 3), 'Vertrag eintragen')));
+  const doSend = async () => {
+    const text = ta.value.trim();
+    if (!text && !pendingFile) return;
+    send.disabled = true;
+    try { await api.send(ch, text, pendingFile); ta.value = ''; ta.oninput(); pendingFile = null; pend.hidden = true; await loadMsgs(); }
+    catch (e) { toast(e.message); }
+    finally { send.disabled = false; }
+  };
+  send.onclick = doSend;
+  ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && window.matchMedia('(pointer:fine)').matches) { e.preventDefault(); doSend(); } };
+  const head = h('div', { class: 'conv-head' }, h('a', { class: 'icon-btn', href: '#chat', 'aria-label': 'Zurück zur Chat-Übersicht' }, svg(I.back)), h('b', {}, chName(ch)), ch === 'team' ? zoomBtn() : null);
+  const note = ch === 'team' ? null : h('p', { class: 'muted', style: 'margin:8px 0 0' }, 'Privater Chat: nur ihr beide könnt diese Nachrichten lesen.');
+  v.replaceChildren(h('div', { class: 'conv' }, head, note, msgs, h('div', {}, pend, h('div', { class: 'composer' }, attach, ta, send))));
+  let lastDay = '';
+  async function loadMsgs() {
+    let list;
+    try { list = await api.messages(ch, lastId); } catch (e) { if (!lastId) msgs.replaceChildren(h('div', { class: 'empty' }, e.message)); return; }
+    if (!lastId && !list.length) msgs.replaceChildren(h('div', { class: 'empty' }, 'Noch keine Nachrichten. Schreib die erste!'));
+    if (!list.length) return;
+    if (!lastId) msgs.replaceChildren();
+    const atBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 80;
+    for (const m of list) {
+      const d = dayLabel(m.at); if (d !== lastDay) { msgs.append(h('div', { class: 'day' }, d)); lastDay = d; }
+      const mine = m.from === me.id;
+      const b = h('div', { class: 'm' + (mine ? ' me' : '') }, h('div', { class: 'who' }, h('span', {}, mine ? 'Du' : userById(m.from).name), h('time', { datetime: m.at }, time(m.at))));
+      if (m.file) b.append(fileView(m.file));
+      if (m.text) b.append(h('div', { class: 'txt' }, m.text));
+      msgs.append(b);
+      lastId = Math.max(lastId, m.id);
     }
-    if (me.admin) {
-      const g = h('input', { id: 'goal', type: 'number', min: 0, inputmode: 'numeric', value: d.goal || '', placeholder: 'z. B. 80', style: 'max-width:140px' });
-      card.append(h('div', { class: 'note' }, h('label', { class: 'f', style: 'flex:1' }, 'Monatsziel für ' + monthName(month), g), h('button', { class: 'btn ghost', style: 'align-self:flex-end', onclick: async () => { const v = Math.max(0, parseInt(g.value, 10) || 0); await api.setGoal(month, v); toast(v ? 'Monatsziel: ' + v + ' Verträge.' : 'Monatsziel entfernt.'); rerender(); } }, 'Ziel speichern')));
-    }
-    if (d.mine.length) card.append(h('div', { class: 'sec', style: 'padding:6px 18px' }, 'MEINE EINTRÄGE'), h('ul', { class: 'mine' }, d.mine.slice(0, 20).map(c => h('li', {},
-      h('span', {}, new Date(c.at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ', ' + time(c.at) + (c.note ? ' · ' + c.note : '')),
-      isCur ? h('button', { class: 'btn ghost', style: 'padding:7px 12px', onclick: async () => { await api.delContract(c.id); toast('Eintrag entfernt.'); rerender(); } }, 'Entfernen') : null))));
+    const read = store.get(readKey(), {}); read[ch] = lastId; store.set(readKey(), read);
+    if (atBottom || list.length) msgs.scrollTop = msgs.scrollHeight;
+    pollUnread();
   }
-  return card;
+  await loadMsgs();
+  chatTimer = setInterval(() => { if (openCh === ch && document.visibilityState === 'visible') loadMsgs(); }, 5000);
 }
-async function addContract(note, person) {
-  const who = person && person.id !== me.id ? person : null;
-  try {
-    const r = await api.addContract(note, who ? who.id : undefined);
-    toast('Vertrag für ' + (who ? who.name : me.name) + ' gezählt.', async () => { await api.delContract(r.id); toast('Rückgängig gemacht.'); rerender(); });
-    rerender();
-  } catch (e) { toast(e.message); }
-}
-function rerender() { if (view === 'dashboard') viewDash(); renderSide(); }
-async function monthSheet(first) {
-  let s; const list = h('div', { style: 'display:flex;flex-direction:column;gap:6px' });
-  for (let m = monthKey(new Date()); m >= first; m = shiftMonth(m, -1)) {
-    const d = await api.contracts(m);
-    list.append(h('button', { class: 'person', onclick: () => { month = m; s.remove(); rerender(); } }, h('span', { class: 't' }, h('b', {}, monthName(m)), h('span', {}, d.goal ? d.total + ' von ' + d.goal + ' Verträgen' : d.total + ' Verträge')), m === month ? h('span', { class: 'pill' }, 'angezeigt') : null));
+function fileView(f) {
+  if (f.type && f.type.startsWith('image/')) {
+    const im = h('img', { alt: f.name, loading: 'lazy', width: 480, height: 320 });
+    api.fileBlob(f).then(b => { im.src = URL.createObjectURL(b); }).catch(() => { im.alt = 'Bild nicht verfügbar'; });
+    im.onclick = () => { const vw = h('div', { class: 'viewer', onclick: () => vw.remove() }, h('img', { src: im.src, alt: f.name })); document.body.append(vw); };
+    return im;
   }
-  s = sheet(h('h3', {}, 'Monat auswählen'), h('p', { class: 'muted' }, 'Vergangene Monate bleiben dauerhaft gespeichert.'), list, h('button', { class: 'btn ghost', onclick: () => s.remove() }, 'Schließen'));
-}
-async function viewDash() {
-  const main = $('main');
-  const sc = h('div', { class: 'scroll', style: 'display:flex;flex-direction:column;gap:12px;padding:12px' });
-  const card = await contractsCard(false);
-  card.style.boxShadow = 'none';
-  sc.append(card);
-  if (!wide.matches) sc.append(zoomCard());
-  main.replaceChildren(sc);
+  const a = h('a', { class: 'file', href: '#', title: 'Öffnen' }, svg(I.file), h('span', {}, f.name), h('small', {}, size(f.size)));
+  a.onclick = async e => { e.preventDefault(); try { const b = await api.fileBlob(f); const url = URL.createObjectURL(b); const x = h('a', { href: url, download: f.name, target: '_blank' }); document.body.append(x); x.click(); x.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); } catch (err) { toast(err.message); } };
+  return a;
 }
 
 /* ================= Team ================= */
-async function viewTeam() {
+async function renderTeam() {
+  const v = $('view-team');
   users = await api.users();
-  const d = await api.contracts(monthKey(new Date())).catch(() => null);
-  const cnt = id => d && d.users ? (d.users.find(u => u.id === id) || {}).count || 0 : null;
-  const act = users.filter(u => u.active).sort((a, b) => a.name.localeCompare(b.name, 'de'));
-  const sc = h('div', { class: 'scroll' });
-  sc.append(h('div', { class: 'hd' }, h('span', { class: 'ic', style: 'background:var(--green)' }, ico(P.users)), h('h2', {}, 'Team'), me.admin ? h('button', { class: 'btn', onclick: addUser }, ico(P.plus, 3), 'Mitarbeiter') : null),
-    h('p', { class: 'muted', style: 'padding:0 18px 10px' }, act.length + ' Mitglieder · Person antippen für Nachricht' + (me.admin ? ' oder Verwaltung' : '')),
-    h('div', { class: 'people' }, act.map(u => h('button', { class: 'person', onclick: () => person(u, cnt(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name + (u.id === me.id ? ' (du)' : '')), h('span', {}, cnt(u.id) !== null ? cnt(u.id) + ' Verträge im ' + MONTHS[new Date().getMonth()] : roleOf(u))), u.admin ? h('span', { class: 'pill' }, 'Admin') : null))));
-  if (me.admin) {
-    const z = h('input', { id: 'zoomUrl', type: 'url', value: settings.zoom || '', placeholder: 'https://zoom.us/j/…' }), zn = h('input', { id: 'zoomNote', value: settings.zoomNote || '', placeholder: 'z. B. Täglich 10:00 – 11:00 Uhr' });
-    sc.append(h('div', { class: 'pad', style: 'display:flex;flex-direction:column;gap:10px' }, h('div', { class: 'sec', style: 'padding:6px 0' }, 'ZOOM-TEAMCALL'), h('label', { class: 'f' }, 'Zoom-Link', z), h('label', { class: 'f' }, 'Hinweis (optional)', zn),
-      h('button', { class: 'btn', style: 'align-self:flex-start', onclick: async () => { const u = z.value.trim(); if (u && !/^https:\/\//.test(u)) return toast('Bitte einen Link mit https:// eingeben.'); await api.setSettings({ zoom: u, zoomNote: zn.value.trim() }); settings = await api.settings(); toast('Teamcall gespeichert.'); renderSide(); } }, 'Speichern'),
-      h('p', { class: 'muted' }, 'Neue Tablets brauchen zusätzlich die Tailscale-App mit eurem gemeinsamen Konto. Ohne Tailscale ist nichts von außen erreichbar.')));
-  }
-  $('main').replaceChildren(sc);
+  const month = monthKey(new Date());
+  const cs = await api.contracts(month).catch(() => null);
+  const countOf = id => cs && cs.users ? (cs.users.find(u => u.id === id) || {}).count || 0 : null;
+  const list = users.filter(u => u.active).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  v.replaceChildren(
+    h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Team · ' + list.length + ' Mitarbeiter'), me.admin ? h('button', { class: 'btn green', onclick: addUserSheet }, svg(I.plus), 'Mitarbeiter') : null),
+    ...list.map(u => h('button', { class: 'person', onclick: () => personSheet(u, countOf(u.id)) }, av(u),
+      h('span', { class: 't' }, h('b', {}, u.name + (u.id === me.id ? ' (du)' : '')), h('div', { class: 'muted' }, countOf(u.id) !== null ? countOf(u.id) + ' Verträge im ' + MONTHS[new Date().getMonth()] : 'Mitarbeiter')),
+      u.admin ? h('span', { class: 'pill' }, 'Admin') : null)),
+    me.admin ? zoomCard() : null,
+    me.admin ? h('p', { class: 'muted' }, 'Neue Tablets brauchen zusätzlich die Tailscale-App, angemeldet mit eurem gemeinsamen Konto. Ohne Tailscale ist die Hauskarte von außen nicht erreichbar.') : null
+  );
 }
-function sheet(...kids) { const p = h('div', { class: 'panel', role: 'dialog', 'aria-modal': 'true' }, ...kids); const s = h('div', { class: 'sheet', onclick: e => { if (e.target === s) s.remove(); } }, p); document.body.append(s); return s; }
-function person(u, count) {
-  let s; const close = () => s.remove();
-  const box = [h('div', { style: 'display:flex;align-items:center;gap:12px' }, av(u), h('div', { style: 'flex:1;min-width:0' }, h('h3', {}, u.name), h('p', { class: 'muted' }, roleOf(u) + (count !== null ? ' · ' + count + ' Verträge diesen Monat' : ''))), h('button', { class: 'ib', 'aria-label': 'Schließen', onclick: close }, ico(P.x)))];
-  if (u.id !== me.id) box.push(h('button', { class: 'btn full', onclick: () => { close(); location.hash = '#chat/' + encodeURIComponent(dmId(me.id, u.id)); } }, ico(P.chat), 'Nachricht senden'));
+function sheet(...content) {
+  const panel = h('div', { class: 'panel', role: 'dialog', 'aria-modal': 'true' }, ...content);
+  const s = h('div', { class: 'sheet', onclick: e => { if (e.target === s) s.remove(); } }, panel);
+  document.body.append(s);
+  panel.querySelector('input')?.focus();
+  return s;
+}
+function personSheet(u, count) {
+  let s;
+  const close = () => s.remove();
+  const actions = h('div', { class: 'row' });
+  if (u.id !== me.id) actions.append(h('button', { class: 'btn big green', onclick: () => { close(); location.hash = '#chat/' + encodeURIComponent(dmId(me.id, u.id)); } }, svg(I.msg), 'Nachricht senden'));
+  const admin = h('div', { class: 'card' });
   if (me.admin) {
     const pin = h('input', { id: 'newPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' });
-    box.push(h('div', { class: 'sec', style: 'padding:8px 0 0' }, 'VERWALTEN'), h('div', { style: 'display:flex;gap:8px;align-items:flex-end' }, h('label', { class: 'f', style: 'flex:1' }, 'Neue PIN', pin), h('button', { class: 'btn ghost', onclick: async () => { if (pin.value.length < 4) return toast('Die PIN braucht mindestens 4 Ziffern.'); await api.updateUser(u.id, { pin: pin.value }); toast('PIN für ' + u.name + ' geändert.'); close(); } }, 'Speichern')));
+    admin.append(h('b', {}, 'Verwalten'),
+      h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Neue PIN', pin), h('button', { class: 'btn', onclick: async () => { if (pin.value.length < 4) return toast('Die PIN braucht mindestens 4 Ziffern.'); try { await api.updateUser(u.id, { pin: pin.value }); toast('PIN für ' + u.name + ' geändert.'); close(); } catch (e) { toast(e.message); } } }, 'PIN speichern')));
     if (u.id !== me.id) {
-      const conf = h('div', { class: 'confirm', hidden: true }, h('span', {}, u.name + ' wirklich entfernen? Der Zugang wird gesperrt. Nachrichten, Hausmarkierungen und Vertragszahlen bleiben erhalten.'), h('div', { style: 'display:flex;gap:8px' }, h('button', { class: 'btn red', onclick: async () => { await api.updateUser(u.id, { active: false }); toast(u.name + ' wurde entfernt.'); close(); route(); } }, 'Ja, entfernen'), h('button', { class: 'btn ghost', onclick: () => { conf.hidden = true; } }, 'Abbrechen')));
-      box.push(h('button', { class: 'btn ghost', onclick: async () => { await api.updateUser(u.id, { admin: !u.admin }); toast(u.admin ? u.name + ' ist kein Admin mehr.' : u.name + ' ist jetzt Admin.'); close(); route(); } }, u.admin ? 'Admin-Rechte entziehen' : 'Zum Admin machen'),
-        h('button', { class: 'btn ghost', style: 'color:var(--red)', onclick: () => { conf.hidden = false; } }, 'Aus dem Team entfernen'), conf);
+      admin.append(h('button', { class: 'btn ghost', onclick: async () => { await api.updateUser(u.id, { admin: !u.admin }); toast(u.name + (u.admin ? ' ist kein Admin mehr.' : ' ist jetzt Admin.')); close(); renderTeam(); } }, u.admin ? 'Admin-Rechte entziehen' : 'Zum Admin machen'));
+      const conf = h('div', { class: 'confirm', hidden: true }, h('span', {}, u.name + ' wirklich aus dem Team entfernen? Der Zugang wird gesperrt. Bisherige Nachrichten, Hausmarkierungen und Vertragszahlen bleiben erhalten.'),
+        h('div', { class: 'row' }, h('button', { class: 'btn danger', onclick: async () => { await api.updateUser(u.id, { active: false }); toast(u.name + ' wurde entfernt.'); close(); renderTeam(); } }, 'Ja, entfernen'), h('button', { class: 'btn ghost', onclick: () => { conf.hidden = true; } }, 'Abbrechen')));
+      admin.append(h('button', { class: 'btn ghost', style: 'color:var(--danger)', onclick: () => { conf.hidden = false; } }, 'Aus dem Team entfernen'), conf);
     }
   }
-  s = sheet(...box);
+  s = sheet(h('div', { class: 'row' }, av(u), h('div', { style: 'flex:1' }, h('h2', {}, u.name), h('div', { class: 'muted' }, (u.admin ? 'Administrator' : 'Mitarbeiter') + (count !== null ? ' · ' + count + ' Verträge diesen Monat' : ''))), h('button', { class: 'icon-btn', 'aria-label': 'Schließen', onclick: () => close() }, svg(I.x))),
+    actions.childNodes.length ? actions : null, me.admin ? admin : null);
 }
-function addUser() {
+function addUserSheet() {
   let s;
-  const n = h('input', { id: 'addName', autocomplete: 'off', placeholder: 'z. B. Max Müller' }), p = h('input', { id: 'addPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' }), a = h('input', { id: 'addAdmin', type: 'checkbox' }), err = h('p', { class: 'muted', role: 'alert' });
-  const f = h('form', { style: 'display:flex;flex-direction:column;gap:12px' }, h('h3', {}, 'Mitarbeiter hinzufügen'), h('label', { class: 'f' }, 'Name (damit meldet er sich an)', n), h('label', { class: 'f' }, 'PIN', p), h('label', { class: 'chk' }, a, 'Administrator (verwaltet das Team, sieht alle Zahlen)'), err,
-    h('div', { style: 'display:flex;gap:8px' }, h('button', { class: 'btn', type: 'submit' }, 'Hinzufügen'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen')));
-  f.onsubmit = async e => { e.preventDefault(); if (!n.value.trim()) return err.textContent = 'Bitte einen Namen eingeben.'; if (p.value.length < 4) return err.textContent = 'Die PIN braucht mindestens 4 Ziffern.'; try { await api.addUser({ name: n.value.trim(), pin: p.value, admin: a.checked }); s.remove(); toast(n.value.trim() + ' wurde hinzugefügt.'); route(); } catch (x) { err.textContent = x.message; } };
-  s = sheet(f);
+  const name = h('input', { id: 'addName', autocomplete: 'off', placeholder: 'z. B. Max Müller' });
+  const pin = h('input', { id: 'addPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' });
+  const adm = h('input', { id: 'addAdmin', type: 'checkbox' });
+  const err = h('p', { class: 'muted', role: 'alert' });
+  const form = h('form', { style: 'display:flex;flex-direction:column;gap:10px' }, h('h2', {}, 'Mitarbeiter hinzufügen'),
+    h('label', { class: 'f' }, 'Name (damit meldet er sich an)', name), h('label', { class: 'f' }, 'PIN', pin), h('label', { class: 'chk' }, adm, 'Administrator (darf Mitarbeiter verwalten und alle Zahlen sehen)'),
+    err, h('div', { class: 'row' }, h('button', { class: 'btn green', type: 'submit' }, 'Hinzufügen'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen')),
+    h('p', { class: 'muted' }, 'Das Tablet braucht zusätzlich die Tailscale-App mit eurem gemeinsamen Konto.'));
+  form.onsubmit = async e => {
+    e.preventDefault();
+    if (!name.value.trim()) return err.textContent = 'Bitte einen Namen eingeben.';
+    if (pin.value.length < 4) return err.textContent = 'Die PIN braucht mindestens 4 Ziffern.';
+    try { await api.addUser({ name: name.value.trim(), pin: pin.value, admin: adm.checked }); s.remove(); toast(name.value.trim() + ' wurde hinzugefügt.'); renderTeam(); }
+    catch (x) { err.textContent = x.message; }
+  };
+  s = sheet(form);
+}
+function zoomCard() {
+  const inp = h('input', { id: 'zoomLink', type: 'url', value: settings.zoom || '', placeholder: 'https://zoom.us/j/…' });
+  return h('div', { class: 'card' }, h('b', {}, 'Zoom-Teamcall'), h('p', { class: 'muted', style: 'margin:0' }, 'Dieser Link öffnet sich bei allen über „Teamcall beitreten“ im Team-Chat und im Dashboard.'),
+    h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Zoom-Link', inp), h('button', { class: 'btn', onclick: async () => { const z = inp.value.trim(); if (z && !/^https:\/\//.test(z)) return toast('Bitte einen Link beginnend mit https:// eingeben.'); await api.setZoom(z); settings.zoom = z; toast(z ? 'Zoom-Link gespeichert.' : 'Zoom-Link entfernt.'); } }, 'Speichern')));
+}
+
+/* ================= Dashboard ================= */
+let dashMonth = monthKey(new Date());
+async function renderDashboard() {
+  const v = $('view-dashboard');
+  const cur = monthKey(new Date());
+  let d;
+  try { d = await api.contracts(dashMonth); } catch (e) { v.replaceChildren(h('div', { class: 'empty' }, e.message)); return; }
+  const isCur = dashMonth === cur;
+  const first = d.months[0] || cur;
+  const nav = h('div', { class: 'month' },
+    h('button', { class: 'icon-btn', 'aria-label': 'Vorheriger Monat', disabled: dashMonth <= first, onclick: () => { dashMonth = shiftMonth(dashMonth, -1); renderDashboard(); } }, svg(I.back)),
+    h('b', {}, monthName(dashMonth) + (isCur ? '' : ' (abgeschlossen)')),
+    h('button', { class: 'icon-btn', 'aria-label': 'Nächster Monat', disabled: isCur, onclick: () => { dashMonth = shiftMonth(dashMonth, 1); renderDashboard(); } }, (() => { const s = svg(I.back); s.style.transform = 'scaleX(-1)'; return s; })()));
+  const pct = d.goal ? Math.min(100, Math.round(d.total / d.goal * 100)) : 0;
+  const totalCard = h('div', { class: 'card' },
+    h('span', { class: 'muted' }, 'Team gesamt'),
+    h('div', { class: 'total' }, h('span', { class: 'big' }, d.total), h('span', {}, d.goal ? 'von ' + d.goal + ' Verträgen' : 'Verträge')),
+    d.goal ? h('div', { class: 'bar', role: 'progressbar', 'aria-valuenow': pct, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('i', { style: 'width:' + pct + '%' })) : null,
+    d.goal ? h('span', { class: 'muted' }, pct + ' % vom Monatsziel' + (isCur && d.total < d.goal ? ' · noch ' + (d.goal - d.total) : '')) : null,
+    me.admin ? goalEditor(d) : null);
+  const myCard = h('div', { class: 'card' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, 'Meine Verträge'), h('span', { class: 'total' }, h('span', { class: 'big', style: 'font-size:30px' }, d.myCount))));
+  if (isCur) {
+    const note = h('input', { id: 'contractNote', placeholder: 'Notiz (optional), z. B. Kunde oder Tarif', autocomplete: 'off' });
+    const add = h('button', { class: 'btn big green' }, svg(I.plus), 'Vertrag eintragen');
+    add.onclick = async () => { add.disabled = true; try { await api.addContract(note.value.trim()); toast('Vertrag für ' + me.name + ' gezählt.'); renderDashboard(); } catch (e) { toast(e.message); add.disabled = false; } };
+    myCard.append(h('label', { class: 'f' }, 'Notiz', note), add, h('p', { class: 'muted', style: 'margin:0' }, 'Wird automatisch dir zugeordnet.'));
+  }
+  if (d.mine.length) {
+    const ul = h('ul', { class: 'mine' }, d.mine.slice(0, 15).map(c => h('li', {}, h('span', {}, new Date(c.at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + time(c.at) + (c.note ? ' · ' + c.note : '')),
+      isCur ? h('button', { class: 'btn ghost', style: 'padding:6px 10px', onclick: async () => { await api.delContract(c.id); toast('Eintrag zurückgenommen.'); renderDashboard(); } }, 'Rückgängig') : null)));
+    myCard.append(ul);
+  }
+  let rank = null;
+  if (d.users) {
+    const max = Math.max(1, ...d.users.map(u => u.count));
+    const grid = h('div', { class: 'rank' });
+    for (const u of [...d.users].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'de'))) {
+      grid.append(av(u), h('span', { class: 'nm' }, u.name), h('span', { class: 'ct' }, u.count), h('span'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(u.count / max * 100) + '%' })));
+    }
+    rank = h('div', { class: 'card' }, h('b', {}, 'Alle Mitarbeiter'), h('span', { class: 'muted' }, 'Nur für Administratoren sichtbar'), grid);
+  }
+  const zb = zoomBtn(); if (zb) zb.classList.add('big');
+  v.replaceChildren(nav, totalCard, myCard, rank, zb);
+}
+function goalEditor(d) {
+  const inp = h('input', { id: 'goal', type: 'number', min: 0, step: 1, value: d.goal || '', placeholder: 'z. B. 60' });
+  return h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Monatsziel für ' + monthName(d.month), inp),
+    h('button', { class: 'btn ghost', onclick: async () => { const g = Math.max(0, parseInt(inp.value, 10) || 0); await api.setGoal(d.month, g); toast(g ? 'Monatsziel: ' + g + ' Verträge.' : 'Monatsziel entfernt.'); renderDashboard(); } }, 'Speichern'));
 }
 
 boot();
