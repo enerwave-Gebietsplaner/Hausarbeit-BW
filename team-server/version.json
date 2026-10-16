@@ -1,6 +1,6 @@
 {
- "version": 12,
- "created": "2026-10-16T10:33:26.803Z",
+ "version": 13,
+ "created": "2026-10-16T11:44:45.877Z",
  "files": {
   "server.js": "c476be080643ff2029f0a1a86356b7a08b6e896ccf90c052760fcd7f9089e4a7",
   "team.js": "6173893d458bf2806f7bb4b4e991d4ef6b286c2929d8b1485efe77ce439903fd",
@@ -8,7 +8,7 @@
   "mitarbeiter.ps1": "67d4a497216d2ffba5f5c857941fb47443a01a354db12dd7afacd8eb86f35fdb",
   "Mitarbeiter verwalten.bat": "ce672017ca6eb6a372cdf15fff098b599fcb8faa1429b4a1ac2f607b78a8d65e",
   "ANLEITUNG.txt": "58dc94626f5b606ef2c274679740935acc6aa54bd1970f70c733366cbd28d40e",
-  "app/index.html": "6aca5a76756584bbdf27b975e46d3d49bbdbe3bac45a15489641a41dc68a5b81",
+  "app/index.html": "9e5037a371384fc3b6d806b781b16dc2bd2863c21b2c228f86b313fa3c97476d",
   "app/team.html": "947d8c2f1de4ddd9dc2ba4ed013a9cd0c287ac6ba63dc820bf50619fb2db7f84",
   "app/motivation.js": "c67ade4e896659fa9f0a3cfc1dec65b6df3d1b7e2513d9da5d7897fe9d6780ed",
   "app/sw.js": "c0c5b8ce1a54b5e406384cc7766bbbcda0c1ce4f95f929ccf912a0cc27b5155e",

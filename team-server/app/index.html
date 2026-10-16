@@ -1058,7 +1058,8 @@ const map = L.map('map', { maxZoom: 21, minZoom: 8, maxBounds: bw.pad(0.15), ren
 if (settings.view && bw.pad(0.15).contains(settings.view.c)) map.setView(settings.view.c, settings.view.z);
 else map.setView([48.832, 9.315], 15);
 
-map.createPane('sketch').style.zIndex = 450;
+// Skizzen-Ebene liegt im drehbaren Teil der Karte, damit sie sich mit Straßen und Häusern mitdreht
+map.createPane('sketch', map.getPane('rotatePane') || undefined).style.zIndex = 450;
 map.getPane('sketch').style.pointerEvents = 'none';
 const sketchRenderer = L.canvas({ pane: 'sketch', padding: 0.5 });
 map.createPane('pos').style.zIndex = 460;
