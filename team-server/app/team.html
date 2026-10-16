@@ -142,6 +142,19 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .rank .bar { grid-column: 2 / 4; height: 6px; margin-top: -4px }
 .mine li { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line) }
 .mine { list-style: none; margin: 0; padding: 0 }
+.dtabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px }
+.dtabs button { border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 700; padding: 10px; border-radius: 9px; cursor: pointer }
+.dtabs button.on { background: var(--brand-2); color: #fff }
+.proj { text-align: left; font: inherit; color: inherit; cursor: pointer; width: 100% }
+.proj .ph { display: flex; align-items: center; gap: 8px; justify-content: space-between }
+.proj .ph b { font-size: 17px }
+.proj.off { opacity: .6 }
+.pill.on { background: rgba(10,128,60,.14); color: var(--accent-ink) }
+.avs { display: flex; flex-wrap: wrap; gap: 4px } .avs .av { width: 30px; height: 30px; font-size: 12px }
+.pstats { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px } .pstats strong { font-size: 20px; font-variant-numeric: tabular-nums }
+.mlist { display: flex; flex-direction: column; max-height: 46vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px }
+.mlist label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); cursor: pointer } .mlist label:first-child { border-top: 0 }
+.mlist input { width: 20px; height: 20px; accent-color: var(--accent-ink) }
 .daygoal { cursor: pointer; text-align: left; font: inherit; color: inherit; width: 100% }
 .daygoal .dg-top { display: flex; justify-content: space-between; align-items: center; gap: 10px }
 .daygoal .dg-num { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1 }
@@ -298,6 +311,10 @@ const realApi = {
   addContract: note => call('POST', 'contracts', { note }),
   delContract: id => call('POST', 'contracts/' + id + '/delete'),
   setDayGoal: goal => call('POST', 'daygoal', { goal }),
+  projects: () => call('GET', 'projects'),
+  addProject: d => call('POST', 'projects', d),
+  updateProject: (id, d) => call('POST', 'projects/' + id, d),
+  delProject: id => call('POST', 'projects/' + id + '/delete'),
   setGoal: (month, goal) => call('POST', 'goals', { month, goal }),
   settings: () => call('GET', 'settings'),
   setZoom: zoom => call('POST', 'settings', { zoom }),
@@ -365,6 +382,7 @@ const demoApi = (() => {
     },
     addContract: note => { contracts.push({ id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }); return wait({ ok: true }); },
     setDayGoal: () => wait({ ok: true }),
+    projects: () => wait([]), addProject: () => wait({}), updateProject: () => wait({}), delProject: () => wait({ ok: true }),
     delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
     setGoal: (month, goal) => { goals[month] = goal; return wait({ ok: true }); },
     settings: () => wait({ zoom, call: demoCall }),
@@ -797,7 +815,13 @@ function accessSheet(name, pin, changed) {
 
 /* ================= Dashboard ================= */
 let dashMonth = monthKey(new Date()), prevMine = null;
-async function renderDashboard() {
+let dashTab = store.get('hauskarte-dash-tab', 'overview') === 'projects' ? 'projects' : 'overview';
+function dashTabs() {
+  const b = (id, label) => h('button', { type: 'button', class: dashTab === id ? 'on' : '', id: 'dtab-' + id, onclick: () => { dashTab = id; store.set('hauskarte-dash-tab', id); renderDashboard(); } }, label);
+  return h('div', { class: 'dtabs', role: 'tablist' }, b('overview', 'Übersicht'), b('projects', 'Projekte'));
+}
+function renderDashboard() { return dashTab === 'projects' ? renderProjects() : renderOverview(); }
+async function renderOverview() {
   const v = $('view-dashboard');
   settings = await api.settings().catch(() => settings);
   const cur = monthKey(new Date());
@@ -868,9 +892,73 @@ async function renderDashboard() {
           h('span', { class: 'l' }, 'Monat: ', h('strong', {}, String(u.month)), ' ' + (u.month === 1 ? 'Vertrag' : 'Verträge')));
       })));
   }
-  put(v, nav, myCard, goalCard, teamToday, rank, callCard());
+  put(v, dashTabs(), nav, myCard, goalCard, teamToday, rank, callCard());
   // Dashboard gesehen: Hinweis auf neue Verträge der Kollegen zurücksetzen
   if (notes && notes.dash) { await api.markRead('dash').catch(() => {}); notes.dash = 0; showNotes(notes); }
+}
+/* ---------- Projekte ---------- */
+async function renderProjects() {
+  const v = $('view-dashboard');
+  let list, d;
+  try { [list, d, users] = await Promise.all([api.projects(), api.contracts(monthKey(new Date())).catch(() => null), api.users().catch(() => users)]); }
+  catch (e) { put(v, dashTabs(), h('div', { class: 'empty' }, e.message)); return; }
+  const stat = id => (d && d.today ? d.today.team.find(u => u.id === id) : null) || { today: 0, goal: 0, month: 0 };
+  const head = h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Projekte · ' + list.length),
+    me.admin ? h('button', { class: 'btn green', id: 'btnNewProject', onclick: () => projectEditor(null) }, svg(I.plus), 'Neues Projekt') : null);
+  const cards = list.map(pr => {
+    const act = pr.members.filter(u => u.active);
+    const today = act.reduce((a, u) => a + stat(u.id).today, 0), month = act.reduce((a, u) => a + stat(u.id).month, 0);
+    const mine = pr.members.some(u => u.id === me.id);
+    return h('button', { class: 'card proj' + (pr.active ? '' : ' off'), 'data-name': pr.name, onclick: () => projectSheet(pr, stat) },
+      h('div', { class: 'ph' }, h('b', {}, pr.name), h('span', { class: 'pill ' + (pr.active ? 'on' : 'off') }, pr.active ? 'Aktiv' : 'Inaktiv')),
+      h('span', { class: 'muted' }, pr.members.length + (pr.members.length === 1 ? ' Mitarbeiter' : ' Mitarbeiter') + (mine ? ' · du bist dabei' : '')),
+      pr.members.length ? h('div', { class: 'avs' }, pr.members.slice(0, 12).map(av)) : null,
+      h('div', { class: 'pstats' }, h('span', {}, 'Heute ', h('strong', {}, String(today))), h('span', {}, 'Monat ', h('strong', {}, String(month))), h('span', { class: 'muted', style: 'align-self:center' }, 'Verträge im Team')));
+  });
+  const empty = !list.length ? h('div', { class: 'card' }, h('p', { class: 'muted', style: 'margin:0' }, me.admin ? 'Noch keine Projekte. Lege mit „Neues Projekt“ das erste an und wähle die Mitarbeiter aus.' : 'Du bist noch keinem Projekt zugeordnet. Der Administrator ordnet dich zu.')) : null;
+  put(v, dashTabs(), head, empty, cards, h('p', { class: 'muted' }, me.admin ? 'Ein Mitarbeiter kann mehreren Projekten angehören. Vertragszahlen und Tagesziele bleiben unverändert – Projekte fassen sie nur zusammen.' : 'Du siehst die Projekte, denen du angehörst. Ändern kann sie nur der Administrator.'));
+  if (notes && notes.dash) { await api.markRead('dash').catch(() => {}); notes.dash = 0; showNotes(notes); }
+}
+function projectSheet(pr, stat) {
+  let s;
+  const close = () => s.remove();
+  const rows = pr.members.map(u => { const t = stat(u.id); return h('div', { class: 'tv' + (u.id === me.id ? ' me' : '') }, av(u), h('b', {}, u.name + (u.id === me.id ? ' (du)' : '') + (u.active ? '' : ' – blockiert')),
+    h('span', { class: 'l' }, 'Heute: ', h('strong', {}, t.goal ? t.today + ' / ' + t.goal : String(t.today)), (t.goal && t.today >= t.goal ? ' 🏆' : '')), h('span', { class: 'l' }, 'Monat: ', h('strong', {}, String(t.month)), ' Verträge')); });
+  const admin = me.admin ? (() => {
+    const cd = h('div', { class: 'confirm', hidden: true }, h('span', {}, 'Projekt „' + pr.name + '“ endgültig löschen? Die Mitarbeiter und alle Vertragszahlen bleiben erhalten – nur die Zuordnung zum Projekt wird entfernt.'),
+      h('div', { class: 'row' }, h('button', { class: 'btn danger', id: 'projDelYes', onclick: async () => { try { await api.delProject(pr.id); close(); toast('Projekt gelöscht.'); renderDashboard(); } catch (e) { toast(e.message); } } }, 'Endgültig löschen'), h('button', { class: 'btn ghost', onclick: () => { cd.hidden = true; } }, 'Abbrechen')));
+    return h('div', { class: 'row' },
+      h('button', { class: 'btn', id: 'projEdit', onclick: () => { close(); projectEditor(pr); } }, 'Bearbeiten'),
+      h('button', { class: 'btn ghost', id: 'projToggle', onclick: async () => { try { await api.updateProject(pr.id, { active: !pr.active }); close(); toast(pr.active ? 'Projekt deaktiviert.' : 'Projekt aktiviert.'); renderDashboard(); } catch (e) { toast(e.message); } } }, pr.active ? 'Deaktivieren' : 'Aktivieren'),
+      h('button', { class: 'btn ghost', id: 'projDel', style: 'color:var(--danger)', onclick: () => { cd.hidden = false; } }, 'Löschen'), cd);
+  })() : null;
+  s = sheet(h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', { id: 'projTitle' }, pr.name), h('button', { class: 'icon-btn', 'aria-label': 'Schließen', onclick: close }, svg(I.x))),
+    h('div', { class: 'row' }, h('span', { class: 'pill ' + (pr.active ? 'on' : 'off') }, pr.active ? 'Aktiv' : 'Inaktiv'), h('span', { class: 'muted' }, pr.members.length + ' Mitarbeiter')),
+    h('div', { class: 'card' }, h('b', {}, 'Mitarbeiter im Projekt'), rows.length ? h('div', { class: 'tvs' }, rows) : h('p', { class: 'muted', style: 'margin:0' }, 'Noch niemand zugeordnet.')),
+    admin);
+}
+function projectEditor(pr) {
+  let s;
+  const name = h('input', { id: 'projName', value: pr ? pr.name : '', placeholder: 'z. B. Stadtwerke Stuttgart', autocomplete: 'off', maxlength: 80 });
+  const chosen = new Set(pr ? pr.members.map(u => u.id) : []);
+  const people = users.filter(u => !u.deleted && (u.active || chosen.has(u.id))).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  const boxes = people.map(u => { const c = h('input', { type: 'checkbox', value: u.id, 'data-name': u.name }); c.checked = chosen.has(u.id); return h('label', {}, c, av(u), h('span', {}, u.name + (u.id === me.id ? ' (du)' : '') + (u.active ? '' : ' – blockiert'))); });
+  const act = h('input', { type: 'checkbox', id: 'projActive' }); act.checked = pr ? pr.active : true;
+  const err = h('p', { class: 'muted', role: 'alert', style: 'color:var(--danger);margin:0' });
+  const form = h('form', { style: 'display:flex;flex-direction:column;gap:12px' }, h('h2', {}, pr ? 'Projekt bearbeiten' : 'Neues Projekt'),
+    h('label', { class: 'f' }, 'Projektname', name),
+    h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, 'Mitarbeiter auswählen'), h('button', { class: 'btn ghost', type: 'button', style: 'padding:6px 10px', onclick: () => { const all = boxes.every(l => l.querySelector('input').checked); boxes.forEach(l => { l.querySelector('input').checked = !all; }); } }, 'Alle / keine')),
+    h('div', { class: 'mlist', id: 'projMembers' }, boxes.length ? boxes : h('p', { class: 'muted', style: 'margin:10px' }, 'Noch keine Mitarbeiter angelegt.')),
+    h('label', { class: 'chk' }, act, 'Projekt ist aktiv'), err,
+    h('div', { class: 'row' }, h('button', { class: 'btn green', type: 'submit', id: 'projSave' }, pr ? 'Speichern' : 'Projekt anlegen'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen')));
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const n = name.value.trim(); if (!n) return err.textContent = 'Bitte einen Projektnamen eingeben.';
+    const members = boxes.map(l => l.querySelector('input')).filter(c => c.checked).map(c => c.value);
+    try { if (pr) await api.updateProject(pr.id, { name: n, members, active: act.checked }); else await api.addProject({ name: n, members, active: act.checked }); s.remove(); toast(pr ? 'Projekt gespeichert.' : 'Projekt „' + n + '“ angelegt.'); dashTab = 'projects'; store.set('hauskarte-dash-tab', 'projects'); renderDashboard(); }
+    catch (x) { err.textContent = x.message; }
+  };
+  s = sheet(form);
 }
 function dayGoalEditor(t) {
   let s;

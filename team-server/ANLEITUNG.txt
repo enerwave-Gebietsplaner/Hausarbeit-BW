@@ -60,6 +60,10 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   Fortschritt z. B. 4 / 6; beim Erreichen kommt eine Glueckwunsch-Meldung. Am naechsten Tag startet
   der Tagesstand wieder bei 0. 'Teamvergleich heute' zeigt allen: Tagesziel, heute erreicht, Monatszahl.
   Tages- und Monatszahlen kommen aus denselben eingetragenen Vertraegen (keine Doppelzaehlung).
+- Projekte: Dashboard -> oben 'Projekte'. Nur der Administrator legt Projekte an, benennt sie um,
+  waehlt die Mitarbeiter aus (ein Mitarbeiter kann in mehreren Projekten sein), aktiviert/deaktiviert
+  und loescht sie. Mitarbeiter sehen nur ihre eigenen Projekte. Vertragszahlen werden dadurch nicht
+  veraendert; die Projektkarte zeigt nur die Summe ihrer Mitarbeiter (heute / Monat).
 - Motivation: persoenliche Begruessung einmal pro Arbeitstag, kurze Nachrichten bei eigenen
   Vertrags-Meilensteinen (1., 2., 3., jeder 5., persoenlicher Monatsrekord).
 - Chat-Anhaenge liegen in C:\Hauskarte\daten\anhaenge (bitte bei der externen Sicherung mitsichern).

@@ -19,6 +19,8 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);
   CREATE TABLE IF NOT EXISTS former_users (id TEXT PRIMARY KEY, name TEXT NOT NULL, deleted_at TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS day_goals (uid TEXT NOT NULL, day TEXT NOT NULL, goal INTEGER NOT NULL, PRIMARY KEY (uid, day));
+  CREATE TABLE IF NOT EXISTS projects (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE COLLATE NOCASE, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS project_members (pid INTEGER NOT NULL, uid TEXT NOT NULL, PRIMARY KEY (pid, uid));
   CREATE TABLE IF NOT EXISTS reads (uid TEXT NOT NULL, key TEXT NOT NULL, val INTEGER NOT NULL, PRIMARY KEY (uid, key));
   `);
   const now = () => new Date().toISOString();
@@ -248,6 +250,47 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       const g = Math.max(0, Math.min(100000, parseInt(b.goal, 10) || 0));
       db.prepare('INSERT INTO goals (month, goal) VALUES (?, ?) ON CONFLICT(month) DO UPDATE SET goal = excluded.goal').run(b.month, g);
       return send(res, 200, { ok: true });
+    }
+
+    /* ---------- Projekte (Mitarbeiter kommen aus der zentralen Tabelle users) ---------- */
+    const projOut = pr => ({ id: pr.id, name: pr.name, active: !!pr.active, members: db.prepare('SELECT u.id, u.name, u.active FROM project_members pm JOIN users u ON u.id = pm.uid WHERE pm.pid = ? ORDER BY u.name COLLATE NOCASE').all(pr.id).map(u => ({ id: u.id, name: u.name, active: !!u.active })) });
+    const cleanMembers = list => [...new Set((Array.isArray(list) ? list : []).map(String))].filter(id => db.prepare('SELECT 1 FROM users WHERE id = ?').get(id));
+    const setMembers = (pid, list) => { db.prepare('DELETE FROM project_members WHERE pid = ?').run(pid); const ins = db.prepare('INSERT INTO project_members (pid, uid) VALUES (?, ?)'); for (const id of cleanMembers(list)) ins.run(pid, id); };
+    if (p === 'projects' && M === 'GET') {
+      // Admin sieht alle Projekte, Mitarbeiter nur die, denen sie angehören
+      const rows = isAdmin ? db.prepare('SELECT * FROM projects ORDER BY active DESC, name COLLATE NOCASE').all()
+        : db.prepare('SELECT p.* FROM projects p JOIN project_members pm ON pm.pid = p.id WHERE pm.uid = ? ORDER BY p.active DESC, p.name COLLATE NOCASE').all(me.uid);
+      return send(res, 200, rows.map(projOut));
+    }
+    if (p === 'projects' && M === 'POST') {
+      if (!isAdmin) return err(res, 403, 'Nur der Administrator kann Projekte anlegen.');
+      const b = await readBody(req) || {}, name = String(b.name || '').trim().slice(0, 80);
+      if (!name) return err(res, 400, 'Bitte einen Projektnamen eingeben.');
+      if (db.prepare('SELECT 1 FROM projects WHERE name = ? COLLATE NOCASE').get(name)) return err(res, 409, 'Ein Projekt „' + name + '“ gibt es schon.');
+      const r = db.prepare('INSERT INTO projects (name, active, created_at) VALUES (?, ?, ?)').run(name, b.active === false ? 0 : 1, now());
+      setMembers(Number(r.lastInsertRowid), b.members);
+      log('Projekt angelegt:', name, 'von', meRow.name);
+      return send(res, 200, projOut(db.prepare('SELECT * FROM projects WHERE id = ?').get(r.lastInsertRowid)));
+    }
+    if ((m = /^projects\/(\d+)\/delete$/.exec(p)) && M === 'POST') {
+      if (!isAdmin) return err(res, 403, 'Nur der Administrator kann Projekte löschen.');
+      const pr = db.prepare('SELECT * FROM projects WHERE id = ?').get(Number(m[1])); if (!pr) return err(res, 404, 'Projekt nicht gefunden.');
+      db.prepare('DELETE FROM project_members WHERE pid = ?').run(pr.id); db.prepare('DELETE FROM projects WHERE id = ?').run(pr.id);
+      log('Projekt gelöscht:', pr.name, 'von', meRow.name);
+      return send(res, 200, { ok: true });
+    }
+    if ((m = /^projects\/(\d+)$/.exec(p)) && M === 'POST') {
+      if (!isAdmin) return err(res, 403, 'Nur der Administrator kann Projekte ändern.');
+      const pr = db.prepare('SELECT * FROM projects WHERE id = ?').get(Number(m[1])); if (!pr) return err(res, 404, 'Projekt nicht gefunden.');
+      const b = await readBody(req) || {};
+      if (b.name !== undefined) {
+        const name = String(b.name).trim().slice(0, 80); if (!name) return err(res, 400, 'Bitte einen Projektnamen eingeben.');
+        if (db.prepare('SELECT 1 FROM projects WHERE name = ? COLLATE NOCASE AND id != ?').get(name, pr.id)) return err(res, 409, 'Ein Projekt „' + name + '“ gibt es schon.');
+        db.prepare('UPDATE projects SET name = ? WHERE id = ?').run(name, pr.id);
+      }
+      if (b.active !== undefined) db.prepare('UPDATE projects SET active = ? WHERE id = ?').run(b.active ? 1 : 0, pr.id);
+      if (b.members !== undefined) setMembers(pr.id, b.members);
+      return send(res, 200, projOut(db.prepare('SELECT * FROM projects WHERE id = ?').get(pr.id)));
     }
 
     /* ---------- Teamcall ---------- */
