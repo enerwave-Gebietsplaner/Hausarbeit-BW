@@ -243,7 +243,7 @@ setInterval(() => { try { log('Sicherung: ' + backup()); } catch (e) { log('Sich
 
 /* ---------- Automatische Updates ----------
    Prüft alle 30 Minuten, ob es auf GitHub eine neue Version gibt (Datei team-server/version.json),
-   lädt geänderte Dateien, prüft deren Prüfsumme und tauscht sie aus. Ändert sich server.js,
+   lädt geänderte Dateien, prüft deren Prüfsumme und tauscht sie aus. Ändert sich server.js oder team.js,
    beendet sich der Server; start-server.cmd startet ihn sofort neu. Daten bleiben unberührt. */
 const UPDATE_BASE = process.env.HAUSKARTE_UPDATE_URL || 'https://raw.githubusercontent.com/enerwave-gebietsplaner/Hausarbeit-BW/main/team-server/';
 const sha256 = buf => crypto.createHash('sha256').update(buf).digest('hex');
@@ -276,7 +276,8 @@ async function checkUpdate() {
     }
     fs.writeFileSync(path.join(ROOT, 'version.json'), JSON.stringify(remote, null, 1));
     log(`Update auf Version ${remote.version} installiert (${got.length} Dateien).`);
-    if (got.some(([f]) => f === 'server.js')) { log('Server wird für das Update neu gestartet.'); setTimeout(() => process.exit(0), 500); }
+    // Neu starten, sobald sich Programmcode des Servers geändert hat (server.js, team.js, …) – sonst bliebe der alte Stand im Speicher
+    if (got.some(([f]) => /^[^/]+\.js$/.test(f))) { log('Server wird für das Update neu gestartet.'); setTimeout(() => process.exit(0), 500); }
   } catch (e) { log('Update-Prüfung fehlgeschlagen:', e.message); }
 }
 setTimeout(checkUpdate, 60e3);

@@ -1,8 +1,8 @@
 {
- "version": 10,
- "created": "2026-10-16T08:06:23.308Z",
+ "version": 11,
+ "created": "2026-10-16T09:16:19.126Z",
  "files": {
-  "server.js": "2cecb19e9171b060fa6738ad3bded109d089d600120417e8acfc7894b1f59fb8",
+  "server.js": "c476be080643ff2029f0a1a86356b7a08b6e896ccf90c052760fcd7f9089e4a7",
   "team.js": "0791ca830608ba4f7724a3214a0eab4af543edddbaed191d1b76c1725b7f7b7c",
   "start-server.cmd": "6ddaaf4a03e46a5a433e74c3b2723b57cb4192e1a1a9ce663215e9d539d07562",
   "mitarbeiter.ps1": "67d4a497216d2ffba5f5c857941fb47443a01a354db12dd7afacd8eb86f35fdb",
