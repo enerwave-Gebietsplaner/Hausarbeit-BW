@@ -391,14 +391,21 @@ async function boot() {
   await pollUnread();  // erst Benachrichtigungen laden, dann Bereich anzeigen (Dashboard setzt sie dann zurück)
   route();
   if (!DEMO && window.HauskarteMotivation) window.HauskarteMotivation.greet();
-  setInterval(() => pollUnread(true), 30000);
-  // Dashboard offen: Zahlen und Tagesziele der Kollegen alle 15 Sekunden auffrischen (nicht während man tippt)
+  setInterval(() => pollUnread(true), 5 * 60000);  // Stromsparen: Hinweise alle 5 Minuten (und sofort beim Öffnen der App)
+  // Dashboard offen: Zahlen und Tagesziele der Kollegen alle 5 Minuten auffrischen (nicht während man tippt)
   setInterval(() => {
     if (view !== 'dashboard' || document.visibilityState !== 'visible' || document.querySelector('.sheet')) return;
     const n = $('contractNote'); if (document.activeElement?.matches?.('input, textarea') || (n && n.value)) return;
     renderDashboard();
-  }, 15000);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && me) pollUnread(true); });
+  }, 5 * 60000);
+  // Zurück in der App (Bildschirm an / App geöffnet): einmal sofort alles auffrischen
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState !== 'visible' || !me) return;
+    await pollUnread(true);
+    if (document.querySelector('.sheet') || document.activeElement?.matches?.('input, textarea')) return;
+    if (view === 'dashboard') renderDashboard();
+    else if (view === 'chat' && !openCh) { settings = await api.settings().catch(() => settings); refreshCall(); }
+  });
 }
 function fatal(t) { for (const s of document.querySelectorAll('.view')) s.hidden = true; const v = $('view-login'); v.hidden = false; v.replaceChildren(h('div', { class: 'card' }, h('h2', {}, 'Team-Bereich nicht erreichbar'), h('p', { class: 'muted' }, t), h('button', { class: 'btn', onclick: () => location.reload() }, 'Erneut versuchen'))); }
 
@@ -504,7 +511,7 @@ function callCard() {
   const card = h('div', { class: 'card callcard' });
   const fill = () => {
     const c = settings.call, n = nextCall(c);
-    card.hidden = !n && !settings.zoom && !me.admin;  // nichts zu zeigen: unsichtbar, prüft aber weiter jede Minute
+    card.hidden = !n && !settings.zoom && !me.admin;  // nichts zu zeigen: unsichtbar, prüft aber weiter alle 5 Minuten
     const top = h('div', { class: 'top' }, h('span', { class: 'lbl' }, n ? (n.live ? 'Teamcall' : 'Nächster Teamcall') : 'Teamcall', n && n.live ? h('span', { class: 'live' }, 'läuft gerade') : null),
       me.admin ? h('button', { class: 'btn edit', onclick: callEditor }, 'Bearbeiten') : null);
     const sub = c && c.repeat ? 'Jeden ' + WDAYS[c.weekday] + ' von ' + c.start + ' bis ' + c.end + ' Uhr' : null;
@@ -514,11 +521,12 @@ function callCard() {
       settings.zoom ? Object.assign(zoomBtn(), { className: 'btn zoom big join' }) : (me.admin ? h('div', { class: 'sub' }, 'Noch kein Zoom-Link hinterlegt.') : null));
   };
   fill();
-  // Änderungen des Admins kommen automatisch an: jede Minute neu laden, solange die Karte zu sehen ist
+  // Änderungen des Admins kommen automatisch an: alle 5 Minuten neu laden, solange die Karte zu sehen ist
   const t = setInterval(async () => {
     if (!document.body.contains(card)) return clearInterval(t);
+    if (document.visibilityState !== 'visible') return;
     settings = await api.settings().catch(() => settings); fill();
-  }, 60000);
+  }, 5 * 60000);
   return card;
 }
 function callEditor() {

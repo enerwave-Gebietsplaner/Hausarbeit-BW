@@ -25,6 +25,8 @@ TABLET EINRICHTEN (pro Mitarbeiter, ca. 5 Minuten)
 IM BETRIEB
 - Oben in der App zeigt das Symbol den Stand: gruen = abgeglichen, grau = offline (Eingaben warten),
   rot = Problem. Offline erfasste Eingaben werden automatisch nachgeliefert.
+- Stromsparen: Im Hintergrund fragen die Tablets nur alle 5 Minuten beim Server nach. Eigene Eingaben
+  werden sofort gesendet; beim Oeffnen der App wird sofort abgeglichen. Ein geoeffneter Chat bleibt live.
 - Der Laptop muss eingeschaltet, am Netzteil und mit dem Internet verbunden bleiben.
 - Sicherungen: jeden Tag automatisch in C:\Hauskarte\daten\sicherungen (die letzten 60 Tage).
   Empfehlung: diesen Ordner zusaetzlich auf OneDrive/USB-Stick/NAS kopieren lassen.
@@ -44,12 +46,12 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
 - Teamcall: Im Team-Chat oben steht fuer alle der naechste Teamcall mit Datum, Uhrzeit und
   dem Knopf 'Zoom-Call beitreten'. Nur der Administrator tippt dort auf 'Bearbeiten' und stellt
   Zoom-Link, einmaliges Datum oder 'Jede Woche' (Wochentag), Start- und Endzeit ein.
-  Wird zentral gespeichert; alle Tablets zeigen die Aenderung spaetestens nach einer Minute.
+  Wird zentral gespeichert; alle Tablets zeigen die Aenderung spaetestens nach 5 Minuten bzw. beim Oeffnen.
   Das ist dieselbe Mitarbeiterliste wie in 'Mitarbeiter verwalten.bat'.
 - Benachrichtigungen: 'Team-Chat' leuchtet gelb mit Zahl, wenn ungelesene Nachrichten da sind
   (eigene zaehlen nicht). 'Dashboard' leuchtet mit rotem Punkt, wenn ein Kollege einen Vertrag
   eingetragen hat. Nach dem Lesen bzw. Oeffnen verschwindet die Anzeige. Der Gelesen-Stand wird pro
-  Mitarbeiter auf dem Server gespeichert (gilt auf jedem Tablet). Aktualisierung alle 30-60 Sekunden.
+  Mitarbeiter auf dem Server gespeichert (gilt auf jedem Tablet). Aktualisierung alle 5 Minuten und sofort beim Oeffnen der App.
 - Chat: Fotos, Videos, PDFs und Dateien bis 200 MB, Sprachnachrichten ueber das Mikrofon-Symbol
   (beim ersten Mal in Chrome das Mikrofon erlauben).
 - Vertraege: Jeder traegt nur fuer sich selbst ein. Alle sehen ihre eigene Monatszahl und die

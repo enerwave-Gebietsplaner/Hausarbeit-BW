@@ -840,7 +840,7 @@ body.sun #teamNav{background:#000}
       dot.hidden = !d; dashA.classList.toggle('glow', d > 0);
     } catch (e) {}
   }
-  setTimeout(check, 3000); setInterval(check, 60000);
+  setTimeout(check, 3000); setInterval(check, 5 * 60000);  // Stromsparen: alle 5 Minuten (und sofort beim Öffnen)
   document.addEventListener('visibilitychange', check);
 })();
 </script>
@@ -2505,7 +2505,7 @@ syncDlg.innerHTML = `<div class="dlg"><h2>☁ Team-Abgleich</h2><p id="syncInfo"
 <label for="syncPass">PIN</label><input id="syncPass" type="password" inputmode="numeric" autocomplete="current-password">
 <div class="stack" style="margin-top:12px"><button type="submit" id="syncGo">Anmelden</button></div></form>
 <div class="stack" id="syncActs" style="margin-top:12px"><button type="button" id="syncNow">⟳ Jetzt abgleichen</button><button type="button" class="secondary" id="syncOut">Abmelden</button></div>
-<p>Änderungen werden automatisch übertragen, sobald Internet da ist – beim Öffnen der App, wenn die Verbindung zurückkommt und jede Minute. Ohne Netz wird alles auf dem Gerät gesammelt.</p>
+<p>Änderungen werden automatisch übertragen, sobald Internet da ist – beim Speichern, beim Öffnen der App, wenn die Verbindung zurückkommt und sonst alle 5 Minuten. Ohne Netz wird alles auf dem Gerät gesammelt.</p>
 <div class="stack" style="margin-top:8px"><button type="button" class="secondary" id="syncClose">Schließen</button></div></div>`;
 document.body.append(syncDlg);
 const timeStr = t => new Date(t).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -2571,7 +2571,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') scheduleSync(500);
   else { saveSync(true); runSync(); }
 });
-setInterval(() => { if (document.visibilityState === 'visible' && (sync.outbox.length || Date.now() - sync.lastOk > 110000)) runSync(); }, 60000);  // ohne eigene Änderungen nur alle 2 Minuten
+setInterval(() => { if (document.visibilityState === 'visible' && (sync.outbox.length || Date.now() - sync.lastOk > 290000)) runSync(); }, 5 * 60000);  // Stromsparen: Abgleich im Hintergrund alle 5 Minuten (eigene Eingaben gehen sofort raus)
 // diese Seite + Zugangsdatei im Offline-Speicher halten (der Service Worker legt alles ab, was online geladen wird)
 const keepOffline = () => { if (navigator.onLine) for (const u of ['./', 'sync-config.js', 'manifest.webmanifest']) fetch(u, { cache: 'no-cache' }).catch(() => {}); };
 navigator.serviceWorker?.ready.then(keepOffline).catch(() => {});
