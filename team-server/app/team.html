@@ -120,13 +120,13 @@ svg.i { width: 22px; height: 22px; flex: 0 0 auto }
 
 /* Teamcall */
 .zoom { display: flex; align-items: center; gap: 14px; padding: 16px 18px; flex-wrap: wrap }
-.zoom .ic { width: 52px; height: 52px; border-radius: 50%; background: var(--zoom); color: #fff; display: grid; place-items: center; flex: 0 0 auto }
+.zoom .ic { width: 58px; height: 58px; border-radius: 50%; background: #2563eb; color: #fff; display: grid; place-items: center; flex: 0 0 auto }
 .zoom .t { flex: 1; min-width: 160px }
 .zoom .t b { display: block; font-size: 19px; font-weight: 800 }
 .zoom .t span { display: block; color: var(--muted) }
 .zoom .t small { display: flex; align-items: center; gap: 6px; color: var(--muted); margin-top: 4px; font-size: 13.5px }
 .btn { border: 0; border-radius: 14px; padding: 12px 18px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; background: var(--green); color: #fff; font-size: 15px }
-.btn.zm { background: var(--zoom) }
+.btn.zm { background: #5b9cf6 }
 .btn.ghost { background: var(--soft); color: var(--fg) }
 .btn.red { background: var(--red) }
 .btn.full { width: 100%; box-sizing: border-box }
@@ -145,13 +145,15 @@ svg.i { width: 22px; height: 22px; flex: 0 0 auto }
 .kpi .row b { color: var(--green-ink); font-size: 17px }
 .bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden }
 .bar i { display: block; height: 100%; border-radius: 4px; background: var(--green); transition: width .4s }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; padding: 12px 18px 18px }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; padding: 12px 14px 16px }
 .tile { border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 4px; position: relative; min-width: 0 }
 .tile .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px }
 .tile .ct { font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums }
 .tile .lb { color: var(--muted); font-size: 13.5px }
 .tile .bar { margin-top: 8px; height: 5px }
-.tile .plus { position: absolute; right: 10px; top: 52px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #6ad4a4; color: #fff; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(30,158,90,.3) }
+.tile .numrow { display: flex; align-items: center; justify-content: space-between; gap: 6px }
+.tile .plus { width: 38px; height: 38px; border-radius: 50%; border: 0; background: #7fdcb0; color: #fff; display: grid; place-items: center; flex: 0 0 auto }
+.tile .plus:hover { background: var(--green) }
 .tile.me { outline: 2px solid var(--green); outline-offset: -2px }
 .mine { list-style: none; margin: 0; padding: 0 18px 16px; display: flex; flex-direction: column }
 .mine li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums }
@@ -183,7 +185,33 @@ label.chk { display: flex; align-items: center; gap: 10px; font-size: 14.5px }
 .viewer img { max-width: 94%; max-height: 90% }
 .demo { background: #fff7e0; color: #5c4400; font-size: 12.5px; padding: 6px 12px; border-radius: 10px; max-width: 360px; line-height: 1.35 }
 @media (max-width: 1100px) { .demo { display: none } }
-@media (max-width: 640px) { .logo small { display: none } .logo b { font-size: 18px } .user .nm { display: none } .demo { display: none } }
+/* Suche oben */
+.search { flex: 1; max-width: 560px; display: flex; align-items: center; gap: 10px; background: var(--soft); border-radius: 26px; padding: 0 16px; margin: 0 8px; color: var(--muted) }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 13px 0; font-size: 16px; outline: none; color: var(--fg) }
+.user .chev { color: var(--muted) }
+.av svg { width: 100%; height: 100%; border-radius: 50%; display: block }
+.av.photo { background: transparent !important; box-shadow: 0 0 0 2px var(--card), 0 1px 4px rgba(0,0,0,.15) }
+/* Kartenbedienung (schwebend) */
+.mctl { position: absolute; display: flex; flex-direction: column; gap: 10px; z-index: 2 }
+.mbtn { width: 50px; height: 50px; border-radius: 14px; border: 0; background: #fff; color: #12302a; display: grid; place-items: center; box-shadow: 0 2px 10px rgba(0,0,0,.18) }
+.mgroup { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.18); display: flex; flex-direction: column; overflow: hidden }
+.mgroup .mbtn { box-shadow: none; border-radius: 0 }
+.mgroup .mbtn + .mbtn { border-top: 1px solid #e6ece9 }
+.seg { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 26px; padding: 5px; display: flex; gap: 4px; box-shadow: 0 2px 10px rgba(0,0,0,.18); z-index: 2 }
+.seg button { border: 0; background: transparent; color: #12302a; border-radius: 22px; padding: 9px 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; font-size: 15px }
+.seg button.on { background: var(--green); color: #fff }
+.tools { position: absolute; right: 16px; top: 16px; background: #fff; border-radius: 18px; padding: 10px 6px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 2px 12px rgba(0,0,0,.18); z-index: 2; max-height: calc(100% - 32px); overflow-y: auto }
+.tools button { border: 0; background: transparent; color: #12302a; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; padding: 6px 4px; border-radius: 12px; width: 76px }
+.tools button .c { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center }
+.tools button.on { background: #e3f4ea }
+.scale { position: absolute; left: 20px; bottom: 18px; color: #fff; font-weight: 600; font-size: 14px; text-shadow: 0 1px 3px rgba(0,0,0,.6); z-index: 2 }
+.scale i { display: block; width: 160px; height: 8px; border: 2px solid #fff; border-top: 0; margin-top: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.4) }
+/* Emoji-Auswahl */
+.emo { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 12px 0 }
+.emo button { border: 0; background: transparent; font-size: 22px; width: 40px; height: 40px; border-radius: 10px }
+.emo button:hover { background: var(--soft) }
+@media (max-width: 900px) { .search { display: none } }
+@media (max-width: 640px) { .seg { top: auto; bottom: 16px } .scale { display: none } .logo small { display: none } .logo b { font-size: 18px } .user .nm, .user .chev { display: none } .demo { display: none } .seg button span { display: none } .tools button { width: 62px; font-size: 11px } .tools button .c { width: 38px; height: 38px } .mbtn { width: 44px; height: 44px } }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none } }
 </style>
 
@@ -193,6 +221,7 @@ label.chk { display: flex; align-items: center; gap: 10px; font-size: 14.5px }
       <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5 3 22.5l3.5 4L10 23.6V42h28V23.6l3.5 2.9 3.5-4z" fill="currentColor"/><path d="M19 42V31a5 5 0 0 1 10 0v11z" fill="#fff"/><circle cx="24" cy="31" r="2" fill="currentColor"/></svg>
       <div><b>Hauskarte BW</b><small>TEAM PLATTFORM</small></div>
     </div>
+    <form class="search" id="search" role="search"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Adresse oder Ort suchen …" autocomplete="off" aria-label="Adresse oder Ort suchen"></form>
     <span class="demo" id="demo" hidden>Vorschau mit Beispieldaten · nichts wird gespeichert · Person wechseln: auf deinen Namen tippen</span>
     <button class="bell" id="bell" aria-label="Neue Nachrichten"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="n" id="bellN" hidden></span></button>
     <div class="user" id="user"></div>
@@ -229,7 +258,20 @@ const P = {
 const COLORS = ['#1e9e5a', '#e85d75', '#3b82f6', '#22b07d', '#8b5cf6', '#f59e0b', '#0ea5a4', '#d946ef'];
 const colorOf = id => COLORS[[...String(id)].reduce((a, c) => a * 31 + c.charCodeAt(0) >>> 0, 7) % COLORS.length];
 const initials = n => String(n).split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
-const av = (u, cls = '') => h('span', { class: 'av ' + cls, style: 'background:' + colorOf(u.id), 'aria-hidden': 'true' }, initials(u.name || '?'));
+const hashOf = s => [...String(s)].reduce((a, c) => a * 31 + c.charCodeAt(0) >>> 0, 7);
+const PASTEL = ['#cfe8dc', '#f7d9de', '#d6e4fb', '#fde7c7', '#e5dcfa', '#d3efee'], SKIN = ['#f2c9a8', '#e3ad8a', '#c98e69', '#f4d6bf', '#b67a55'], HAIR = ['#2b1d14', '#5a3a22', '#b98436', '#1c1c1c', '#7b3f22', '#d3ac6a'], SHIRT = ['#1e3a5f', '#2f6b4f', '#7a2e3b', '#3d3d48', '#4b5f8a', '#6b4e2e'];
+function avatarSvg(u) {
+  const k = hashOf(u.id + u.name), long = /(a|e|ie|in|y)$/i.test(u.name) && !/^(neki|tom|max)$/i.test(u.name);
+  const bg = PASTEL[k % 6], sk = SKIN[(k >> 3) % 5], hr = HAIR[(k >> 6) % 6], sh = SHIRT[(k >> 9) % 6];
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="${bg}"/>` +
+    (long ? `<path d="M15 40c-2-14 3-27 17-27s19 13 17 27z" fill="${hr}"/>` : '') +
+    `<path d="M10 64c2-11 11-16 22-16s20 5 22 16z" fill="${sh}"/><rect x="27" y="40" width="10" height="10" rx="4" fill="${sk}"/>` +
+    `<ellipse cx="32" cy="30" rx="11" ry="13" fill="${sk}"/>` +
+    (long ? `<path d="M20 29c0-10 6-15 12-15s12 5 12 15c-3-5-8-8-12-8s-8 3-12 8z" fill="${hr}"/>` : `<path d="M20.5 28c-.5-9 4.5-13 11.5-13s12 4 11.5 13c-1.5-4-5.5-6.5-11.5-6.5S22 24 20.5 28z" fill="${hr}"/>`) +
+    (!long && k % 3 === 0 ? `<path d="M23 34c1 8 5 11 9 11s8-3 9-11c-2 4-5 5-9 5s-7-1-9-5z" fill="${hr}" opacity=".85"/>` : '') +
+    `<circle cx="27.5" cy="31" r="1.4" fill="#2a1d16"/><circle cx="36.5" cy="31" r="1.4" fill="#2a1d16"/><path d="M28.5 36.5c2 1.6 5 1.6 7 0" stroke="#8a4b3a" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;
+}
+const av = (u, cls = '') => { const e = h('span', { class: 'av photo ' + cls, 'aria-hidden': 'true', title: u.name }); e.innerHTML = avatarSvg(u); return e; };
 const pad = n => String(n).padStart(2, '0');
 const monthKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1);
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
@@ -271,7 +313,7 @@ const realApi = {
   channels: () => call('GET', 'channels'), messages: (ch, after) => call('GET', 'messages?channel=' + encodeURIComponent(ch) + '&after=' + (after || 0)),
   send: async (ch, text, file) => { let attachment = null; if (file) attachment = (await call('POST', 'files', null, { headers: { 'Content-Type': file.type || 'application/octet-stream', 'X-Filename': encodeURIComponent(file.name) }, body: file })).id; return call('POST', 'messages', { channel: ch, text, attachment }); },
   fileBlob: async f => { const r = await fetch('/api/files/' + f.id, { headers: { Authorization: 'Bearer ' + await token() } }); if (!r.ok) throw Error('Datei nicht verfügbar'); return r.blob(); },
-  contracts: m => call('GET', 'contracts?month=' + m), addContract: note => call('POST', 'contracts', { note }), delContract: id => call('POST', 'contracts/' + id + '/delete'),
+  contracts: m => call('GET', 'contracts?month=' + m), addContract: (note, uid) => call('POST', 'contracts', { note, uid }), delContract: id => call('POST', 'contracts/' + id + '/delete'),
   setGoal: (month, goal) => call('POST', 'goals', { month, goal }), settings: () => call('GET', 'settings'), setSettings: s => call('POST', 'settings', s)
 };
 const demoApi = (() => {
@@ -315,8 +357,8 @@ const demoApi = (() => {
       const per = users.map(u => ({ id: u.id, name: u.name, count: list.filter(c => c.uid === u.id).length, active: u.active })).filter(u => u.active || u.count);
       return wait({ month, total: list.length, goal: goals[month] || 0, myCount: mine.length, mine: mine.sort((a, b) => b.at.localeCompare(a.at)), users: me().admin ? per : null, first: [...contracts.map(c => c.month), cur].sort()[0] });
     },
-    addContract: note => { const c = { id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }; contracts.push(c); return wait({ id: c.id }); },
-    delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
+    addContract: (note, uid) => { const c = { id: ++cseq, uid: uid && me().admin ? uid : meId, by: meId, month: cur, at: new Date().toISOString(), note }; contracts.push(c); return wait({ id: c.id }); },
+    delContract: id => { const i = contracts.findIndex(c => c.id === id && (c.uid === meId || c.by === meId || me().admin)); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
     setGoal: (m, g) => { goals[m] = g; return wait({ ok: true }); },
     settings: () => wait(settings), setSettings: s => { Object.assign(settings, s); return wait({ ok: true }); }
   };
@@ -376,7 +418,8 @@ function login(msg) {
 }
 function renderUser() {
   const box = $('user');
-  box.replaceChildren(av(me), h('span', { class: 'nm' }, h('b', {}, me.name), h('span', {}, roleOf(me))));
+  box.replaceChildren(av(me), h('span', { class: 'nm' }, h('b', {}, me.name), h('span', {}, roleOf(me))), ico('<path d="m6 9 6 6 6-6"/>', 2.4));
+  box.lastChild.classList.add('chev');
   if (DEMO) {
     const sel = h('select', { id: 'demoUser', 'aria-label': 'Angemeldet als (Vorschau)' }, users.filter(u => u.active).map(u => h('option', { value: u.id, selected: u.id === me.id }, u.name + (u.admin ? ' (Admin)' : ''))));
     sel.onchange = async () => { demoApi.setMe(sel.value); me = await api.me(); renderUser(); route(); unread(); toast('Jetzt angemeldet als ' + me.name + '.'); };
@@ -404,17 +447,93 @@ async function renderSide() {
   side.replaceChildren(...parts);
 }
 
-/* ================= Karte ================= */
+/* ================= Karte =================
+   Echtbetrieb: Die bestehende Hauskarte läuft unverändert in diesem Rahmen. Die schwebenden Knöpfe lösen
+   nur die vorhandenen Funktionen der Karte aus (Standort, Häuser finden, Skizzieren …). */
+let mapMode = 'luft';
+function drawAerial(g, w, hh) {
+  let s = 77; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  g.fillStyle = '#46612f'; g.fillRect(0, 0, w, hh);
+  const tex = ['#3a5428', '#4f6d36', '#5b7a3f', '#334b23', '#64813f'];
+  for (let i = 0; i < w * hh / 90; i++) { g.fillStyle = tex[i % 5]; g.globalAlpha = .55; g.beginPath(); g.arc(rnd() * w, rnd() * hh, 2 + rnd() * 7, 0, 7); g.fill(); }
+  g.globalAlpha = 1;
+  const field = (pts, c) => { g.fillStyle = c; g.beginPath(); pts.forEach(([x, y], i) => g[i ? 'lineTo' : 'moveTo'](x * w, y * hh)); g.closePath(); g.fill(); g.save(); g.clip(); g.strokeStyle = 'rgba(255,255,255,.08)'; g.lineWidth = 2; for (let x = -hh; x < w; x += 9) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + hh * .5, hh); g.stroke(); } g.restore(); };
+  field([[0, 0], [.3, 0], [.26, .2], [0, .26]], '#7e8f4e'); field([[.78, .28], [1, .22], [1, .55], [.82, .6]], '#a49a63'); field([[.86, .62], [1, .6], [1, .85], [.9, .9]], '#6f8e45');
+  g.fillStyle = '#6f7f55'; g.beginPath(); g.ellipse(w * .42, hh * .48, w * .36, hh * .4, -.2, 0, 7); g.fill();
+  g.strokeStyle = '#2f4a4b'; g.lineWidth = Math.max(10, w / 70); g.globalAlpha = .9; g.beginPath(); g.moveTo(0, hh * .86); g.bezierCurveTo(w * .25, hh * .78, w * .45, hh * .98, w * .7, hh * .9); g.bezierCurveTo(w * .85, hh * .86, w * .95, hh * .95, w, hh * .93); g.stroke(); g.globalAlpha = 1;
+  const roads = [
+    [[0, .42], [.2, .35], [.45, .6], [.62, .55]], [[.62, .55], [.7, .45], [.78, .25], [.85, 0]], [[.62, .55], [.75, .7], [.9, .75], [1, .8]],
+    [[.32, 0], [.36, .2], [.33, .3], [.38, .42]], [[.38, .42], [.5, .4], [.56, .32], [.6, .2]], [[.1, .55], [.2, .62], [.3, .75], [.45, .78]], [[.45, .6], [.5, .7], [.48, .8], [.45, .78]]
+  ];
+  const bez = (r, t) => { const [p0, p1, p2, p3] = r, u = 1 - t; return [u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0], u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]; };
+  g.lineCap = 'round';
+  for (const [wd, col] of [[Math.max(9, w / 85), '#6b6a63'], [Math.max(6, w / 120), '#9b988f']]) for (const r of roads) { g.strokeStyle = col; g.lineWidth = wd; g.beginPath(); for (let t = 0; t <= 1.001; t += .02) { const [x, y] = bez(r, t); g[t ? 'lineTo' : 'moveTo'](x * w, y * hh); } g.stroke(); }
+  const roofs = ['#7a6f66', '#8b5e4f', '#5f646b', '#9a7b62', '#6d6a64', '#8f8a85', '#a05d48'];
+  const sz = Math.max(13, w / 46);
+  for (const r of roads) for (let t = .03; t < 1; t += .045 + rnd() * .02) {
+    const [x, y] = bez(r, t), [x2, y2] = bez(r, Math.min(1, t + .01)), ang = Math.atan2((y2 - y) * hh, (x2 - x) * w);
+    for (const side of [-1, 1]) {
+      if (rnd() < .18) continue;
+      const off = sz * (1.25 + rnd() * .3), px = x * w + Math.cos(ang + Math.PI / 2) * off * side, py = y * hh + Math.sin(ang + Math.PI / 2) * off * side;
+      if (px < 0 || py < 0 || px > w || py > hh) continue;
+      g.save(); g.translate(px, py); g.rotate(ang + (rnd() - .5) * .25);
+      const bw = sz * (.8 + rnd() * .4), bh = sz * (.65 + rnd() * .25);
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(-bw / 2 + 2, -bh / 2 + 3, bw, bh);
+      g.fillStyle = roofs[Math.floor(rnd() * roofs.length)]; g.fillRect(-bw / 2, -bh / 2, bw, bh);
+      g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-bw / 2, 0); g.lineTo(bw / 2, 0); g.stroke();
+      const q = rnd(); if (q < .42) { g.fillStyle = q < .24 ? 'rgba(34,197,94,.72)' : 'rgba(239,68,68,.72)'; g.fillRect(-bw / 2, -bh / 2, bw, bh); g.strokeStyle = q < .24 ? '#15803d' : '#b91c1c'; g.lineWidth = 1.5; g.strokeRect(-bw / 2, -bh / 2, bw, bh); }
+      g.restore();
+    }
+  }
+  g.strokeStyle = '#ff8a00'; g.lineWidth = Math.max(3, w / 230); g.lineJoin = 'round'; g.beginPath();
+  [[.4, .53], [.47, .5], [.53, .52], [.56, .6], [.53, .66], [.45, .66], [.4, .6]].forEach(([x, y], i) => g[i ? 'lineTo' : 'moveTo'](x * w, y * hh)); g.closePath(); g.stroke();
+}
 function viewMap() {
   const main = $('main');
-  if (!DEMO) { main.replaceChildren(h('div', { class: 'mapcard' }, h('iframe', { src: './index.html', title: 'Hauskarte', allow: 'geolocation' }))); return; }
-  const c = h('canvas'), tag = h('div', { class: 'maptag' }, 'Hier läuft eure Hauskarte – genau so wie heute, unverändert.');
-  const box = h('div', { class: 'mapcard' }, c, tag);
+  const btn = (cls, label, path, extra) => h('button', { class: cls, 'aria-label': label, title: label, type: 'button', ...(extra || {}) }, ico(path, 2.2));
+  const PROXY = { loc: 'loc', find: 'load', draw: 'drawButton', erase: 'eraseButton', more: 'menuButton', zin: null, zout: null };
+  let frame = null;
+  const act = (what, label) => {
+    if (DEMO) return toast(label + ': In der echten App löst das die vorhandene Funktion der Hauskarte aus.');
+    try { const d = frame.contentDocument; if (what === 'zin' || what === 'zout') d.querySelector(what === 'zin' ? '.leaflet-control-zoom-in' : '.leaflet-control-zoom-out').click(); else d.getElementById(PROXY[what]).click(); } catch (e) { toast('Karte noch nicht bereit.'); }
+  };
+  const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Kartenansicht' },
+    h('button', { class: mapMode === 'luft' ? 'on' : '', type: 'button', onclick: () => { mapMode = 'luft'; viewMap(); } }, ico('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>'), h('span', {}, 'Luftbild')),
+    h('button', { class: mapMode === 'karte' ? 'on' : '', type: 'button', onclick: () => { mapMode = 'karte'; viewMap(); } }, ico('<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>'), h('span', {}, 'Karte')),
+    btn('', 'Häuser in diesem Ausschnitt finden', '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>', { onclick: () => act('find', 'Häuser finden') }));
+  const left = h('div', { class: 'mctl', style: 'left:16px;top:16px' },
+    btn('mbtn', 'Mein Standort', '<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/>', { onclick: () => act('loc', 'Mein Standort') }),
+    h('div', { class: 'mgroup' }, btn('mbtn', 'Vergrößern', P.plus, { onclick: () => act('zin', 'Vergrößern') }), btn('mbtn', 'Verkleinern', '<path d="M5 12h14"/>', { onclick: () => act('zout', 'Verkleinern') })),
+    btn('mbtn', 'Filter', '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>', { onclick: () => act('more', 'Filter und Einstellungen') }));
+  const tool = (label, color, path, what, fill) => h('button', { type: 'button', onclick: () => act(what, label) }, h('span', { class: 'c', style: color ? 'background:' + color + ';color:#fff' : '' }, fill ? (() => { const s = ico(path, 2.2); return s; })() : ico(path, 2.2)), label);
+  const tools = h('div', { class: 'tools', role: 'toolbar', 'aria-label': 'Kartenwerkzeuge' },
+    tool('Folgen', '#1e9e5a', '<path d="M21 3 3 10.5l7.5 3L14 21z"/>', 'loc'),
+    tool('Häuser', '', '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>', 'find'),
+    tool('Skizzieren', '', '<path d="M4 20l4-1L19 8a2.1 2.1 0 0 0-3-3L5 16z"/>', 'draw'),
+    tool('Radierer', '', '<path d="M20 20H9L4 15a2 2 0 0 1 0-3l8-8a2 2 0 0 1 3 0l5 5a2 2 0 0 1 0 3l-8 8"/>', 'erase'),
+    tool('Mehr', '', '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>', 'more'));
+  const box = h('div', { class: 'mapcard' });
+  if (!DEMO) {
+    frame = h('iframe', { src: './index.html', title: 'Hauskarte', allow: 'geolocation' });
+    frame.onload = () => { try { const d = frame.contentDocument; d.head.append(Object.assign(d.createElement('style'), { textContent: 'header, nav.toolbar, .leaflet-control-zoom, #backupBar { display: none !important }' })); } catch (e) {} };
+    box.append(frame, seg, left, tools);
+    main.replaceChildren(box);
+    return;
+  }
+  const c = h('canvas');
+  box.append(c, seg, left, tools, h('div', { class: 'scale' }, '100 m', h('i')));
   main.replaceChildren(box);
-  const paint = () => { const r = box.getBoundingClientRect(), dpr = window.devicePixelRatio || 1; c.width = r.width * dpr; c.height = r.height * dpr; const g = c.getContext('2d'); g.scale(dpr, dpr); drawMap(g, r.width, r.height, 2); };
+  const paint = () => { const r = box.getBoundingClientRect(); if (!r.width) return; const dpr = window.devicePixelRatio || 1; c.width = r.width * dpr; c.height = r.height * dpr; const g = c.getContext('2d'); g.scale(dpr, dpr); if (mapMode === 'luft') drawAerial(g, r.width, r.height); else drawMap(g, r.width, r.height, 2); };
   requestAnimationFrame(paint);
   new ResizeObserver(() => paint()).observe(box);
 }
+$('search').onsubmit = e => {
+  e.preventDefault();
+  const q = $('q').value.trim(); if (!q) return;
+  location.hash = '#karte';
+  if (DEMO) return toast('Suche nach „' + q + '“: In der echten App springt die Karte dorthin.');
+  setTimeout(() => { try { const d = document.querySelector('.mapcard iframe').contentDocument; d.getElementById('searchInput').value = q; d.getElementById('searchForm').requestSubmit(); d.getElementById('searchBox').classList.add('open'); } catch (err) {} }, 400);
+};
 
 /* ================= Chat ================= */
 let unreadCount = 0;
@@ -453,11 +572,13 @@ function composer(ch, onSent) {
   ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; };
   const clip = h('button', { class: 'ib', type: 'button', title: 'Foto, PDF oder Datei anhängen', 'aria-label': 'Foto, PDF oder Datei anhängen' }, ico(P.clip));
   const send = h('button', { class: 'ib go', type: 'button', 'aria-label': 'Senden' }, ico(P.send));
+  const emo = h('div', { class: 'emo', hidden: true }, ['👍', '😊', '😂', '💪', '🙏', '👏', '🎉', '✅', '❤️', '🔥', '📍', '☕'].map(x => h('button', { type: 'button', 'aria-label': x, onclick: () => { ta.value += x; ta.focus(); ta.oninput(); } }, x)));
+  const smile = h('button', { class: 'ib', type: 'button', 'aria-label': 'Emoji einfügen', title: 'Emoji', onclick: () => { emo.hidden = !emo.hidden; } }, ico(P.smile));
   clip.onclick = () => { const fp = $('filePick'); fp.value = ''; fp.onchange = () => { const f = fp.files[0]; if (!f) return; if (f.size > MAX_FILE) return toast('Die Datei ist zu groß (höchstens 25 MB).'); file = f; prev.replaceChildren(f.type.startsWith('image/') ? h('img', { src: URL.createObjectURL(f), alt: '' }) : h('span', { class: 'file' }, h('span', { class: 'fi' }, (f.name.split('.').pop() || '').slice(0, 4).toUpperCase())), h('span', { style: 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, f.name + ' · ' + size(f.size)), h('button', { class: 'ib', type: 'button', 'aria-label': 'Anhang entfernen', onclick: () => { file = null; prev.hidden = true; } }, ico(P.x))); prev.hidden = false; }; fp.click(); };
   const go = async () => { const t = ta.value.trim(); if (!t && !file) return; send.disabled = true; try { await api.send(ch, t, file); ta.value = ''; ta.oninput(); file = null; prev.hidden = true; onSent && onSent(); } catch (e) { toast(e.message); } finally { send.disabled = false; } };
   send.onclick = go;
   ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && matchMedia('(pointer:fine)').matches) { e.preventDefault(); go(); } };
-  return h('div', {}, prev, h('div', { class: 'composer' }, h('div', { class: 'box' }, clip, ta), send));
+  return h('div', {}, prev, emo, h('div', { class: 'composer' }, h('div', { class: 'box' }, smile, ta, clip), send));
 }
 async function chatMini() {
   const list = h('div', { class: 'msgs' });
@@ -518,7 +639,7 @@ async function viewChat() {
 function zoomCard() {
   const has = !!settings.zoom;
   return h('section', { class: 'card zoom' }, h('span', { class: 'ic' }, ico(P.video)),
-    h('div', { class: 't' }, h('b', {}, 'Teamcall (Zoom)'), h('span', {}, 'Unser Team-Call'), settings.zoomNote ? h('small', {}, ico(P.cal), settings.zoomNote) : null),
+    h('div', { class: 't' }, h('b', {}, 'Teamcall (Zoom)'), h('span', {}, 'Unser täglicher Team-Call'), settings.zoomNote ? h('small', {}, ico(P.cal), settings.zoomNote) : null),
     has ? h('a', { class: 'btn zm', href: settings.zoom, target: '_blank', rel: 'noopener' }, ico(P.video), 'Jetzt beitreten') : h('span', { class: 'muted' }, me.admin ? 'Link im Bereich „Team“ festlegen.' : 'Noch kein Link hinterlegt.'));
 }
 
@@ -532,9 +653,11 @@ async function contractsCard(compact) {
   const nav = h('div', { class: 'month' },
     h('button', { class: 'ib', 'aria-label': 'Vorheriger Monat', disabled: month <= d.first, onclick: () => { month = shiftMonth(month, -1); rerender(); } }, ico(P.left)),
     h('button', { class: 'ib', 'aria-label': 'Nächster Monat', disabled: isCur, onclick: () => { month = shiftMonth(month, 1); rerender(); } }, ico(P.right)));
-  card.append(h('div', { class: 'hd' }, h('span', { class: 'ic', style: 'background:var(--green-soft);color:var(--green)' }, ico(P.chartUp, 3)), h('h2', {}, 'Verträge im ' + monthName(month)), nav));
+  const bars = h('span', { class: 'ic', style: 'background:transparent;width:40px' }); bars.innerHTML = '<svg viewBox="0 0 32 32" width="34" height="34" aria-hidden="true"><rect x="3" y="17" width="6" height="12" rx="2" fill="#1e9e5a"/><rect x="13" y="11" width="6" height="18" rx="2" fill="#1e9e5a"/><rect x="23" y="4" width="6" height="25" rx="2" fill="#1e9e5a"/></svg>';
+  nav.prepend(h('button', { class: 'ib', 'aria-label': 'Monat auswählen', title: 'Frühere Monate', onclick: () => monthSheet(d.first) }, ico(P.cal)));
+  card.append(h('div', { class: 'hd' }, bars, h('h2', {}, 'Verträge im ' + monthName(month)), nav));
   card.append(h('div', { class: 'kpis' },
-    h('div', { class: 'kpi g' }, ico(P.users), h('div', {}, h('span', {}, 'Team gesamt'), h('div', { class: 'num' }, d.total))),
+    h('div', { class: 'kpi g' }, (() => { const s = ico(P.users, 2.4); s.style.width = '34px'; s.style.height = '34px'; s.style.color = 'var(--green)'; return s; })(), h('div', {}, h('span', {}, 'Team gesamt'), h('div', { class: 'num' }, d.total, h('span', { style: 'font-size:16px;font-weight:700;margin-left:6px' }, 'Verträge')))),
     h('div', { class: 'kpi w' }, h('span', { class: 'muted', style: 'font-weight:600;color:var(--fg)' }, 'Monatsziel'), d.goal ? h('div', { class: 'row' }, h('span', {}, h('b', {}, d.total), ' / ' + d.goal), h('span', {}, pct + ' %')) : h('span', { class: 'muted' }, 'nicht festgelegt'), h('div', { class: 'bar', role: 'progressbar', 'aria-valuenow': pct, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('i', { style: 'width:' + pct + '%' })))));
   const people = d.users || [{ id: me.id, name: me.name, count: d.myCount }];
   const max = Math.max(1, ...people.map(p => p.count));
@@ -542,9 +665,10 @@ async function contractsCard(compact) {
   for (const p of [...people].sort((a, b) => (b.id === me.id) - (a.id === me.id) || b.count - a.count)) {
     const c = colorOf(p.id), mine = p.id === me.id;
     tiles.append(h('div', { class: 'tile' + (mine ? ' me' : ''), style: 'background:color-mix(in srgb, ' + c + ' 9%, var(--card))' },
-      av(p, 's'), h('span', { class: 'nm' }, mine ? p.name + ' (du)' : p.name), h('span', { class: 'ct' }, p.count), h('span', { class: 'lb' }, p.count === 1 ? 'Vertrag' : 'Verträge'),
-      h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(p.count / max * 100) + '%;background:' + c })),
-      mine && isCur ? h('button', { class: 'plus', 'aria-label': 'Vertrag eintragen', title: 'Vertrag eintragen', onclick: () => addContract('') }, ico(P.plus, 3)) : null));
+      av(p), h('span', { class: 'nm' }, mine ? p.name + ' (du)' : p.name),
+      h('div', { class: 'numrow' }, h('span', { class: 'ct' }, p.count), isCur && (mine || me.admin) ? h('button', { class: 'plus', 'aria-label': 'Vertrag für ' + p.name + ' eintragen', title: 'Vertrag für ' + p.name + ' eintragen', onclick: () => addContract('', p) }, ico(P.plus, 3)) : null),
+      h('span', { class: 'lb' }, p.count === 1 ? 'Vertrag' : 'Verträge'),
+      h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(p.count / max * 100) + '%;background:' + c }))));
   }
   card.append(tiles);
   if (!d.users) card.append(h('p', { class: 'muted', style: 'padding:0 18px 16px' }, 'Die Zahlen der einzelnen Kollegen sieht nur der Administrator.'));
@@ -563,14 +687,23 @@ async function contractsCard(compact) {
   }
   return card;
 }
-async function addContract(note) {
+async function addContract(note, person) {
+  const who = person && person.id !== me.id ? person : null;
   try {
-    const r = await api.addContract(note);
-    toast('Vertrag für ' + me.name + ' gezählt.', async () => { await api.delContract(r.id); toast('Rückgängig gemacht.'); rerender(); });
+    const r = await api.addContract(note, who ? who.id : undefined);
+    toast('Vertrag für ' + (who ? who.name : me.name) + ' gezählt.', async () => { await api.delContract(r.id); toast('Rückgängig gemacht.'); rerender(); });
     rerender();
   } catch (e) { toast(e.message); }
 }
 function rerender() { if (view === 'dashboard') viewDash(); renderSide(); }
+async function monthSheet(first) {
+  let s; const list = h('div', { style: 'display:flex;flex-direction:column;gap:6px' });
+  for (let m = monthKey(new Date()); m >= first; m = shiftMonth(m, -1)) {
+    const d = await api.contracts(m);
+    list.append(h('button', { class: 'person', onclick: () => { month = m; s.remove(); rerender(); } }, h('span', { class: 't' }, h('b', {}, monthName(m)), h('span', {}, d.goal ? d.total + ' von ' + d.goal + ' Verträgen' : d.total + ' Verträge')), m === month ? h('span', { class: 'pill' }, 'angezeigt') : null));
+  }
+  s = sheet(h('h3', {}, 'Monat auswählen'), h('p', { class: 'muted' }, 'Vergangene Monate bleiben dauerhaft gespeichert.'), list, h('button', { class: 'btn ghost', onclick: () => s.remove() }, 'Schließen'));
+}
 async function viewDash() {
   const main = $('main');
   const sc = h('div', { class: 'scroll', style: 'display:flex;flex-direction:column;gap:12px;padding:12px' });
