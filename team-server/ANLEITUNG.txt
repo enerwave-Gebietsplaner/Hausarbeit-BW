@@ -60,7 +60,10 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   Fortschritt z. B. 4 / 6; beim Erreichen kommt eine Glueckwunsch-Meldung. Am naechsten Tag startet
   der Tagesstand wieder bei 0. 'Teamvergleich heute' zeigt allen: Tagesziel, heute erreicht, Monatszahl.
   Tages- und Monatszahlen kommen aus denselben eingetragenen Vertraegen (keine Doppelzaehlung).
-- Projekte: Dashboard -> oben 'Projekte'. Nur der Administrator legt Projekte an, benennt sie um,
+- Dashboard (kompakt, von oben nach unten): Meine Vertraege mit [-] und [+] (+ traegt einen Vertrag ein,
+  - nimmt den zuletzt eingetragenen zurueck), Mein Tagesziel, Teamvergleich heute (Ziel/Heute/Monat), Projekte.
+  Fruehere Monate: Pfeile neben dem Monatsnamen. Der Teamcall steht im Team-Chat.
+- Projekte: Dashboard -> unten 'Projekte'. Nur der Administrator legt Projekte an, benennt sie um,
   waehlt die Mitarbeiter aus (ein Mitarbeiter kann in mehreren Projekten sein), aktiviert/deaktiviert
   und loescht sie. Mitarbeiter sehen nur ihre eigenen Projekte. Vertragszahlen werden dadurch nicht
   veraendert; die Projektkarte zeigt nur die Summe ihrer Mitarbeiter (heute / Monat).

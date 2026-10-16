@@ -142,6 +142,43 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .rank .bar { grid-column: 2 / 4; height: 6px; margin-top: -4px }
 .mine li { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line) }
 .mine { list-style: none; margin: 0; padding: 0 }
+.dcard { gap: 12px }
+.dhead { display: flex; align-items: center; gap: 12px; flex-wrap: wrap }
+.dico { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; background: rgba(34,186,87,.14); color: var(--brand-2); display: grid; place-items: center } .dico svg { width: 24px; height: 24px }
+.dtt { flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 1px } .dtt b { font-size: 18px } .dtt .muted { font-size: 13.5px }
+.mnav { display: flex; align-items: center; gap: 2px; font-size: 13px; color: var(--muted); font-weight: 650 } .mnav .icon-btn { width: 32px; height: 32px } .mnav .icon-btn svg { width: 16px; height: 16px } .mnav .icon-btn:disabled { opacity: .3 }
+.stepper { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; gap: 12px }
+.stepbtn { height: 64px; border-radius: 16px; border: 0; font-size: 34px; font-weight: 700; line-height: 1; background: var(--line); color: var(--fg); cursor: pointer }
+.stepbtn.plus { background: var(--accent-ink); color: #fff }
+.stepbtn:disabled { opacity: .35; cursor: default }
+.stepval { display: flex; align-items: baseline; justify-content: center; gap: 8px; color: var(--muted); font-weight: 650 }
+.stepval .n { font-size: 46px; font-weight: 800; color: var(--fg); font-variant-numeric: tabular-nums; line-height: 1 }
+.stepval.past { justify-content: flex-start }
+#contractNote { font-size: 15px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--card); color: var(--fg) }
+.tc { display: flex; flex-direction: column; gap: 4px }
+.tch, .tcr { display: grid; grid-template-columns: 34px minmax(0, 1fr) 70px minmax(90px, 150px) 56px; align-items: center; gap: 8px; padding: 6px 8px }
+.tc.past .tch, .tc.past .tcr { grid-template-columns: 34px minmax(0, 1fr) 70px }
+.tch { font-size: 12.5px; color: var(--muted); font-weight: 650; padding-bottom: 2px }
+.tcr { border-radius: 10px; padding: 8px }
+.tcr:nth-child(even) { background: var(--bg) }
+.tcr.me { box-shadow: inset 0 0 0 1.5px var(--accent-ink) }
+.tch .sm { display: none } @media (max-width: 520px) { .tch .lg { display: none } .tch .sm { display: inline } }
+.tc .c { text-align: center; font-variant-numeric: tabular-nums } .tch > span:nth-child(4) { padding-left: 2px }
+.rk { display: flex; align-items: center; gap: 2px; font-weight: 700; font-variant-numeric: tabular-nums } .crown { color: #e7a614; display: inline-flex } .crown svg { width: 18px; height: 18px; fill: #f5b82e }
+.who { display: flex; align-items: center; gap: 8px; min-width: 0 } .who b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 15px; font-weight: 650 } .tcr.me .who b { color: var(--accent-ink); font-weight: 750 }
+.who .av { width: 34px; height: 34px; font-size: 13px; flex: 0 0 auto }
+.today { display: flex; flex-direction: column; gap: 4px } .tv2 { font-variant-numeric: tabular-nums; color: var(--muted) } .tv2 strong { color: var(--accent-ink); font-size: 16px }
+.tcb { height: 7px; border-radius: 4px; background: var(--line); overflow: hidden } .tcb i { display: block; height: 100%; background: #6cc68e; border-radius: 4px } .tcr.hit .tcb i { background: var(--accent-ink) }
+.tc .month strong { font-size: 16px }
+@media (max-width: 520px) { .tch, .tcr { grid-template-columns: 26px minmax(0, 1fr) 40px 76px 44px; gap: 6px } .who .av { width: 28px; height: 28px; font-size: 11px } .who b { font-size: 14px } .tch { font-size: 11px } }
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px }
+.proj { display: flex; flex-direction: column; gap: 8px; align-items: stretch; text-align: left; font: inherit; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; cursor: pointer }
+.proj .pt { display: flex; justify-content: space-between; gap: 6px } .proj .pt b { font-size: 16px } .kebab { font-size: 20px; line-height: 1; color: var(--muted) }
+.proj .pst { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--muted) } .proj .pst i { width: 9px; height: 9px; border-radius: 50%; background: #9aa5a1 } .proj .pst.on { color: var(--accent-ink); font-weight: 650 } .proj .pst.on i { background: #22ba57 }
+.proj .avs .av { width: 38px; height: 38px; font-size: 14px; border: 2px solid var(--card) } .proj .avs .av.more { background: var(--line); color: var(--fg) }
+.proj .pfoot { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted) } .proj .pfoot span { display: inline-flex; align-items: center; gap: 5px } .proj .pfoot svg { width: 16px; height: 16px }
+.proj.off { opacity: .6 }
+.btn.small { padding: 8px 12px; font-size: 14px } .btn.small svg { width: 18px; height: 18px }
 .dtabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px }
 .dtabs button { border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 700; padding: 10px; border-radius: 9px; cursor: pointer }
 .dtabs button.on { background: var(--brand-2); color: #fff }
@@ -155,14 +192,16 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .mlist { display: flex; flex-direction: column; max-height: 46vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px }
 .mlist label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); cursor: pointer } .mlist label:first-child { border-top: 0 }
 .mlist input { width: 20px; height: 20px; accent-color: var(--accent-ink) }
+.dg-body { display: flex; gap: 16px; align-items: center } .dg-left { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0 } .dg-right { display: flex; flex-direction: column; align-items: center }
+.dg-goal { font-size: 16px } .dg-goal strong { font-weight: 750 }
+.daygoal .dg-edit { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 10px; padding: 7px 12px; color: var(--fg) } .daygoal .dg-edit svg { width: 18px; height: 18px }
 .daygoal { cursor: pointer; text-align: left; font: inherit; color: inherit; width: 100% }
 .daygoal .dg-top { display: flex; justify-content: space-between; align-items: center; gap: 10px }
-.daygoal .dg-num { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1 }
+.daygoal .dg-num { font-size: 44px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1 }
 .daygoal .dg-num small { font-size: 20px; color: var(--muted); font-weight: 700 }
 .daygoal .dg-bar { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden }
 .daygoal .dg-bar i { display: block; height: 100%; background: var(--accent-ink); border-radius: 6px; transition: width .4s }
 .daygoal.done { border-color: var(--accent-ink); box-shadow: inset 0 0 0 1px var(--accent-ink) }
-.daygoal .dg-edit { font-size: 13px; color: var(--accent-ink); font-weight: 700 }
 .tvs { display: flex; flex-direction: column }
 .tv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line) }
 .tv:first-child { border-top: 0 }
@@ -230,7 +269,13 @@ const I = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   msg: '<path d="M4 5h16v11H9l-5 4z"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
-  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>'
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>',
+  doc: '<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  team: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/>',
+  case: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 12h18"/>',
+  pen: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  crown: '<path d="m3 8 4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>'
 };
 const COLORS = ['#1f7a45', '#1d4ed8', '#b45309', '#7c3aed', '#be185d', '#0f766e', '#a16207', '#4d7c0f'];
 const avColor = id => COLORS[[...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0) % COLORS.length];
@@ -815,30 +860,31 @@ function accessSheet(name, pin, changed) {
 
 /* ================= Dashboard ================= */
 let dashMonth = monthKey(new Date()), prevMine = null;
-let dashTab = store.get('hauskarte-dash-tab', 'overview') === 'projects' ? 'projects' : 'overview';
-function dashTabs() {
-  const b = (id, label) => h('button', { type: 'button', class: dashTab === id ? 'on' : '', id: 'dtab-' + id, onclick: () => { dashTab = id; store.set('hauskarte-dash-tab', id); renderDashboard(); } }, label);
-  return h('div', { class: 'dtabs', role: 'tablist' }, b('overview', 'Übersicht'), b('projects', 'Projekte'));
-}
-function renderDashboard() { return dashTab === 'projects' ? renderProjects() : renderOverview(); }
-async function renderOverview() {
+/* Dashboard (kompakt): 1. Meine Verträge (+/−)  2. Mein Tagesziel  3. Teamvergleich heute  4. Projekte
+   Alle Zahlen kommen wie bisher aus /api/contracts; + und − nutzen die bestehende Vertragserfassung. */
+const dhead = (icon, title, sub, right) => h('div', { class: 'dhead' }, h('span', { class: 'dico' }, svg(I[icon])), h('div', { class: 'dtt' }, h('b', {}, title), sub ? h('span', { class: 'muted' }, sub) : null), right || null);
+async function renderDashboard() {
   const v = $('view-dashboard');
-  settings = await api.settings().catch(() => settings);
   const cur = monthKey(new Date());
-  let d;
-  try { d = await api.contracts(dashMonth); } catch (e) { v.replaceChildren(h('div', { class: 'empty' }, e.message)); return; }
+  let d, projects = [];
+  try { [d, projects, users] = await Promise.all([api.contracts(dashMonth), api.projects().catch(() => []), api.users().catch(() => users)]); }
+  catch (e) { v.replaceChildren(h('div', { class: 'empty' }, e.message)); return; }
   const isCur = dashMonth === cur;
   const first = d.months[0] || cur;
-  const nav = h('div', { class: 'month' },
+  const mnav = h('div', { class: 'mnav' },
     h('button', { class: 'icon-btn', 'aria-label': 'Vorheriger Monat', disabled: dashMonth <= first, onclick: () => { dashMonth = shiftMonth(dashMonth, -1); renderDashboard(); } }, svg(I.back)),
-    h('b', {}, monthName(dashMonth) + (isCur ? '' : ' (abgeschlossen)')),
+    h('span', {}, monthName(dashMonth)),
     h('button', { class: 'icon-btn', 'aria-label': 'Nächster Monat', disabled: isCur, onclick: () => { dashMonth = shiftMonth(dashMonth, 1); renderDashboard(); } }, (() => { const s = svg(I.back); s.style.transform = 'scaleX(-1)'; return s; })()));
-  const myCard = h('div', { class: 'card' }, h('div', { class: 'row', style: 'justify-content:space-between' }, h('b', {}, isCur ? 'Meine Verträge diesen Monat' : 'Meine Verträge'), h('span', { class: 'total' }, h('span', { class: 'big', style: 'font-size:34px' }, d.myCount))));
+
+  /* 1. Meine Verträge diesen Monat */
+  const myCard = h('div', { class: 'card dcard', id: 'myContracts' }, dhead('doc', isCur ? 'Meine Verträge diesen Monat' : 'Meine Verträge', isCur ? 'Mit + einen Vertrag eintragen, mit − den letzten zurücknehmen.' : 'Abgeschlossener Monat', mnav));
   if (isCur) {
-    const note = h('input', { id: 'contractNote', placeholder: 'Notiz (optional), z. B. Kunde oder Tarif', autocomplete: 'off' });
-    const add = h('button', { class: 'btn big green' }, svg(I.plus), 'Vertrag eintragen');
-    add.onclick = async () => {
-      add.disabled = true;
+    const note = h('input', { id: 'contractNote', placeholder: 'Notiz zum nächsten Vertrag (optional)', autocomplete: 'off' });
+    const minus = h('button', { class: 'stepbtn', id: 'btnMinus', 'aria-label': 'Letzten Vertrag entfernen', disabled: !d.mine.length }, '−');
+    const plus = h('button', { class: 'stepbtn plus', id: 'btnPlus', 'aria-label': 'Vertrag hinzufügen' }, '+');
+    const busy = on => { plus.disabled = on; minus.disabled = on || !d.mine.length; };
+    plus.onclick = async () => {
+      busy(true);
       try {
         await api.addContract(note.value.trim());
         const after = await api.contracts(cur);
@@ -847,76 +893,75 @@ async function renderOverview() {
         if (t && t.goal && t.count === t.goal && window.HauskarteMotivation) window.HauskarteMotivation.show('🎉 Super! Du hast dein Tagesziel erreicht!', true);
         else if (!(window.HauskarteMotivation && window.HauskarteMotivation.contract(after.myCount, prevMine))) toast('Vertrag für ' + me.name + ' gezählt.');
         renderDashboard();
-      } catch (e) { toast(e.message); add.disabled = false; }
+      } catch (e) { toast(e.message); busy(false); }
     };
-    myCard.append(h('label', { class: 'f' }, 'Notiz', note), add, h('p', { class: 'muted', style: 'margin:0' }, 'Wird automatisch dir zugeordnet.'));
+    // Minus: den zuletzt eingetragenen eigenen Vertrag über die bestehende Rücknahme entfernen
+    minus.onclick = async () => {
+      const last = d.mine[0]; if (!last) return;
+      busy(true);
+      try { await api.delContract(last.id); toast('Letzter Vertrag (' + time(last.at) + (last.note ? ' · ' + last.note : '') + ') entfernt.'); renderDashboard(); }
+      catch (e) { toast(e.message); busy(false); }
+    };
+    myCard.append(h('div', { class: 'stepper' }, minus, h('div', { class: 'stepval' }, h('span', { class: 'n', id: 'myCount' }, String(d.myCount)), h('span', {}, d.myCount === 1 ? 'Vertrag' : 'Verträge')), plus), note);
+  } else {
+    myCard.append(h('div', { class: 'stepval past' }, h('span', { class: 'n', id: 'myCount' }, String(d.myCount)), h('span', {}, (d.myCount === 1 ? 'Vertrag' : 'Verträge') + ' · Monat abgeschlossen')));
   }
-  if (d.mine.length) {
-    const ul = h('ul', { class: 'mine' }, d.mine.slice(0, 15).map(c => h('li', {}, h('span', {}, new Date(c.at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' ' + time(c.at) + (c.note ? ' · ' + c.note : '')),
-      isCur ? h('button', { class: 'btn ghost', style: 'padding:6px 10px', onclick: async () => { await api.delContract(c.id); toast('Eintrag zurückgenommen.'); renderDashboard(); } }, 'Rückgängig') : null)));
-    myCard.append(ul);
-  }
-  let rank = null;
-  if (d.users && d.users.length) {
-    const max = Math.max(1, ...d.users.map(u => u.count));
-    const grid = h('div', { class: 'rank' });
-    for (const u of [...d.users].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'de'))) {
-      const mine = u.id === me.id;
-      grid.append(av(u), h('span', { class: 'nm', style: mine ? 'color:var(--accent-ink)' : '' }, u.name + (mine ? ' (du)' : '')), h('span', { class: 'ct' }, u.count), h('span'), h('div', { class: 'bar' }, h('i', { style: 'width:' + Math.round(u.count / max * 100) + '%' + (mine ? '' : ';background:#7fb8a0') })));
-    }
-    rank = h('div', { class: 'card' }, h('b', {}, 'Team im ' + monthName(dashMonth)), h('span', { class: 'muted' }, 'Verträge pro Mitarbeiter' + (isCur ? ' – der Monat läuft noch' : '')), grid);
-  }
-  // Persönliches Tagesziel + Teamvergleich heute (aus denselben Verträgen berechnet)
-  let goalCard = null, teamToday = null;
+
+  /* 2. Mein Tagesziel  3. Teamvergleich heute (nur im laufenden Monat) */
+  let goalCard = null, teamToday = null, pastTeam = null;
   if (isCur && d.today) {
     const t = d.today;
     if (t.goal) {
       const pct = Math.min(100, Math.round(t.count / t.goal * 100)), done = t.count >= t.goal;
-      goalCard = h('button', { class: 'card daygoal' + (done ? ' done' : ''), id: 'dayGoal', onclick: () => dayGoalEditor(t) },
-        h('div', { class: 'dg-top' }, h('b', {}, 'Mein Tagesziel'), h('span', { class: 'dg-edit' }, 'Ändern')),
-        h('div', { class: 'dg-top' }, h('span', {}, 'Tagesziel: ' + t.goal + ' ' + (t.goal === 1 ? 'Vertrag' : 'Verträge')), h('span', { class: 'dg-num', id: 'dayProgress' }, String(t.count), h('small', {}, ' / ' + t.goal))),
-        h('div', { class: 'dg-bar' }, h('i', { style: 'width:' + pct + '%' })),
-        h('span', { class: 'muted' }, done ? (t.count > t.goal ? '🏆 Ziel übertroffen – ' + (t.count - t.goal) + ' mehr als geplant!' : '🏆 Tagesziel erreicht!') : 'Aktuell: ' + t.count + ' / ' + t.goal + ' – noch ' + (t.goal - t.count) + ' bis zum Ziel'));
+      goalCard = h('button', { class: 'card dcard daygoal' + (done ? ' done' : ''), id: 'dayGoal', onclick: () => dayGoalEditor(t) },
+        dhead('target', 'Mein Tagesziel', 'Dein persönliches Ziel für heute.', h('span', { class: 'dg-edit' }, svg(I.pen), 'Ändern')),
+        h('div', { class: 'dg-body' },
+          h('div', { class: 'dg-left' }, h('span', { class: 'dg-goal' }, 'Tagesziel: ', h('strong', {}, t.goal + ' ' + (t.goal === 1 ? 'Vertrag' : 'Verträge'))),
+            h('div', { class: 'dg-bar' }, h('i', { style: 'width:' + pct + '%' })),
+            h('span', { class: 'muted' }, done ? (t.count > t.goal ? '🏆 Ziel übertroffen – ' + (t.count - t.goal) + ' mehr als geplant!' : '🏆 Tagesziel erreicht!') : 'Noch ' + (t.goal - t.count) + ' bis zum Ziel')),
+          h('div', { class: 'dg-right' }, h('span', { class: 'dg-num', id: 'dayProgress' }, String(t.count), h('small', {}, ' / ' + t.goal)), h('span', { class: 'muted' }, 'Verträge'))));
     } else {
-      goalCard = h('button', { class: 'card daygoal', id: 'dayGoal', onclick: () => dayGoalEditor(t) },
-        h('div', { class: 'dg-top' }, h('b', {}, 'Mein Tagesziel'), h('span', { class: 'dg-edit' }, 'Festlegen')),
-        h('span', { class: 'muted' }, 'Heute ' + t.count + ' ' + (t.count === 1 ? 'Vertrag' : 'Verträge') + '. Tippe hier, um dein Ziel für heute festzulegen, z. B. 6 Verträge.'));
+      goalCard = h('button', { class: 'card dcard daygoal', id: 'dayGoal', onclick: () => dayGoalEditor(t) },
+        dhead('target', 'Mein Tagesziel', 'Heute ' + t.count + ' ' + (t.count === 1 ? 'Vertrag' : 'Verträge') + ' – tippe hier, um dein Ziel festzulegen.', h('span', { class: 'dg-edit' }, svg(I.pen), 'Festlegen')));
     }
     const rows = [...t.team].sort((a, b) => b.today - a.today || b.month - a.month || a.name.localeCompare(b.name, 'de'));
-    const maxM = Math.max(1, ...rows.map(u => u.month));
-    teamToday = h('div', { class: 'card', id: 'teamToday' }, h('b', {}, 'Teamvergleich heute'), h('span', { class: 'muted', style: 'margin-top:-6px' }, 'Tagesziel, heutige Verträge und Monatszahl'),
-      h('div', { class: 'tvs' }, rows.map(u => {
-        const mine = u.id === me.id, hit = u.goal && u.today >= u.goal;
-        return h('div', { class: 'tv' + (mine ? ' me' : ''), 'data-name': u.name }, av(u), h('b', {}, u.name + (mine ? ' (du)' : '')),
-          h('span', { class: 'l' }, 'Heute: ', h('strong', {}, u.goal ? u.today + ' / ' + u.goal : String(u.today)), ' ' + ((u.goal || u.today) === 1 ? 'Vertrag' : 'Verträge') + (hit ? ' 🏆' : '') + (u.goal ? '' : ' (kein Ziel)')),
-          h('span', { class: 'l' }, 'Monat: ', h('strong', {}, String(u.month)), ' ' + (u.month === 1 ? 'Vertrag' : 'Verträge')));
-      })));
+    const leader = rows.length && rows[0].today > 0 ? rows[0].id : null;
+    teamToday = h('div', { class: 'card dcard', id: 'teamToday' }, dhead('team', 'Teamvergleich heute', 'Tagesziel, heutige Verträge und Monatszahl – alle auf einen Blick.'),
+      h('div', { class: 'tc' },
+        h('div', { class: 'tch' }, h('span', {}, '#'), h('span', {}, 'Mitarbeiter'), h('span', { class: 'c' }, h('span', { class: 'lg' }, 'Tagesziel'), h('span', { class: 'sm' }, 'Ziel')), h('span', {}, 'Heute'), h('span', { class: 'c' }, 'Monat')),
+        rows.map((u, i) => {
+          const mine = u.id === me.id, hit = u.goal && u.today >= u.goal, pct = u.goal ? Math.min(100, Math.round(u.today / u.goal * 100)) : 0;
+          return h('div', { class: 'tcr' + (mine ? ' me' : '') + (hit ? ' hit' : ''), 'data-name': u.name },
+            h('span', { class: 'rk' }, String(i + 1), u.id === leader ? h('span', { class: 'crown', title: 'Heute vorne' }, svg(I.crown)) : null),
+            h('span', { class: 'who' }, av(u), h('b', {}, u.name + (mine ? ' (du)' : '') + (hit ? ' 🏆' : ''))),
+            h('span', { class: 'c goal' }, u.goal ? String(u.goal) : '–'),
+            h('span', { class: 'today' }, h('span', { class: 'tv2' }, h('strong', {}, String(u.today)), u.goal ? ' / ' + u.goal : ''), u.goal ? h('span', { class: 'tcb' }, h('i', { style: 'width:' + pct + '%' })) : null),
+            h('span', { class: 'c month' }, h('strong', {}, String(u.month))));
+        })));
+  } else if (d.users && d.users.length) {
+    // Abgeschlossener Monat: hier gibt es keinen „heute“-Vergleich, daher die gespeicherten Monatszahlen des Teams
+    pastTeam = h('div', { class: 'card dcard', id: 'pastTeam' }, dhead('team', 'Team im ' + monthName(dashMonth), 'Abgeschlossener Monat – gespeicherte Monatszahlen.'),
+      h('div', { class: 'tc past' }, h('div', { class: 'tch' }, h('span', {}, '#'), h('span', {}, 'Mitarbeiter'), h('span', { class: 'c' }, 'Monat')),
+        [...d.users].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'de')).map((u, i) => h('div', { class: 'tcr' + (u.id === me.id ? ' me' : ''), 'data-name': u.name },
+          h('span', { class: 'rk' }, String(i + 1)), h('span', { class: 'who' }, av(u), h('b', {}, u.name + (u.id === me.id ? ' (du)' : ''))), h('span', { class: 'c month' }, h('strong', {}, String(u.count)))))));
   }
-  put(v, dashTabs(), nav, myCard, goalCard, teamToday, rank, callCard());
+
+  /* 4. Projekte */
+  const stat = id => (d.today ? d.today.team.find(u => u.id === id) : null) || { today: 0, goal: 0, month: 0 };
+  const projCard = h('div', { class: 'card dcard', id: 'projects' },
+    dhead('case', 'Projekte', me.admin ? 'Alle Projekte und die zugeordneten Mitarbeiter.' : 'Deine Projekte und Teams.', me.admin ? h('button', { class: 'btn green small', id: 'btnNewProject', onclick: () => projectEditor(null) }, svg(I.plus), 'Projekt erstellen') : null),
+    projects.length ? h('div', { class: 'pgrid' }, projects.map(pr => {
+      const act = pr.members.filter(u => u.active), month = act.reduce((a, u) => a + stat(u.id).month, 0);
+      return h('button', { class: 'proj' + (pr.active ? '' : ' off'), 'data-name': pr.name, onclick: () => projectSheet(pr, stat) },
+        h('span', { class: 'pt' }, h('b', {}, pr.name), me.admin ? h('span', { class: 'kebab', 'aria-hidden': 'true' }, '⋮') : null),
+        h('span', { class: 'pst' + (pr.active ? ' on' : '') }, h('i'), pr.active ? 'Aktiv' : 'Inaktiv'),
+        h('span', { class: 'avs' }, pr.members.slice(0, 3).map(av), pr.members.length > 3 ? h('span', { class: 'av more' }, '+' + (pr.members.length - 3)) : null),
+        h('span', { class: 'pfoot' }, h('span', {}, svg(I.team), pr.members.length + ' Mitarbeiter'), h('span', {}, svg(I.doc), month + ' Verträge (Monat)')));
+    }))
+      : h('p', { class: 'muted', style: 'margin:0' }, me.admin ? 'Noch keine Projekte. Mit „Projekt erstellen“ legst du eines an und wählst die Mitarbeiter aus.' : 'Du bist noch keinem Projekt zugeordnet.'));
+
+  put(v, myCard, goalCard, teamToday, pastTeam, projCard);
   // Dashboard gesehen: Hinweis auf neue Verträge der Kollegen zurücksetzen
-  if (notes && notes.dash) { await api.markRead('dash').catch(() => {}); notes.dash = 0; showNotes(notes); }
-}
-/* ---------- Projekte ---------- */
-async function renderProjects() {
-  const v = $('view-dashboard');
-  let list, d;
-  try { [list, d, users] = await Promise.all([api.projects(), api.contracts(monthKey(new Date())).catch(() => null), api.users().catch(() => users)]); }
-  catch (e) { put(v, dashTabs(), h('div', { class: 'empty' }, e.message)); return; }
-  const stat = id => (d && d.today ? d.today.team.find(u => u.id === id) : null) || { today: 0, goal: 0, month: 0 };
-  const head = h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Projekte · ' + list.length),
-    me.admin ? h('button', { class: 'btn green', id: 'btnNewProject', onclick: () => projectEditor(null) }, svg(I.plus), 'Neues Projekt') : null);
-  const cards = list.map(pr => {
-    const act = pr.members.filter(u => u.active);
-    const today = act.reduce((a, u) => a + stat(u.id).today, 0), month = act.reduce((a, u) => a + stat(u.id).month, 0);
-    const mine = pr.members.some(u => u.id === me.id);
-    return h('button', { class: 'card proj' + (pr.active ? '' : ' off'), 'data-name': pr.name, onclick: () => projectSheet(pr, stat) },
-      h('div', { class: 'ph' }, h('b', {}, pr.name), h('span', { class: 'pill ' + (pr.active ? 'on' : 'off') }, pr.active ? 'Aktiv' : 'Inaktiv')),
-      h('span', { class: 'muted' }, pr.members.length + (pr.members.length === 1 ? ' Mitarbeiter' : ' Mitarbeiter') + (mine ? ' · du bist dabei' : '')),
-      pr.members.length ? h('div', { class: 'avs' }, pr.members.slice(0, 12).map(av)) : null,
-      h('div', { class: 'pstats' }, h('span', {}, 'Heute ', h('strong', {}, String(today))), h('span', {}, 'Monat ', h('strong', {}, String(month))), h('span', { class: 'muted', style: 'align-self:center' }, 'Verträge im Team')));
-  });
-  const empty = !list.length ? h('div', { class: 'card' }, h('p', { class: 'muted', style: 'margin:0' }, me.admin ? 'Noch keine Projekte. Lege mit „Neues Projekt“ das erste an und wähle die Mitarbeiter aus.' : 'Du bist noch keinem Projekt zugeordnet. Der Administrator ordnet dich zu.')) : null;
-  put(v, dashTabs(), head, empty, cards, h('p', { class: 'muted' }, me.admin ? 'Ein Mitarbeiter kann mehreren Projekten angehören. Vertragszahlen und Tagesziele bleiben unverändert – Projekte fassen sie nur zusammen.' : 'Du siehst die Projekte, denen du angehörst. Ändern kann sie nur der Administrator.'));
   if (notes && notes.dash) { await api.markRead('dash').catch(() => {}); notes.dash = 0; showNotes(notes); }
 }
 function projectSheet(pr, stat) {
@@ -955,7 +1000,7 @@ function projectEditor(pr) {
     e.preventDefault();
     const n = name.value.trim(); if (!n) return err.textContent = 'Bitte einen Projektnamen eingeben.';
     const members = boxes.map(l => l.querySelector('input')).filter(c => c.checked).map(c => c.value);
-    try { if (pr) await api.updateProject(pr.id, { name: n, members, active: act.checked }); else await api.addProject({ name: n, members, active: act.checked }); s.remove(); toast(pr ? 'Projekt gespeichert.' : 'Projekt „' + n + '“ angelegt.'); dashTab = 'projects'; store.set('hauskarte-dash-tab', 'projects'); renderDashboard(); }
+    try { if (pr) await api.updateProject(pr.id, { name: n, members, active: act.checked }); else await api.addProject({ name: n, members, active: act.checked }); s.remove(); toast(pr ? 'Projekt gespeichert.' : 'Projekt „' + n + '“ angelegt.'); renderDashboard(); }
     catch (x) { err.textContent = x.message; }
   };
   s = sheet(form);
