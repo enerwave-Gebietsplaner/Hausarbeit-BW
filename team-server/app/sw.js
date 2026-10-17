@@ -1,5 +1,5 @@
 // Hauskarte BW – Offline-Speicher (Service Worker)
-const APP = 'hauskarte-team-v14';
+const APP = 'hauskarte-team-v15';
 const TILES = 'hauskarte-tiles-v1';
 const MAX_TILES = 3000;
 const SHELL = ['./', './index.html', './team.html', './motivation.js', './manifest.webmanifest', './icon.svg'];

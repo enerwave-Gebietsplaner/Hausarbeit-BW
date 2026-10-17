@@ -38,7 +38,7 @@ IM BETRIEB
   Daten und Mitarbeiter bleiben dabei unveraendert.
 
 TEAM-BEREICH (Team-Chat, Team, Dashboard)
-- Oben in ENERWAVE Connect: Hauskarte | Team-Chat | Mitarbeiter | Dashboard.
+- Oben in ENERWAVE Connect: Hauskarte | Team-Chat | Mitarbeiter | Dashboard | Academy.
 - Die Karte ist fuer ganz Deutschland freigegeben (Suche, Standort, Haeuser finden).
 - Administrator: Neki bekommt die Admin-Rechte automatisch, solange es noch keinen Admin gibt.
   Nur der Administrator kann unter 'Mitarbeiter' neue Mitarbeiter anlegen, eine persoenliche PIN
@@ -70,6 +70,10 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   veraendert; die Projektkarte zeigt nur die Summe ihrer Mitarbeiter (heute / Monat).
 - Aktiv-Status: Im Tagesziel 'START' (gruen = heute aktiv) und 'ENDE' (rot = beendet). Im Teamvergleich
   sieht jeder den Status aller. Nur fuer den aktuellen Tag, keine Uhrzeiten, keine Zeiterfassung.
+- Academy: Schulungsunterlagen (PDF) und Schulungsvideos. Nur der Administrator legt PDF-Kacheln an,
+  laedt PDFs/Videos hoch (Videos bis 4 GB, am besten als MP4), benennt um, tauscht aus und loescht
+  (Knopf mit den drei Punkten). Alle anderen lesen PDFs und spielen Videos direkt in der App ab.
+  Die Dateien liegen in C:\Hauskarte\daten\anhaenge (bei der externen Sicherung mitsichern).
 - Motivation: persoenliche Begruessung einmal pro Arbeitstag, kurze Nachrichten bei eigenen
   Vertrags-Meilensteinen (1., 2., 3., jeder 5., persoenlicher Monatsrekord).
 - Chat-Anhaenge liegen in C:\Hauskarte\daten\anhaenge (bitte bei der externen Sicherung mitsichern).

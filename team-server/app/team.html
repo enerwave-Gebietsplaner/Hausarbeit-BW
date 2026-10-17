@@ -44,7 +44,7 @@ header.top .wrap { display: flex; align-items: center; justify-content: space-be
 .me { display: flex; align-items: center; gap: 8px; font-size: 13px; min-width: 0 }
 .me select { background: rgba(255,255,255,.14); border: 0; border-radius: 10px; padding: 4px 8px; color: #fff; max-width: 170px }
 .me select option { color: #000 }
-nav.tabs .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding-block: 0 6px }
+nav.tabs .wrap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding-block: 0 6px }
 nav.tabs a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; color: rgba(255,255,255,.78); text-decoration: none; font-size: 12.5px; font-weight: 600; position: relative }
 nav.tabs a svg { width: 22px; height: 22px }
 nav.tabs a.on { background: rgba(255,255,255,.16); color: #fff }
@@ -192,6 +192,37 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .mlist { display: flex; flex-direction: column; max-height: 46vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px }
 .mlist label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); cursor: pointer } .mlist label:first-child { border-top: 0 }
 .mlist input { width: 20px; height: 20px; accent-color: var(--accent-ink) }
+.ac-hero { display: flex; gap: 14px; align-items: center; background: linear-gradient(135deg, #173a34, #1f5246); color: #fff; border-radius: var(--radius); padding: 16px }
+.ac-hero h2 { margin: 0; font-size: 20px } .ac-hero p { margin: 2px 0 0; color: rgba(255,255,255,.8); font-size: 14px }
+.ac-hico { flex: 0 0 auto; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center } .ac-hico svg { width: 28px; height: 28px }
+.ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px }
+.ac-tile { position: relative; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden }
+.ac-tile.empty { border-style: dashed }
+.ac-open { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 14px; cursor: pointer; min-height: 120px }
+.ac-open b { font-size: 16px; line-height: 1.25; padding-right: 26px }
+.ac-pdfico { display: inline-grid; place-items: center; width: 44px; height: 52px; border-radius: 6px; background: #c62828; color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .04em; box-shadow: inset -8px 8px 0 -4px rgba(255,255,255,.35) }
+.ac-tile.empty .ac-pdfico { background: #9aa5a1 }
+.ac-edit { position: absolute; top: 6px; right: 6px; border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; width: 34px; height: 34px; border-radius: 8px; cursor: pointer }
+.ac-vids { display: flex; flex-direction: column; gap: 14px }
+.ac-vid { display: flex; flex-direction: column; gap: 8px }
+.ac-thumb { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; padding: 0; border-radius: 14px; overflow: hidden; background: #173a34; cursor: pointer }
+.ac-thumb img { width: 100%; height: 100%; object-fit: cover; display: block }
+.ac-noimg { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.35) } .ac-noimg svg { width: 64px; height: 64px }
+.ac-play { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(0,0,0,.55); display: grid; place-items: center; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.3) } .ac-play svg { width: 30px; height: 30px; fill: #fff; stroke: none; margin-left: 4px }
+.ac-vmeta { position: relative; display: flex; flex-direction: column; gap: 2px; padding-right: 36px } .ac-vmeta b { font-size: 16px } .ac-vmeta .ac-edit { top: -4px; right: 0 }
+.ac-prog { position: relative; height: 26px; border-radius: 8px; background: var(--line); overflow: hidden } .ac-prog i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent-ink); transition: width .2s } .ac-prog span { position: relative; display: block; text-align: center; line-height: 26px; font-size: 13px; font-weight: 650 }
+body.fv-open { overflow: hidden }
+.fv { position: fixed; inset: 0; z-index: 2147481000; background: #0f1d1a; display: flex; flex-direction: column }
+.fv-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 6px 8px; padding-top: max(6px, env(safe-area-inset-top)); background: #173a34; color: #fff }
+.fv-bar .icon-btn { color: #fff; background: rgba(255,255,255,.12); border: 0; min-width: 40px; height: 40px; font-size: 22px; font-weight: 700 }
+.fv-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 16px }
+.fv-tools { display: flex; align-items: center; gap: 6px } .fv-zoom, .fv-page { font-size: 13px; color: rgba(255,255,255,.85); font-variant-numeric: tabular-nums; min-width: 44px; text-align: center }
+.fv-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y }
+.fv-pages { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 8px; min-width: min-content }
+.fv-pg { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.35); flex: 0 0 auto } .fv-pg canvas { width: 100%; height: 100%; display: block }
+.fv-msg { color: #fff; text-align: center; padding: 40px 20px; font-size: 15px }
+.fv.video .fv-body { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000 } .fv.video video { width: 100%; max-height: 100%; background: #000 }
+@media (max-width: 420px) { nav.tabs a { font-size: 11px } .fv-zoom { display: none } }
 .dstat { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 10px }
 .dst-l { flex: 1; min-width: 150px; font-weight: 700; font-size: 15px } .dst-l.active { color: var(--accent-ink) } .dst-l.ended { color: var(--danger) } .dst-l.none { color: var(--muted); font-weight: 600 }
 .dst-b { border: 1.5px solid var(--line); background: var(--card); color: var(--fg); border-radius: 10px; padding: 8px 12px; font: inherit; font-weight: 750; font-size: 14px; cursor: pointer }
@@ -249,6 +280,7 @@ div.daygoal { width: auto; box-sizing: border-box }
       <a href="#chat" id="tab-chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Team-Chat<span class="badge" id="unread" hidden></span></a>
       <a href="#team" id="tab-team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/></svg>Mitarbeiter</a>
       <a href="#dashboard" id="tab-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard<span class="dot" id="dashDot" hidden></span></a>
+      <a href="#academy" id="tab-academy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg>Academy</a>
     </div>
   </nav>
 </header>
@@ -258,6 +290,7 @@ div.daygoal { width: auto; box-sizing: border-box }
   <section class="view wrap" id="view-chat" hidden></section>
   <section class="view wrap" id="view-team" hidden></section>
   <section class="view wrap" id="view-dashboard" hidden></section>
+  <section class="view wrap" id="view-academy" hidden></section>
   <section class="view wrap" id="view-login" hidden></section>
 </main>
 <input type="file" id="filePick" hidden>
@@ -366,6 +399,26 @@ const realApi = {
   delContract: id => call('POST', 'contracts/' + id + '/delete'),
   setDayGoal: goal => call('POST', 'daygoal', { goal }),
   setDayStatus: status => call('POST', 'daystatus', { status }),
+  academy: () => call('GET', 'academy'),
+  addAcademy: d => call('POST', 'academy', d),
+  updateAcademy: (id, d) => call('POST', 'academy/' + id, d),
+  delAcademy: id => call('POST', 'academy/' + id + '/delete'),
+  // Datei für die Academy hochladen (nur Admin, große Videos erlaubt), mit Fortschritt
+  uploadAcademy: async (file, type, onProgress) => {
+    const tk = await token();
+    return new Promise((resolve, reject) => {
+      const x = new XMLHttpRequest();
+      x.open('POST', '/api/files');
+      x.setRequestHeader('Authorization', 'Bearer ' + tk);
+      x.setRequestHeader('Content-Type', type || file.type || 'application/octet-stream');
+      x.setRequestHeader('X-Filename', encodeURIComponent(file.name || 'datei'));
+      x.setRequestHeader('X-Academy', '1');
+      x.upload.onprogress = e => { if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100)); };
+      x.onload = () => { let j = {}; try { j = JSON.parse(x.responseText); } catch (e) {} x.status === 200 ? resolve(j.id) : reject(Error(j.message || 'Hochladen fehlgeschlagen (' + x.status + ')')); };
+      x.onerror = () => reject(Error('Keine Verbindung zum Server. Ist Tailscale an?'));
+      x.send(file);
+    });
+  },
   projects: () => call('GET', 'projects'),
   addProject: d => call('POST', 'projects', d),
   updateProject: (id, d) => call('POST', 'projects/' + id, d),
@@ -438,6 +491,7 @@ const demoApi = (() => {
     addContract: note => { contracts.push({ id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }); return wait({ ok: true }); },
     setDayGoal: () => wait({ ok: true }),
     setDayStatus: () => wait({ ok: true }),
+    academy: () => wait([{ id: 1, kind: 'pdf', title: 'ENERWAVE Workbook', file: null }]), addAcademy: () => wait({}), updateAcademy: () => wait({}), delAcademy: () => wait({ ok: true }), uploadAcademy: () => Promise.reject(Error('In der Vorschau nicht möglich.')),
     projects: () => wait([]), addProject: () => wait({}), updateProject: () => wait({}), delProject: () => wait({ ok: true }),
     delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
     setGoal: (month, goal) => { goals[month] = goal; return wait({ ok: true }); },
@@ -514,17 +568,17 @@ function showLogin(msg) {
 /* ================= Navigation ================= */
 function route() {
   const v = (location.hash || '#chat').slice(1).split('/')[0];
-  view = ['chat', 'team', 'dashboard'].includes(v) ? v : 'chat';
-  for (const k of ['chat', 'team', 'dashboard']) { $('tab-' + k).classList.toggle('on', k === view); $('view-' + k).hidden = k !== view; }
+  view = ['chat', 'team', 'dashboard', 'academy'].includes(v) ? v : 'chat';
+  for (const k of ['chat', 'team', 'dashboard', 'academy']) { $('tab-' + k).classList.toggle('on', k === view); $('view-' + k).hidden = k !== view; }
   $('view-login').hidden = true; $('view-map').hidden = true;
-  if (view === 'chat') renderChat(); else if (view === 'team') renderTeam(); else renderDashboard();
+  if (view === 'chat') renderChat(); else if (view === 'team') renderTeam(); else if (view === 'academy') renderAcademy(); else renderDashboard();
 }
 window.addEventListener('hashchange', () => { if (me) route(); });
 $('tab-map').onclick = e => {
   if (!DEMO) return;  // Echtbetrieb: Link öffnet die Hauskarte
   e.preventDefault();
   for (const s of document.querySelectorAll('.view')) s.hidden = true;
-  for (const k of ['chat', 'team', 'dashboard']) $('tab-' + k).classList.remove('on');
+  for (const k of ['chat', 'team', 'dashboard', 'academy']) $('tab-' + k).classList.remove('on');
   $('tab-map').classList.add('on');
   const v = $('view-map'); v.hidden = false;
   v.replaceChildren(h('div', { class: 'card' }, h('h2', {}, 'Hauskarte'), h('p', {}, 'Hier öffnet sich im echten Betrieb eure bestehende Hauskarte, genau so wie heute. An der Karte selbst wird nichts verändert.'), h('p', { class: 'muted' }, 'In der Hauskarte kommt oben nur diese Leiste mit den vier Bereichen dazu, damit man zwischen Karte und Team-Bereich wechseln kann.')));
@@ -867,6 +921,168 @@ function accessSheet(name, pin, changed) {
     h('p', { class: 'muted', style: 'margin:0' }, changed ? 'Die alte PIN gilt ab sofort nicht mehr. ' + name + ' muss sich auf seinem Tablet einmal neu anmelden.' : 'Auf dem Tablet von ' + name + ': Tailscale einschalten, ENERWAVE Connect öffnen und mit diesem Namen und dieser PIN anmelden. Vertragszahlen, private Nachrichten und Motivation gehören dann automatisch zu seinem Profil.'),
     h('p', { class: 'muted', style: 'margin:0' }, 'Die PIN wird nur jetzt angezeigt – bitte notieren oder direkt weitergeben.'),
     h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: async () => { try { await navigator.clipboard.writeText(text); toast('Zugangsdaten kopiert.'); } catch (e) { toast('Kopieren nicht möglich – bitte abschreiben.'); } } }, 'Kopieren'), h('button', { class: 'btn green', type: 'button', onclick: () => s.remove() }, 'Fertig'))));
+}
+
+/* ================= Academy (Schulungs-PDFs und Schulungsvideos) ================= */
+I.cap = '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/>';
+I.book = '<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H20v-3"/><path d="M8 7h8M8 11h6"/>';
+I.play = '<path d="M8 5v14l11-7z"/>';
+I.film = '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/>';
+const fmtSize = n => n >= 1073741824 ? (n / 1073741824).toFixed(1).replace('.', ',') + ' GB' : n >= 1048576 ? Math.round(n / 1048576) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+let academyItems = [];
+async function renderAcademy() {
+  const v = $('view-academy');
+  if (!v.childNodes.length) v.append(h('div', { class: 'empty' }, 'Academy wird geladen …'));
+  try { academyItems = await api.academy(); } catch (e) { put(v, h('div', { class: 'empty' }, e.message)); return; }
+  const pdfs = academyItems.filter(a => a.kind === 'pdf'), vids = academyItems.filter(a => a.kind === 'video');
+  const hero = h('div', { class: 'ac-hero' }, h('span', { class: 'ac-hico' }, svg(I.cap)), h('div', {}, h('h2', {}, 'ENERWAVE Academy'), h('p', {}, 'Schulungsunterlagen und Videos – direkt hier lesen und ansehen.')));
+  const pdfCard = h('div', { class: 'card dcard', id: 'acPdfs' },
+    dhead('book', 'Schulungsunterlagen', 'Antippen zum Lesen – direkt in der App.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddPdf', onclick: () => academyEditor(null, 'pdf') }, svg(I.plus), 'PDF hinzufügen') : null),
+    pdfs.length ? h('div', { class: 'ac-grid' }, pdfs.map(a => h('div', { class: 'ac-tile' + (a.file ? '' : ' empty'), 'data-title': a.title },
+      h('button', { class: 'ac-open', type: 'button', onclick: () => a.file ? openPdf(a) : (me.admin ? academyEditor(a, 'pdf') : toast('Diese Unterlage ist noch nicht hochgeladen.')) },
+        h('span', { class: 'ac-pdfico' }, 'PDF'),
+        h('b', {}, a.title),
+        h('span', { class: 'muted' }, a.file ? fmtSize(a.file.size) + ' · Lesen' : (me.admin ? 'Noch keine PDF – tippen zum Hochladen' : 'Noch nicht verfügbar'))),
+      me.admin ? h('button', { class: 'ac-edit', type: 'button', 'aria-label': a.title + ' bearbeiten', onclick: () => academyEditor(a, 'pdf') }, '⋮') : null)))
+      : h('p', { class: 'muted', style: 'margin:0' }, 'Noch keine Schulungsunterlagen.'));
+  const vidCard = h('div', { class: 'card dcard', id: 'acVideos' },
+    dhead('film', 'ENERWAVE Schulungsvideos', 'Antippen zum Abspielen.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddVideo', onclick: () => academyEditor(null, 'video') }, svg(I.plus), 'Video hochladen') : null),
+    vids.length ? h('div', { class: 'ac-vids' }, vids.map(a => h('div', { class: 'ac-vid', 'data-title': a.title },
+      h('button', { class: 'ac-thumb', type: 'button', 'aria-label': a.title + ' abspielen', onclick: () => playVideo(a) },
+        a.thumb ? h('img', { src: api.mediaUrl({ id: a.thumb }), alt: '', loading: 'lazy' }) : h('span', { class: 'ac-noimg' }, svg(I.film)),
+        h('span', { class: 'ac-play' }, svg(I.play))),
+      h('div', { class: 'ac-vmeta' }, h('b', {}, a.title), a.file ? h('span', { class: 'muted' }, fmtSize(a.file.size)) : null,
+        me.admin ? h('button', { class: 'ac-edit', type: 'button', 'aria-label': a.title + ' bearbeiten', onclick: () => academyEditor(a, 'video') }, '⋮') : null))))
+      : h('p', { class: 'muted', style: 'margin:0' }, me.admin ? 'Noch keine Videos. Mit „Video hochladen“ fügst du das erste hinzu.' : 'Noch keine Schulungsvideos.'));
+  put(v, hero, pdfCard, vidCard);
+}
+/* Vorschaubild aus dem Video erzeugen (im Browser, vor dem Hochladen) */
+function videoThumb(file) {
+  return new Promise(resolve => {
+    const vd = document.createElement('video'), url = URL.createObjectURL(file);
+    let done = false; const fin = b => { if (done) return; done = true; URL.revokeObjectURL(url); vd.removeAttribute('src'); resolve(b); };
+    vd.muted = true; vd.playsInline = true; vd.preload = 'auto'; vd.src = url;
+    vd.onloadeddata = () => { try { vd.currentTime = Math.min(1.5, (vd.duration || 3) / 3); } catch (e) { fin(null); } };
+    vd.onseeked = () => { try { const w = 640, hh = Math.round(w * (vd.videoHeight || 360) / (vd.videoWidth || 640)); const c = document.createElement('canvas'); c.width = w; c.height = hh; c.getContext('2d').drawImage(vd, 0, 0, w, hh); c.toBlob(b => fin(b), 'image/jpeg', 0.82); } catch (e) { fin(null); } };
+    vd.onerror = () => fin(null); setTimeout(() => fin(null), 10000);
+  });
+}
+/* Hinzufügen / Bearbeiten (nur Admin): Titel, Datei hochladen oder austauschen, löschen */
+function academyEditor(a, kind) {
+  let s;
+  const isPdf = kind === 'pdf';
+  const title = h('input', { id: 'acTitle', value: a ? a.title : '', placeholder: isPdf ? 'z. B. Einwandbehandlung' : 'z. B. Das erste Gespräch an der Tür', maxlength: 120, autocomplete: 'off' });
+  const file = h('input', { id: 'acFile', type: 'file', accept: isPdf ? 'application/pdf,.pdf' : 'video/*' });
+  const bar = h('div', { class: 'ac-prog', hidden: true }, h('i'), h('span', {}, ''));
+  const err = h('p', { class: 'muted', role: 'alert', style: 'color:var(--danger);margin:0' });
+  const save = h('button', { class: 'btn green', type: 'submit', id: 'acSave' }, a ? 'Speichern' : (isPdf ? 'PDF hinzufügen' : 'Video hochladen'));
+  const del = a ? (() => {
+    const c = h('div', { class: 'confirm', hidden: true }, h('span', {}, '„' + a.title + '“ endgültig löschen? ' + (isPdf ? 'Die PDF' : 'Das Video') + ' wird für alle entfernt.'),
+      h('div', { class: 'row' }, h('button', { class: 'btn danger', type: 'button', id: 'acDelYes', onclick: async () => { try { await api.delAcademy(a.id); s.remove(); toast('Gelöscht.'); renderAcademy(); } catch (e) { err.textContent = e.message; } } }, 'Endgültig löschen'), h('button', { class: 'btn ghost', type: 'button', onclick: () => { c.hidden = true; } }, 'Abbrechen')));
+    return [h('button', { class: 'btn ghost', type: 'button', id: 'acDel', style: 'color:var(--danger);margin-left:auto', onclick: () => { c.hidden = false; } }, 'Löschen'), c];
+  })() : [];
+  const form = h('form', { style: 'display:flex;flex-direction:column;gap:12px' },
+    h('h2', {}, a ? (isPdf ? 'Unterlage bearbeiten' : 'Video bearbeiten') : (isPdf ? 'Neue PDF-Kachel' : 'Neues Schulungsvideo')),
+    h('label', { class: 'f' }, 'Titel', title),
+    h('label', { class: 'f' }, a && a.file ? (isPdf ? 'PDF austauschen (optional)' : 'Video austauschen (optional)') : (isPdf ? 'PDF-Datei' : 'Videodatei'), file),
+    a && a.file ? h('span', { class: 'muted' }, 'Aktuell: ' + a.file.name + ' · ' + fmtSize(a.file.size)) : null,
+    bar, err,
+    h('div', { class: 'row' }, save, h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen'), del[0] || null), del[1] || null);
+  form.onsubmit = async e => {
+    e.preventDefault(); err.textContent = '';
+    const t = title.value.trim(), f = file.files[0];
+    if (!t) return err.textContent = 'Bitte einen Titel eingeben.';
+    if (!a && !f && !isPdf) return err.textContent = 'Bitte eine Videodatei wählen.';
+    if (f && isPdf && !(/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name))) return err.textContent = 'Bitte eine PDF-Datei wählen.';
+    if (f && !isPdf && !/^video\//.test(f.type) && !/\.(mp4|mov|m4v|webm|3gp|mkv)$/i.test(f.name)) return err.textContent = 'Bitte eine Videodatei wählen.';
+    save.disabled = true;
+    try {
+      const d = { title: t };
+      if (f) {
+        const show = (p, txt) => { bar.hidden = false; bar.firstChild.style.width = p + '%'; bar.lastChild.textContent = txt; };
+        if (!isPdf) { show(0, 'Vorschaubild wird erstellt …'); const tb = await videoThumb(f); if (tb) d.thumb = await api.uploadAcademy(new File([tb], 'vorschau.jpg', { type: 'image/jpeg' }), 'image/jpeg'); }
+        const type = isPdf ? 'application/pdf' : (f.type || (/\.mov$/i.test(f.name) ? 'video/quicktime' : 'video/mp4'));
+        d.file = await api.uploadAcademy(f, type, p => show(p, 'Hochladen … ' + p + ' % von ' + fmtSize(f.size)));
+        show(100, 'Wird gespeichert …');
+      }
+      if (a) await api.updateAcademy(a.id, d); else await api.addAcademy({ kind, ...d });
+      s.remove(); toast(a ? 'Gespeichert – für alle sichtbar.' : (isPdf ? 'PDF hinzugefügt – für alle sichtbar.' : 'Video hochgeladen – für alle sichtbar.')); renderAcademy();
+    } catch (x) { err.textContent = x.message; save.disabled = false; }
+  };
+  s = sheet(form);
+}
+/* Vollbild-Ansicht (PDF-Leser / Videoplayer) mit Zurück-Taste */
+function fullscreenView(titleText, tools) {
+  const body = h('div', { class: 'fv-body' });
+  const close = () => { if (box.isConnected) { box.remove(); document.body.classList.remove('fv-open'); if (box._cleanup) box._cleanup(); } };
+  const box = h('div', { class: 'fv', role: 'dialog', 'aria-modal': 'true', 'aria-label': titleText },
+    h('div', { class: 'fv-bar' }, h('button', { class: 'icon-btn fv-close', type: 'button', 'aria-label': 'Schließen', onclick: () => { history.state && history.state.fv ? history.back() : close(); } }, svg(I.back)), h('b', { class: 'fv-title' }, titleText), tools || null), body);
+  document.body.append(box); document.body.classList.add('fv-open');
+  history.pushState({ fv: 1 }, '');
+  const onPop = () => { window.removeEventListener('popstate', onPop); close(); };
+  window.addEventListener('popstate', onPop);
+  return { box, body, close };
+}
+let pdfjsP = null;
+const loadPdfjs = () => pdfjsP || (pdfjsP = import('./pdfjs/pdf.min.js').then(m => { m.GlobalWorkerOptions.workerSrc = new URL('pdfjs/pdf.worker.min.js', location.href).href; return m; }).catch(e => { pdfjsP = null; throw e; }));
+async function openPdf(a) {
+  const zoomLbl = h('span', { class: 'fv-zoom' }, '100 %'), pageLbl = h('span', { class: 'fv-page' }, '');
+  const zOut = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Verkleinern' }, '−'), zIn = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Vergrößern' }, '+');
+  const v = fullscreenView(a.title, h('div', { class: 'fv-tools' }, pageLbl, zOut, zoomLbl, zIn));
+  v.box.classList.add('pdf');
+  v.body.append(h('div', { class: 'fv-msg' }, 'PDF wird geladen …'));
+  let doc;
+  try {
+    const [pdfjs, buf] = await Promise.all([loadPdfjs(), fetch('/api/files/' + a.file.id, { headers: { Authorization: 'Bearer ' + await token() } }).then(r => { if (!r.ok) throw Error('PDF nicht verfügbar'); return r.arrayBuffer(); })]);
+    doc = await pdfjs.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise;
+  } catch (e) { v.body.replaceChildren(h('div', { class: 'fv-msg' }, 'Die PDF konnte nicht geöffnet werden: ' + e.message)); return; }
+  if (!v.box.isConnected) return;
+  const first = await doc.getPage(1), base = first.getViewport({ scale: 1 });
+  const pagesEl = h('div', { class: 'fv-pages' });
+  v.body.replaceChildren(pagesEl);
+  let zoom = 1;
+  const fitW = () => Math.min(v.body.clientWidth - 16, 1100);
+  const slots = [];
+  for (let i = 1; i <= doc.numPages; i++) { const el = h('div', { class: 'fv-pg', 'data-page': i }); el._ratio = base.height / base.width; slots.push(el); pagesEl.append(el); }
+  const size = () => { const w = Math.round(fitW() * zoom); for (const el of slots) { el.style.width = w + 'px'; el.style.height = Math.round(w * el._ratio) + 'px'; } zoomLbl.textContent = Math.round(zoom * 100) + ' %'; };
+  const rendering = new Map();
+  async function draw(el) {
+    const n = +el.dataset.page, w = Math.round(fitW() * zoom), key = n + ':' + w;
+    if (el._key === key || rendering.get(el) === key) return;
+    rendering.set(el, key);
+    try {
+      const page = await doc.getPage(n), vp1 = page.getViewport({ scale: 1 });
+      el._ratio = vp1.height / vp1.width; el.style.height = Math.round(w * el._ratio) + 'px';
+      const dpr = Math.min(window.devicePixelRatio || 1, 2), vp = page.getViewport({ scale: w / vp1.width * dpr });
+      const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      if (rendering.get(el) !== key) return;
+      el.replaceChildren(c); el._key = key;
+    } catch (e) { /* Seite später erneut versuchen */ } finally { if (rendering.get(el) === key) rendering.delete(el); }
+  }
+  const io = new IntersectionObserver(es => { for (const e of es) { if (e.isIntersecting) draw(e.target); else if (e.target._key) { e.target.replaceChildren(); e.target._key = null; } } }, { root: v.body, rootMargin: '1200px 0px' });
+  slots.forEach(el => io.observe(el));
+  const updPage = () => { const top = v.body.scrollTop + v.body.clientHeight / 3; let n = 1; for (const el of slots) { if (el.offsetTop <= top) n = +el.dataset.page; else break; } pageLbl.textContent = n + ' / ' + doc.numPages; };
+  v.body.addEventListener('scroll', updPage, { passive: true });
+  const setZoom = z => { const rel = v.body.scrollTop / Math.max(1, v.body.scrollHeight); zoom = Math.max(0.5, Math.min(4, Math.round(z * 100) / 100)); size(); v.body.scrollTop = rel * v.body.scrollHeight; for (const el of slots) { const r = el.getBoundingClientRect(); if (r.bottom > -1200 && r.top < innerHeight + 1200) draw(el); } };
+  zOut.onclick = () => setZoom(zoom / 1.25); zIn.onclick = () => setZoom(zoom * 1.25);
+  // Zwei-Finger-Zoom
+  let pinch = null;
+  v.body.addEventListener('touchstart', e => { if (e.touches.length === 2) { const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); pinch = { d, z: zoom }; } }, { passive: true });
+  v.body.addEventListener('touchmove', e => { if (pinch && e.touches.length === 2) { e.preventDefault(); const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); pagesEl.style.transformOrigin = 'top center'; pagesEl.style.transform = 'scale(' + (d / pinch.d) + ')'; pinch.scale = d / pinch.d; } }, { passive: false });
+  v.body.addEventListener('touchend', () => { if (pinch && pinch.scale) { pagesEl.style.transform = ''; setZoom(pinch.z * pinch.scale); } pinch = null; });
+  const onResize = () => setZoom(zoom); window.addEventListener('resize', onResize);
+  v.box._cleanup = () => { io.disconnect(); window.removeEventListener('resize', onResize); doc.destroy(); };
+  size(); updPage();
+}
+function playVideo(a) {
+  if (!a.file) return toast('Dieses Video ist noch nicht verfügbar.');
+  const v = fullscreenView(a.title);
+  v.box.classList.add('video');
+  const vid = h('video', { controls: true, autoplay: true, playsinline: true, preload: 'auto', src: api.mediaUrl(a.file), poster: a.thumb ? api.mediaUrl({ id: a.thumb }) : undefined });
+  vid.onerror = () => v.body.append(h('div', { class: 'fv-msg' }, 'Dieses Video kann auf diesem Gerät nicht abgespielt werden (Format ' + (a.file.type || 'unbekannt') + '). Tipp: Videos als MP4 aufnehmen bzw. hochladen.'));
+  v.body.append(vid);
+  v.box._cleanup = () => { vid.pause(); vid.removeAttribute('src'); vid.load(); };
 }
 
 /* ================= Dashboard ================= */

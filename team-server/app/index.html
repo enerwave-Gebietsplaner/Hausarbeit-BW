@@ -814,7 +814,7 @@ document.getElementById('lock')?.remove();
 </header>
 <!-- Team-Leiste: nur Navigation zu den Team-Bereichen, die Karte selbst bleibt unverändert -->
 <style>
-#teamNav{flex:0 0 auto;background:#173a34;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:0 8px 6px}
+#teamNav{flex:0 0 auto;background:#173a34;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 8px 6px}
 #teamNav a{display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 2px;border-radius:10px;color:rgba(255,255,255,.8);text-decoration:none;font:600 13px system-ui,-apple-system,Arial,sans-serif;position:relative;white-space:nowrap}
 #teamNav a.on{background:rgba(255,255,255,.16);color:#fff}
 #teamNav svg{width:18px;height:18px;flex:0 0 auto}
@@ -825,6 +825,7 @@ document.getElementById('lock')?.remove();
 #teamNav .b{background:#f24747;color:#fff;border-radius:9px;font-size:11px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px;box-sizing:border-box}
 body.sun #teamNav{background:#000}
 @media (max-width:420px){#teamNav a{font-size:12px;gap:4px}#teamNav svg{display:none}}
+@media (max-width:380px){#teamNav{gap:2px;padding:0 4px 6px}#teamNav a{font-size:11px;padding:7px 0}}
 </style>
 <script src="motivation.js" defer></script>
 <script>
@@ -836,6 +837,7 @@ body.sun #teamNav{background:#000}
   <a href="team.html#chat" id="teamNavChat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Team-Chat<span class="b" id="teamNavN" hidden></span></a>
   <a href="team.html#team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14c2.6.2 4.4 2 5 5"/></svg>Mitarbeiter</a>
   <a href="team.html#dashboard" id="teamNavDash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Dashboard<span class="d" id="teamNavD" hidden></span></a>
+  <a href="team.html#academy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/></svg>Academy</a>
 </nav>
 <script>
 /* Hinweise in der Team-Leiste: ungelesene Chat-Nachrichten und neue Verträge der Kollegen (liest nur, ändert nichts an der Karte) */

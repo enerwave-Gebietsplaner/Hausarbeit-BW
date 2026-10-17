@@ -229,9 +229,11 @@ async function handle(req, res) {
   res.writeHead(405); res.end();
 }
 
-http.createServer((req, res) => {
+const httpServer = http.createServer((req, res) => {
   handle(req, res).catch(e => { log('Fehler:', e.message); if (!res.headersSent) send(res, 500, { message: 'Serverfehler' }); else res.end(); });
-}).listen(PORT, HOST, () => {
+});
+httpServer.requestTimeout = 3 * 3600e3;  // große Academy-Videos über das Handynetz brauchen länger als die Standard-5-Minuten
+httpServer.listen(PORT, HOST, () => {
   const users = db.prepare('SELECT COUNT(*) n FROM users WHERE active = 1').get().n;
   log(`Hauskarte-Server läuft auf http://${HOST}:${PORT} – ${users} Mitarbeiter`);
   if (!users) log('Noch keine Mitarbeiter angelegt: node server.js user add "Name" PIN');

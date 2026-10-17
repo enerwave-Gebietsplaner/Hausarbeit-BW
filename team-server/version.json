@@ -1,20 +1,23 @@
 {
- "version": 20,
- "created": "2026-10-17T09:34:39.147Z",
+ "version": 21,
+ "created": "2026-10-17T12:12:12.168Z",
  "files": {
-  "server.js": "c476be080643ff2029f0a1a86356b7a08b6e896ccf90c052760fcd7f9089e4a7",
-  "team.js": "2638321be65641067107efef159f0092a52c246f17b598933e2e7c920622b282",
+  "server.js": "0ffa3b96bf0cf7180b65414f82204d01e2fbbe77a7c8e561ad33620b62b2b6d6",
+  "team.js": "ac8ee6e616b249125633c8d7aabd2d0e33ac27d8efb1eb4b30d4cd1b528d423c",
   "start-server.cmd": "6ddaaf4a03e46a5a433e74c3b2723b57cb4192e1a1a9ce663215e9d539d07562",
   "mitarbeiter.ps1": "c557ae11531feafbf7f29d94e84683524afe71bec5ecc00af7342cdebe80e02e",
   "Mitarbeiter verwalten.bat": "ce672017ca6eb6a372cdf15fff098b599fcb8faa1429b4a1ac2f607b78a8d65e",
-  "ANLEITUNG.txt": "62165a40b31e13342a4a296ffa764b23bf1885990c58fa2b06727238b05c4421",
-  "app/index.html": "15a9eb3ab1a0e4ba2fb330c3563321c6c4a362e87e3dee21daa5d6de12c030ef",
-  "app/team.html": "6385c58ebfc99ee0c4610b739f70402c5d1dad87bb567e2b2c5a264289a854f3",
+  "ANLEITUNG.txt": "8d31d808897c03c1d336e5ef576166ef5bde2d731420f7ed2bfe7434c84eb4fe",
+  "app/index.html": "85d4a156f446597fdaa7d42bf65a529300591c9ace1ab98d8fbb6d8625cb4d23",
+  "app/team.html": "fed303153361ed82ecab3b63d1a85a8c4742b1c9d72a5e1d5876e3291b9d60b0",
   "app/motivation.js": "c67ade4e896659fa9f0a3cfc1dec65b6df3d1b7e2513d9da5d7897fe9d6780ed",
-  "app/sw.js": "cd69f05cc704217a67537b0560a602404bb0d4f846a8a378c9a8cf8a6c698366",
+  "app/sw.js": "5c27407bd4ed19743f749b4f5c29a2fccf274eb6bf9085a48e60525cfc4ea0bb",
   "app/sync-config.js": "0512bd7379e56ab866c319bb04b993a4cb7cb55bf84f9e45b564e372814eadfc",
   "app/manifest.webmanifest": "d74c9a120efe38ac1236ce71b5607a8f9db99140ca55ff90ccb9d5bfa5d19637",
   "app/icon.svg": "272502d983dcb735d20080788de896bba7231bde081fcef53f21fd4d95fb7711",
-  "app/v16.html": "ec2b400fd0d7b6abc36cf3e74e6ac830bb04f806f09d31999a6e499de520d830"
+  "app/v16.html": "ec2b400fd0d7b6abc36cf3e74e6ac830bb04f806f09d31999a6e499de520d830",
+  "app/pdfjs/pdf.min.js": "44ec6f011027ee77791386b66c14876a5fc29e20bf0433c07c6726fff7212b72",
+  "app/pdfjs/pdf.worker.min.js": "bd88805178a26c729db8c0107a5b630cb900ec070f4d8c7529a3e45530afd41d",
+  "app/pdfjs/LICENSE.txt": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
  }
 }
