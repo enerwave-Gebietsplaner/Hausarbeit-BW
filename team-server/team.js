@@ -46,8 +46,13 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     } catch (e) { log('Admin-Prüfung fehlgeschlagen:', e.message); }
   }
   ensureAdmin();
+  // Schreibweise des Firmennamens: „ENERWAVE“ → „enerwave“ in bereits gespeicherten Academy-Titeln (einmalig)
+  if (!db.prepare("SELECT 1 FROM settings WHERE key = 'nameLowercase'").get()) {
+    db.prepare("UPDATE academy SET title = REPLACE(title, 'ENERWAVE', 'enerwave') WHERE title LIKE '%ENERWAVE%'").run();
+    db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('nameLowercase', '1')").run();
+  }
   if (!db.prepare('SELECT 1 FROM academy').get() && !db.prepare("SELECT 1 FROM settings WHERE key = 'academySeeded'").get()) {
-    db.prepare("INSERT INTO academy (kind, title, sort, created_at, updated_at) VALUES ('pdf', 'ENERWAVE Workbook', 1, ?, ?)").run(now(), now());
+    db.prepare("INSERT INTO academy (kind, title, sort, created_at, updated_at) VALUES ('pdf', 'enerwave Workbook', 1, ?, ?)").run(now(), now());
     db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('academySeeded', '1')").run();
   }
 

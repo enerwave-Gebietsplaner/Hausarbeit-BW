@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#173a34">
-<title>ENERWAVE Connect</title>
+<title>enerwave Connect</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -773,7 +773,7 @@ button.danger{background:#a33}
 <div id="lock" role="dialog" aria-modal="true" aria-label="App-Sperre">
   <div class="lk-box">
     <div class="lk-icon">🔒</div>
-    <div class="lk-title">ENERWAVE Connect</div>
+    <div class="lk-title">enerwave Connect</div>
     <div class="lk-sub" id="lkSub">Bitte Code eingeben</div>
     <div class="lk-dots" id="lkDots"><i></i><i></i><i></i><i></i></div>
     <div class="lk-pad" id="lkPad">
@@ -809,7 +809,7 @@ window.hauskarteUnlocked = Promise.resolve();
 document.getElementById('lock')?.remove();
 </script>
 <header>
-  <span class="title">ENERWAVE Connect <small class="key" id="ver"></small></span>
+  <span class="title">enerwave Connect <small class="key" id="ver"></small></span>
   <div id="stats" aria-label="Übersicht"></div>
 </header>
 <!-- Team-Leiste: nur Navigation zu den Team-Bereichen, die Karte selbst bleibt unverändert -->
@@ -960,7 +960,7 @@ body.sun #teamNav{background:#000}
     <button class="secondary" id="shareSave">⬇ Nur als Datei speichern</button>
     <button class="secondary" id="shareCancel">Abbrechen</button>
   </div>
-  <p><b>Link:</b> Der Kollege tippt in WhatsApp oder der E-Mail einfach auf den Link – ENERWAVE Connect öffnet sich mit dem Gebiet, er bestätigt mit „Zusammenführen“. Fertig.</p>
+  <p><b>Link:</b> Der Kollege tippt in WhatsApp oder der E-Mail einfach auf den Link – enerwave Connect öffnet sich mit dem Gebiet, er bestätigt mit „Zusammenführen“. Fertig.</p>
 </div></dialog>
 
 <script>
@@ -1899,7 +1899,7 @@ function exportExcel(withOpen) {
   }
   if (!rows.length) { say('Noch keine Daten für die Excel-Liste vorhanden.', true); return; }
   rows.sort((a, b) => (a[0] || '~').localeCompare(b[0] || '~', 'de') || String(a[1]).localeCompare(String(b[1]), 'de', { numeric: true }));
-  const blob = buildXlsx([head, ...rows], [26, 9, 16, 20, 30, 34, 18, 9, 18, 12, 12, 16], 'ENERWAVE Connect');
+  const blob = buildXlsx([head, ...rows], [26, 9, 16, 20, 30, 34, 18, 9, 18, 12, 12, 16], 'enerwave Connect');
   download(new File([blob], 'enerwave-connect-liste-' + new Date().toISOString().slice(0, 10) + '.xlsx', { type: blob.type }));
   $('menu').close();
   say(`Excel-Liste mit ${rows.length} Zeilen wurde zum Download angeboten.`);
@@ -2072,7 +2072,7 @@ $('shareLink').onclick = async () => {
   say('Link wird erstellt …');
   try {
     const { url, info } = await buildLink(withNames);
-    const text = 'ENERWAVE Connect – Gebiet (' + info + '): ' + url;
+    const text = 'enerwave Connect – Gebiet (' + info + '): ' + url;
     if (navigator.share) { await navigator.share({ text }); say('Link geteilt (' + info + '). Der Kollege tippt einfach auf den Link.'); }
     else { await navigator.clipboard.writeText(url); say('Link kopiert (' + info + '). In WhatsApp oder E-Mail einfügen und senden.'); }
   } catch (e) {

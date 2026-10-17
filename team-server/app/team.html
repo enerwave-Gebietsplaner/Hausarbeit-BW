@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ENERWAVE Connect</title>
+<title>enerwave Connect</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -284,7 +284,7 @@ div.daygoal { width: auto; box-sizing: border-box }
 <body>
 <header class="top">
   <div class="wrap">
-    <span class="title">ENERWAVE Connect <small>Team</small></span>
+    <span class="title">enerwave Connect <small>Team</small></span>
     <span class="me" id="me"></span>
   </div>
   <nav class="tabs" aria-label="Hauptnavigation">
@@ -505,7 +505,7 @@ const demoApi = (() => {
     addContract: note => { contracts.push({ id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }); return wait({ ok: true }); },
     setDayGoal: () => wait({ ok: true }),
     setDayStatus: () => wait({ ok: true }),
-    academy: () => wait([{ id: 1, kind: 'pdf', title: 'ENERWAVE Workbook', file: null }]), addAcademy: () => wait({}), updateAcademy: () => wait({}), delAcademy: () => wait({ ok: true }), uploadAcademy: () => Promise.reject(Error('In der Vorschau nicht möglich.')),
+    academy: () => wait([{ id: 1, kind: 'pdf', title: 'enerwave Workbook', file: null }]), addAcademy: () => wait({}), updateAcademy: () => wait({}), delAcademy: () => wait({ ok: true }), uploadAcademy: () => Promise.reject(Error('In der Vorschau nicht möglich.')),
     projects: () => wait([]), addProject: () => wait({}), updateProject: () => wait({}), delProject: () => wait({ ok: true }),
     delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
     setGoal: (month, goal) => { goals[month] = goal; return wait({ ok: true }); },
@@ -577,7 +577,7 @@ function showLogin(msg) {
   const v = $('view-login'); v.hidden = false;
   const name = h('input', { id: 'lgName', autocomplete: 'username' }), pin = h('input', { id: 'lgPin', type: 'password', inputmode: 'numeric', autocomplete: 'current-password' });
   const err = h('p', { class: 'muted', role: 'alert' }, msg || '');
-  const form = h('form', { class: 'card' }, h('h2', {}, 'Anmelden'), h('p', { class: 'muted' }, 'Mit demselben Namen und derselben PIN wie in ENERWAVE Connect.'),
+  const form = h('form', { class: 'card' }, h('h2', {}, 'Anmelden'), h('p', { class: 'muted' }, 'Mit demselben Namen und derselben PIN wie in enerwave Connect.'),
     h('label', { class: 'f' }, 'Dein Name', name), h('label', { class: 'f' }, 'PIN', pin), err, h('button', { class: 'btn big green', type: 'submit' }, 'Anmelden'));
   form.onsubmit = async e => {
     e.preventDefault();
@@ -871,7 +871,7 @@ async function renderTeam() {
       u.admin ? h('span', { class: 'pill' }, 'Admin') : u.access === 'academy' ? h('span', { class: 'pill acad' }, 'Nur Academy') : null)),
     blocked.length ? h('h2', { style: 'font-size:16px;margin-top:8px' }, 'Blockiert · ' + blocked.length) : null,
     ...blocked.map(u => h('button', { class: 'person', style: 'opacity:.75', onclick: () => personSheet(u, countOf(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name), h('div', { class: 'muted' }, 'Zugang gesperrt')), h('span', { class: 'pill off' }, 'Blockiert'))),
-    me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet ENERWAVE Connect öffnen und mit Name und PIN anmelden – fertig.'))) : null
+    me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet enerwave Connect öffnen und mit Name und PIN anmelden – fertig.'))) : null
   );
 }
 function sheet(...content) {
@@ -956,11 +956,11 @@ function genPin() {
 /* Zugangsdaten zum Weitergeben an den Mitarbeiter */
 function accessSheet(name, pin, changed) {
   let s;
-  const text = 'ENERWAVE Connect – deine Anmeldung\nName: ' + name + '\nPIN: ' + pin + '\n\nTailscale auf dem Tablet einschalten, ENERWAVE Connect öffnen und mit Name und PIN anmelden.';
+  const text = 'enerwave Connect – deine Anmeldung\nName: ' + name + '\nPIN: ' + pin + '\n\nTailscale auf dem Tablet einschalten, enerwave Connect öffnen und mit Name und PIN anmelden.';
   s = sheet(h('div', { style: 'display:flex;flex-direction:column;gap:12px' },
     h('h2', {}, changed ? 'Neue PIN für ' + name : name + ' ist angelegt'),
     h('div', { class: 'card access' }, h('div', {}, h('span', { class: 'muted' }, 'Name'), h('b', { id: 'accName' }, name)), h('div', {}, h('span', { class: 'muted' }, 'PIN'), h('b', { id: 'accPin', class: 'pinbig' }, pin))),
-    h('p', { class: 'muted', style: 'margin:0' }, changed ? 'Die alte PIN gilt ab sofort nicht mehr. ' + name + ' muss sich auf seinem Tablet einmal neu anmelden.' : 'Auf dem Tablet von ' + name + ': Tailscale einschalten, ENERWAVE Connect öffnen und mit diesem Namen und dieser PIN anmelden. Vertragszahlen, private Nachrichten und Motivation gehören dann automatisch zu seinem Profil.'),
+    h('p', { class: 'muted', style: 'margin:0' }, changed ? 'Die alte PIN gilt ab sofort nicht mehr. ' + name + ' muss sich auf seinem Tablet einmal neu anmelden.' : 'Auf dem Tablet von ' + name + ': Tailscale einschalten, enerwave Connect öffnen und mit diesem Namen und dieser PIN anmelden. Vertragszahlen, private Nachrichten und Motivation gehören dann automatisch zu seinem Profil.'),
     h('p', { class: 'muted', style: 'margin:0' }, 'Die PIN wird nur jetzt angezeigt – bitte notieren oder direkt weitergeben.'),
     h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: async () => { try { await navigator.clipboard.writeText(text); toast('Zugangsdaten kopiert.'); } catch (e) { toast('Kopieren nicht möglich – bitte abschreiben.'); } } }, 'Kopieren'), h('button', { class: 'btn green', type: 'button', onclick: () => s.remove() }, 'Fertig'))));
 }
@@ -977,7 +977,7 @@ async function renderAcademy() {
   if (!v.childNodes.length) v.append(h('div', { class: 'empty' }, 'Academy wird geladen …'));
   try { academyItems = await api.academy(); } catch (e) { put(v, h('div', { class: 'empty' }, e.message)); return; }
   const pdfs = academyItems.filter(a => a.kind === 'pdf'), vids = academyItems.filter(a => a.kind === 'video');
-  const hero = h('div', { class: 'ac-hero' }, h('span', { class: 'ac-hico' }, svg(I.cap)), h('div', {}, h('h2', {}, 'ENERWAVE Academy'), h('p', {}, 'Schulungsunterlagen und Videos – direkt hier lesen und ansehen.')));
+  const hero = h('div', { class: 'ac-hero' }, h('span', { class: 'ac-hico' }, svg(I.cap)), h('div', {}, h('h2', {}, 'enerwave Academy'), h('p', {}, 'Schulungsunterlagen und Videos – direkt hier lesen und ansehen.')));
   const pdfCard = h('div', { class: 'card dcard', id: 'acPdfs' },
     dhead('book', 'Schulungsunterlagen', 'Antippen zum Lesen – direkt in der App.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddPdf', onclick: () => academyEditor(null, 'pdf') }, svg(I.plus), 'PDF hinzufügen') : null),
     pdfs.length ? h('div', { class: 'ac-grid' }, pdfs.map(a => h('div', { class: 'ac-tile' + (a.file ? '' : ' empty'), 'data-title': a.title },
@@ -988,7 +988,7 @@ async function renderAcademy() {
       me.admin ? h('button', { class: 'ac-edit', type: 'button', 'aria-label': a.title + ' bearbeiten', onclick: () => academyEditor(a, 'pdf') }, '⋮') : null)))
       : h('p', { class: 'muted', style: 'margin:0' }, 'Noch keine Schulungsunterlagen.'));
   const vidCard = h('div', { class: 'card dcard', id: 'acVideos' },
-    dhead('film', 'ENERWAVE Schulungsvideos', 'Antippen zum Abspielen.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddVideo', onclick: () => academyEditor(null, 'video') }, svg(I.plus), 'Video hochladen') : null),
+    dhead('film', 'enerwave Schulungsvideos', 'Antippen zum Abspielen.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddVideo', onclick: () => academyEditor(null, 'video') }, svg(I.plus), 'Video hochladen') : null),
     vids.length ? h('div', { class: 'ac-vids' }, vids.map(a => h('div', { class: 'ac-vid', 'data-title': a.title },
       h('button', { class: 'ac-thumb', type: 'button', 'aria-label': a.title + ' abspielen', onclick: () => playVideo(a) },
         a.thumb ? h('img', { src: api.mediaUrl({ id: a.thumb }), alt: '', loading: 'lazy' }) : h('span', { class: 'ac-noimg' }, svg(I.film)),

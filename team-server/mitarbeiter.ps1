@@ -5,7 +5,7 @@ if (-not $node) { $node = 'C:\Program Files\nodejs\node.exe' }
 $srv = 'C:\Hauskarte\server.js'
 if (-not (Test-Path $srv)) { $srv = Join-Path $PSScriptRoot 'server.js' }
 while ($true) {
-  Write-Host "`n=== ENERWAVE Connect - Mitarbeiter ===" -ForegroundColor Cyan
+  Write-Host "`n=== enerwave Connect - Mitarbeiter ===" -ForegroundColor Cyan
   & $node $srv user list
   Write-Host "`n  1  Mitarbeiter anlegen`n  2  PIN aendern`n  3  Mitarbeiter sperren`n  4  Server-Status`n  5  Administrator festlegen / entziehen`n  0  Beenden"
   switch (Read-Host "`nAuswahl") {
