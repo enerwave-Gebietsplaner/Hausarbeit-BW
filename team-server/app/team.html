@@ -203,13 +203,18 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .ac-hero { display: flex; gap: 14px; align-items: center; background: linear-gradient(135deg, #173a34, #1f5246); color: #fff; border-radius: var(--radius); padding: 16px }
 .ac-hero h2 { margin: 0; font-size: 20px } .ac-hero p { margin: 2px 0 0; color: rgba(255,255,255,.8); font-size: 14px }
 .ac-hico { flex: 0 0 auto; width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center } .ac-hico svg { width: 28px; height: 28px }
-.ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px }
+.ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px }
+.ac-cover { display: grid; place-items: center; width: 100%; aspect-ratio: 1 / 1.414; border-radius: 6px; overflow: hidden; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 6px 16px rgba(0,0,0,.14); position: relative }
+.ac-cover img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block }
+.ac-cover svg { width: 44px; height: 44px; color: var(--muted) }
+.ac-cover.none { background: var(--bg); box-shadow: none; border: 1.5px dashed var(--line); gap: 4px; align-content: center } .ac-cover.none small { color: var(--muted); font-size: 12px }
+.ac-cover.loading { background: linear-gradient(100deg, #eef2f0 30%, #f8faf9 50%, #eef2f0 70%); background-size: 200% 100%; animation: acshine 1.2s linear infinite }
+@keyframes acshine { to { background-position: -200% 0 } }
 .ac-tile { position: relative; border: 1px solid var(--line); border-radius: 14px; background: var(--card); overflow: hidden }
 .ac-tile.empty { border-style: dashed }
-.ac-open { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 14px; cursor: pointer; min-height: 120px }
-.ac-open b { font-size: 16px; line-height: 1.25; padding-right: 26px }
-.ac-pdfico { display: inline-grid; place-items: center; width: 44px; height: 52px; border-radius: 6px; background: #c62828; color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .04em; box-shadow: inset -8px 8px 0 -4px rgba(255,255,255,.35) }
-.ac-tile.empty .ac-pdfico { background: #9aa5a1 }
+.ac-open { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 10px; cursor: pointer }
+.ac-open b { font-size: 15px; line-height: 1.25; margin-top: 4px }
+.ac-tile .ac-edit { background: rgba(255,255,255,.92); box-shadow: 0 1px 4px rgba(0,0,0,.25); top: 14px; right: 14px }
 .ac-edit { position: absolute; top: 6px; right: 6px; border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; width: 34px; height: 34px; border-radius: 8px; cursor: pointer }
 .ac-vids { display: flex; flex-direction: column; gap: 14px }
 .ac-vid { display: flex; flex-direction: column; gap: 8px }
@@ -977,7 +982,7 @@ async function renderAcademy() {
     dhead('book', 'Schulungsunterlagen', 'Antippen zum Lesen – direkt in der App.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddPdf', onclick: () => academyEditor(null, 'pdf') }, svg(I.plus), 'PDF hinzufügen') : null),
     pdfs.length ? h('div', { class: 'ac-grid' }, pdfs.map(a => h('div', { class: 'ac-tile' + (a.file ? '' : ' empty'), 'data-title': a.title },
       h('button', { class: 'ac-open', type: 'button', onclick: () => a.file ? openPdf(a) : (me.admin ? academyEditor(a, 'pdf') : toast('Diese Unterlage ist noch nicht hochgeladen.')) },
-        h('span', { class: 'ac-pdfico' }, 'PDF'),
+        pdfCoverEl(a),
         h('b', {}, a.title),
         h('span', { class: 'muted' }, a.file ? fmtSize(a.file.size) + ' · Lesen' : (me.admin ? 'Noch keine PDF – tippen zum Hochladen' : 'Noch nicht verfügbar'))),
       me.admin ? h('button', { class: 'ac-edit', type: 'button', 'aria-label': a.title + ' bearbeiten', onclick: () => academyEditor(a, 'pdf') }, '⋮') : null)))
@@ -992,6 +997,38 @@ async function renderAcademy() {
         me.admin ? h('button', { class: 'ac-edit', type: 'button', 'aria-label': a.title + ' bearbeiten', onclick: () => academyEditor(a, 'video') }, '⋮') : null))))
       : h('p', { class: 'muted', style: 'margin:0' }, me.admin ? 'Noch keine Videos. Mit „Video hochladen“ fügst du das erste hinzu.' : 'Noch keine Schulungsvideos.'));
   put(v, hero, pdfCard, vidCard);
+}
+/* PDF-Cover: erste Seite als Bild (für die Kachel) */
+async function pdfCover(src) {
+  const pdfjs = await loadPdfjs();
+  const data = src instanceof Blob ? new Uint8Array(await src.arrayBuffer()) : src;
+  const doc = await pdfjs.getDocument({ data, isEvalSupported: false }).promise;
+  try {
+    const page = await doc.getPage(1), vp1 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: 520 / vp1.width });
+    const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    return await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+  } finally { doc.destroy(); }
+}
+const coverCache = {};  // Datei-ID → Bild-Adresse (für PDFs ohne gespeichertes Cover)
+function pdfCoverEl(a) {
+  const box = h('span', { class: 'ac-cover' + (a.file ? '' : ' none') });
+  if (!a.file) { box.append(svg(I.book), h('small', {}, 'Noch keine PDF')); return box; }
+  const show = url => box.replaceChildren(h('img', { src: url, alt: '', loading: 'lazy' }));
+  if (a.thumb) { show(api.mediaUrl({ id: a.thumb })); return box; }
+  // Ältere PDF ohne Cover: erste Seite einmalig erzeugen; der Admin speichert es dauerhaft für alle
+  box.classList.add('loading');
+  if (coverCache[a.file.id]) { show(coverCache[a.file.id]); return box; }
+  (async () => {
+    try {
+      const buf = await fetch('/api/files/' + a.file.id, { headers: { Authorization: 'Bearer ' + await token() } }).then(r => { if (!r.ok) throw Error(); return r.arrayBuffer(); });
+      const blob = await pdfCover(new Uint8Array(buf)); if (!blob) return;
+      coverCache[a.file.id] = URL.createObjectURL(blob); show(coverCache[a.file.id]); box.classList.remove('loading');
+      if (me.admin) { const tid = await api.uploadAcademy(new File([blob], 'cover.jpg', { type: 'image/jpeg' }), 'image/jpeg'); await api.updateAcademy(a.id, { thumb: tid }); a.thumb = tid; }
+    } catch (e) { box.classList.remove('loading'); box.replaceChildren(svg(I.book)); }
+  })();
+  return box;
 }
 /* Vorschaubild aus dem Video erzeugen (im Browser, vor dem Hochladen) */
 function videoThumb(file) {
@@ -1037,6 +1074,7 @@ function academyEditor(a, kind) {
       const d = { title: t };
       if (f) {
         const show = (p, txt) => { bar.hidden = false; bar.firstChild.style.width = p + '%'; bar.lastChild.textContent = txt; };
+        if (isPdf) { show(0, 'Vorschau der ersten Seite wird erstellt …'); const cb = await pdfCover(f).catch(() => null); if (cb) d.thumb = await api.uploadAcademy(new File([cb], 'cover.jpg', { type: 'image/jpeg' }), 'image/jpeg'); }
         if (!isPdf) { show(0, 'Vorschaubild wird erstellt …'); const tb = await videoThumb(f); if (tb) d.thumb = await api.uploadAcademy(new File([tb], 'vorschau.jpg', { type: 'image/jpeg' }), 'image/jpeg'); }
         const type = isPdf ? 'application/pdf' : (f.type || (/\.mov$/i.test(f.name) ? 'video/quicktime' : 'video/mp4'));
         d.file = await api.uploadAcademy(f, type, p => show(p, 'Hochladen … ' + p + ' % von ' + fmtSize(f.size)));
