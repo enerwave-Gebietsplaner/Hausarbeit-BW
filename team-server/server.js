@@ -182,6 +182,8 @@ async function handle(req, res) {
   if (url.pathname.startsWith('/rest/v1/')) {
     const me = userFromToken(req);
     if (!me) return send(res, 401, { message: 'Nicht angemeldet' });
+    // „Nur Academy“-Benutzer bekommen keine Kartendaten
+    try { if ((db.prepare('SELECT access FROM users WHERE id = ?').get(me.uid) || {}).access === 'academy') return send(res, 403, { message: 'Für dich ist nur die Academy freigegeben.', code: 'academy' }); } catch (e) { /* ältere Datenbank ohne Spalte */ }
     const table = url.pathname.slice(9);
     if (table === 'changes') {
       if (req.method === 'POST') {

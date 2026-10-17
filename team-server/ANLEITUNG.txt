@@ -70,6 +70,9 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   veraendert; die Projektkarte zeigt nur die Summe ihrer Mitarbeiter (heute / Monat).
 - Aktiv-Status: Im Tagesziel 'START' (gruen = heute aktiv) und 'ENDE' (rot = beendet). Im Teamvergleich
   sieht jeder den Status aller. Nur fuer den aktuellen Tag, keine Uhrzeiten, keine Zeiterfassung.
+- Zugriffsberechtigung: Beim Anlegen und spaeter im Mitarbeiter-Blatt waehlt der Administrator
+  'Nur Academy' (sieht nur die Academy, keine Karte, kein Chat, keine Zahlen) oder 'Vollzugriff'.
+  Bestehende Mitarbeiter haben Vollzugriff. Administratoren haben immer Vollzugriff.
 - Academy: Schulungsunterlagen (PDF) und Schulungsvideos. Nur der Administrator legt PDF-Kacheln an,
   laedt PDFs/Videos hoch (Videos bis 4 GB, am besten als MP4), benennt um, tauscht aus und loescht
   (Knopf mit den drei Punkten). Alle anderen lesen PDFs und spielen Videos direkt in der App ab.

@@ -91,6 +91,7 @@
     try {
       if (a.access && navigator.onLine) {
         const r = await fetch('/api/contracts', { headers: { Authorization: 'Bearer ' + a.access } });
+        if (r.status === 403) return;  // „Nur Academy“: keine Vertrags-Begrüßung
         if (r.ok) { const d = await r.json(); if (d.myCount > 0) text += ` Du hast diesen Monat schon ${d.myCount} ${d.myCount === 1 ? 'Vertrag' : 'Verträge'} – heute kommen neue dazu!`; }
       }
     } catch (e) {}

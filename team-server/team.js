@@ -31,8 +31,10 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   const curDay = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
   const dayOf = iso => new Date(iso).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
   const err = (res, code, message) => send(res, code, { message });
-  const userRow = id => db.prepare('SELECT id, name, admin, active FROM users WHERE id = ?').get(id);
-  const pub = u => ({ id: u.id, name: u.name, admin: !!u.admin, active: !!u.active });
+  // Zugriffsberechtigung je Benutzer: 'full' = Vollzugriff (Standard, auch für alle bestehenden), 'academy' = nur Academy
+  try { db.exec("ALTER TABLE users ADD COLUMN access TEXT NOT NULL DEFAULT 'full'"); } catch (e) { /* Spalte gibt es schon */ }
+  const userRow = id => db.prepare('SELECT id, name, admin, active, access FROM users WHERE id = ?').get(id);
+  const pub = u => ({ id: u.id, name: u.name, admin: !!u.admin, active: !!u.active, access: u.access === 'academy' ? 'academy' : 'full' });
 
   // Erster Administrator ohne Admin-ZIP: Solange es noch gar keinen aktiven Admin gibt,
   // bekommt der Mitarbeiter „Neki“ die Admin-Rechte automatisch. Gibt es schon einen Admin, passiert nichts.
@@ -79,10 +81,17 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     const isAdmin = !!meRow.admin;
     const p = url.pathname.slice(5);  // ohne "/api/"
     const M = req.method;
+    // „Nur Academy“: ausschließlich eigene Angaben, Academy-Liste und Academy-Dateien – alles andere gesperrt
+    if (meRow.access === 'academy') {
+      let fm;
+      const allowed = (p === 'me' && M === 'GET') || (p === 'academy' && M === 'GET') ||
+        ((fm = /^files\/([0-9a-f]{32})$/.exec(p)) && M === 'GET' && !!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(fm[1], fm[1]));
+      if (!allowed) return send(res, 403, { message: 'Für dich ist nur die Academy freigegeben.', code: 'academy' });
+    }
 
     /* ---------- Ich & Team ---------- */
     if (p === 'me' && M === 'GET') return send(res, 200, pub(meRow));
-    if (p === 'users' && M === 'GET') return send(res, 200, db.prepare('SELECT id, name, admin, active FROM users ORDER BY name COLLATE NOCASE').all().map(pub).concat(db.prepare('SELECT id, name FROM former_users').all().map(u => ({ id: u.id, name: u.name, admin: false, active: false, deleted: true }))));
+    if (p === 'users' && M === 'GET') return send(res, 200, db.prepare('SELECT id, name, admin, active, access FROM users ORDER BY name COLLATE NOCASE').all().filter(u => isAdmin || u.access !== 'academy').map(pub).concat(db.prepare('SELECT id, name FROM former_users').all().map(u => ({ id: u.id, name: u.name, admin: false, active: false, deleted: true }))));
     if (p === 'users' && M === 'POST') {
       if (!isAdmin) return err(res, 403, 'Nur Administratoren können Mitarbeiter anlegen.');
       const b = await readBody(req) || {}, name = String(b.name || '').trim(), pin = String(b.pin || '');
@@ -90,10 +99,11 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       if (pin.length < 4) return err(res, 400, 'Die PIN braucht mindestens 4 Ziffern.');
       const ex = db.prepare('SELECT * FROM users WHERE name = ? COLLATE NOCASE').get(name);
       if (ex && ex.active) return err(res, 409, '„' + name + '“ gibt es schon.');
-      if (ex) { db.prepare('UPDATE users SET active = 1, hash = ?, admin = ? WHERE id = ?').run(hashPin(pin), b.admin ? 1 : 0, ex.id); log('Mitarbeiter wieder aufgenommen:', name); return send(res, 200, pub(userRow(ex.id))); }
+      const access = b.access === 'academy' && !b.admin ? 'academy' : 'full';  // Administratoren haben immer Vollzugriff
+      if (ex) { db.prepare('UPDATE users SET active = 1, hash = ?, admin = ?, access = ? WHERE id = ?').run(hashPin(pin), b.admin ? 1 : 0, access, ex.id); log('Mitarbeiter wieder aufgenommen:', name); return send(res, 200, pub(userRow(ex.id))); }
       const id = crypto.randomUUID();
-      db.prepare('INSERT INTO users (id, name, hash, active, created_at, admin) VALUES (?, ?, ?, 1, ?, ?)').run(id, name, hashPin(pin), now(), b.admin ? 1 : 0);
-      log('Mitarbeiter angelegt:', name, 'von', meRow.name);
+      db.prepare('INSERT INTO users (id, name, hash, active, created_at, admin, access) VALUES (?, ?, ?, 1, ?, ?, ?)').run(id, name, hashPin(pin), now(), b.admin ? 1 : 0, access);
+      log('Mitarbeiter angelegt:', name, access === 'academy' ? '(Nur Academy)' : '(Vollzugriff)', 'von', meRow.name);
       return send(res, 200, pub(userRow(id)));
     }
     let m;
@@ -117,7 +127,13 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       const b = await readBody(req) || {};
       if (u.id === me.uid && (b.active === false || b.admin === false)) return err(res, 400, 'Du kannst dich nicht selbst blockieren oder dir die Admin-Rechte nehmen.');
       if (b.pin !== undefined) { if (String(b.pin).length < 4) return err(res, 400, 'Die PIN braucht mindestens 4 Ziffern.'); db.prepare('UPDATE users SET hash = ? WHERE id = ?').run(hashPin(String(b.pin)), u.id); if (u.id !== me.uid) db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id); }
-      if (b.admin !== undefined) db.prepare('UPDATE users SET admin = ? WHERE id = ?').run(b.admin ? 1 : 0, u.id);
+      if (b.access !== undefined) {
+        const acc = b.access === 'academy' ? 'academy' : 'full';
+        if (acc === 'academy' && (u.admin || b.admin)) return err(res, 400, 'Administratoren haben immer Vollzugriff.');
+        db.prepare('UPDATE users SET access = ? WHERE id = ?').run(acc, u.id);
+        log('Zugriff geändert:', u.name, acc === 'academy' ? 'Nur Academy' : 'Vollzugriff', 'von', meRow.name);
+      }
+      if (b.admin !== undefined) { db.prepare('UPDATE users SET admin = ? WHERE id = ?').run(b.admin ? 1 : 0, u.id); if (b.admin) db.prepare("UPDATE users SET access = 'full' WHERE id = ?").run(u.id); }
       if (b.active === false) { db.prepare('UPDATE users SET active = 0 WHERE id = ?').run(u.id); db.prepare('DELETE FROM sessions WHERE uid = ?').run(u.id); log('Mitarbeiter blockiert:', u.name, 'von', meRow.name); }
       if (b.active === true) { db.prepare('UPDATE users SET active = 1 WHERE id = ?').run(u.id); log('Mitarbeiter freigegeben:', u.name, 'von', meRow.name); }
       return send(res, 200, pub(userRow(u.id)));
@@ -260,7 +276,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       let users = null;
       {
         const counts = {}; for (const c of list) counts[c.uid] = (counts[c.uid] || 0) + 1;
-        users = db.prepare('SELECT id, name, active FROM users').all().map(u => ({ id: u.id, name: u.name, active: !!u.active, count: counts[u.id] || 0 })).filter(u => u.active || u.count);
+        users = db.prepare("SELECT id, name, active, access FROM users").all().map(u => ({ id: u.id, name: u.name, active: !!u.active && u.access !== 'academy', count: counts[u.id] || 0 })).filter(u => u.active || u.count);
       }
       // Heute: aus denselben Verträgen des laufenden Monats berechnet (keine eigene Zählung, keine Doppelzählung)
       const today = (() => {
@@ -272,7 +288,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
         const lastGoal = (db.prepare('SELECT goal FROM day_goals WHERE uid = ? ORDER BY day DESC LIMIT 1').get(me.uid) || {}).goal || 0;
         // Aktiv-Status nur für heute (keine Uhrzeiten, keine Historie): '' = noch nicht gestartet, 'active', 'ended'
         const stat = Object.fromEntries(db.prepare('SELECT uid, status FROM day_status WHERE day = ?').all(day).map(r => [r.uid, r.status]));
-        const team = db.prepare('SELECT id, name FROM users WHERE active = 1').all().map(u => ({ id: u.id, name: u.name, today: dayCnt[u.id] || 0, goal: goals[u.id] || 0, month: monCnt[u.id] || 0, status: stat[u.id] || '' }));
+        const team = db.prepare("SELECT id, name FROM users WHERE active = 1 AND access != 'academy'").all().map(u => ({ id: u.id, name: u.name, today: dayCnt[u.id] || 0, goal: goals[u.id] || 0, month: monCnt[u.id] || 0, status: stat[u.id] || '' }));
         return { day, count: dayCnt[me.uid] || 0, goal: goals[me.uid] || 0, lastGoal, team, status: stat[me.uid] || '' };
       })();
       return send(res, 200, { month, total: list.length, goal, myCount: mine.length, mine: mine.map(c => ({ id: c.id, at: c.at, note: c.note || '' })), users, first, months: [...new Set([...months, curMonth()])].sort(), today });

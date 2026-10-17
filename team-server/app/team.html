@@ -44,6 +44,7 @@ header.top .wrap { display: flex; align-items: center; justify-content: space-be
 .me { display: flex; align-items: center; gap: 8px; font-size: 13px; min-width: 0 }
 .me select { background: rgba(255,255,255,.14); border: 0; border-radius: 10px; padding: 4px 8px; color: #fff; max-width: 170px }
 .me select option { color: #000 }
+body.acad-only nav.tabs a:not(#tab-academy) { display: none } body.acad-only nav.tabs .wrap { grid-template-columns: 1fr }
 nav.tabs .wrap { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding-block: 0 6px }
 nav.tabs a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; color: rgba(255,255,255,.78); text-decoration: none; font-size: 12.5px; font-weight: 600; position: relative }
 nav.tabs a svg { width: 22px; height: 22px }
@@ -124,6 +125,13 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .pill { font-size: 11.5px; font-weight: 700; border-radius: 8px; padding: 2px 7px; background: rgba(29,78,216,.12); color: var(--info) }
 .access { display: flex; gap: 22px; flex-wrap: wrap } .access > div { display: flex; flex-direction: column; gap: 2px } .access b { font-size: 18px } .access .pinbig { font-size: 26px; letter-spacing: 4px; font-variant-numeric: tabular-nums }
 .steps { margin: 4px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px }
+.pill.acad { background: rgba(124,58,237,.12); color: #6d28d9 }
+.accpick { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px 10px; margin: 0; display: flex; flex-direction: column; gap: 6px }
+.accpick legend { font-size: 13px; color: var(--muted); padding: 0 4px; font-weight: 650 }
+.accopt { display: flex; gap: 10px; align-items: flex-start; padding: 8px; border-radius: 10px; cursor: pointer }
+.accopt:has(input:checked) { background: rgba(10,128,60,.1) }
+.accopt input { width: 20px; height: 20px; margin-top: 1px; accent-color: var(--accent-ink) }
+.accopt span { display: flex; flex-direction: column } .accopt small { color: var(--muted); font-size: 12.5px }
 .pill.off { background: rgba(189,33,33,.12); color: var(--danger) }
 .sheet { position: fixed; inset: 0; background: rgba(10,30,25,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 20 }
 .sheet .panel { background: var(--bg); width: 100%; max-width: 560px; border-radius: 18px 18px 0 0; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 10px; max-height: 88%; overflow-y: auto; box-sizing: border-box }
@@ -361,6 +369,7 @@ async function call(method, path, body, raw) {
   } catch (e) { if (e.auth) throw e; throw Error('Keine Verbindung zum Server. Ist Tailscale an?'); }
   if (res.status === 401) { auth.exp = 0; store.set(AUTHKEY, auth); throw Object.assign(Error('Bitte erneut anmelden.'), { auth: true }); }
   const j = await res.json().catch(() => ({}));
+  if (res.status === 403 && j.code === 'academy' && !(me && me.access === 'academy')) { location.replace('team.html#academy'); setTimeout(() => location.reload(), 50); }
   if (!res.ok) throw Error(j.message || 'Fehler ' + res.status);
   return j;
 }
@@ -513,8 +522,19 @@ async function boot() {
   if (DEMO) $('demoBar').hidden = false;
   try {
     me = await api.me();
-    [users, settings] = await Promise.all([api.users(), api.settings()]);
+    if (me.access === 'academy') { users = [me]; settings = {}; }
+    else [users, settings] = await Promise.all([api.users(), api.settings()]);
   } catch (e) { if (e.auth) return showLogin(e.message); return fatal(e.message); }
+  // Zugriffsänderung durch den Admin wird beim Zurückkehren in die App bzw. alle 5 Minuten übernommen
+  const accessCheck = async () => { if (document.visibilityState !== 'visible') return; try { const m = await api.me(); if ((m.access || 'full') !== (me.access || 'full')) location.reload(); } catch (e) {} };
+  setInterval(accessCheck, 5 * 60000); document.addEventListener('visibilitychange', accessCheck);
+  if (me.access === 'academy') {
+    document.body.classList.add('acad-only');
+    renderMe();
+    if (location.hash !== '#academy') history.replaceState(null, '', '#academy');
+    route();
+    return;
+  }
   renderMe();
   await pollUnread();  // erst Benachrichtigungen laden, dann Bereich anzeigen (Dashboard setzt sie dann zurück)
   route();
@@ -568,7 +588,7 @@ function showLogin(msg) {
 /* ================= Navigation ================= */
 function route() {
   const v = (location.hash || '#chat').slice(1).split('/')[0];
-  view = ['chat', 'team', 'dashboard', 'academy'].includes(v) ? v : 'chat';
+  view = me && me.access === 'academy' ? 'academy' : ['chat', 'team', 'dashboard', 'academy'].includes(v) ? v : 'chat';
   for (const k of ['chat', 'team', 'dashboard', 'academy']) { $('tab-' + k).classList.toggle('on', k === view); $('view-' + k).hidden = k !== view; }
   $('view-login').hidden = true; $('view-map').hidden = true;
   if (view === 'chat') renderChat(); else if (view === 'team') renderTeam(); else if (view === 'academy') renderAcademy(); else renderDashboard();
@@ -842,8 +862,8 @@ async function renderTeam() {
   put(v, 
     h('div', { class: 'row', style: 'justify-content:space-between' }, h('h2', {}, 'Mitarbeiter · ' + list.length + ' aktiv'), me.admin ? h('button', { class: 'btn green', id: 'btnAddUser', onclick: addUserSheet }, svg(I.plus), 'Neuer Mitarbeiter') : null),
     ...list.map(u => h('button', { class: 'person', onclick: () => personSheet(u, countOf(u.id)) }, av(u),
-      h('span', { class: 't' }, h('b', {}, u.name + (u.id === me.id ? ' (du)' : '')), h('div', { class: 'muted' }, countOf(u.id) !== null ? countOf(u.id) + ' Verträge im ' + MONTHS[new Date().getMonth()] : 'Mitarbeiter')),
-      u.admin ? h('span', { class: 'pill' }, 'Admin') : null)),
+      h('span', { class: 't' }, h('b', {}, u.name + (u.id === me.id ? ' (du)' : '')), h('div', { class: 'muted' }, u.access === 'academy' ? 'Zugriff: nur Academy' : countOf(u.id) !== null ? countOf(u.id) + ' Verträge im ' + MONTHS[new Date().getMonth()] : 'Mitarbeiter')),
+      u.admin ? h('span', { class: 'pill' }, 'Admin') : u.access === 'academy' ? h('span', { class: 'pill acad' }, 'Nur Academy') : null)),
     blocked.length ? h('h2', { style: 'font-size:16px;margin-top:8px' }, 'Blockiert · ' + blocked.length) : null,
     ...blocked.map(u => h('button', { class: 'person', style: 'opacity:.75', onclick: () => personSheet(u, countOf(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name), h('div', { class: 'muted' }, 'Zugang gesperrt')), h('span', { class: 'pill off' }, 'Blockiert'))),
     me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet ENERWAVE Connect öffnen und mit Name und PIN anmelden – fertig.'))) : null
@@ -860,10 +880,16 @@ function personSheet(u, count) {
   let s;
   const close = () => s.remove();
   const actions = h('div', { class: 'row' });
-  if (u.id !== me.id && u.active) actions.append(h('button', { class: 'btn big green', onclick: () => { close(); location.hash = '#chat/' + encodeURIComponent(dmId(me.id, u.id)); } }, svg(I.msg), 'Nachricht senden'));
+  if (u.id !== me.id && u.active && u.access !== 'academy') actions.append(h('button', { class: 'btn big green', onclick: () => { close(); location.hash = '#chat/' + encodeURIComponent(dmId(me.id, u.id)); } }, svg(I.msg), 'Nachricht senden'));
   const admin = h('div', { class: 'card' });
   if (me.admin) {
     const pin = h('input', { id: 'newPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' });
+    if (u.id !== me.id && !u.admin) {
+      admin.append(accessPicker('userAccess', u.access === 'academy' ? 'academy' : 'full', async val => {
+        try { await api.updateUser(u.id, { access: val }); u.access = val; toast(u.name + ': ' + (val === 'academy' ? 'nur Academy' : 'Vollzugriff') + ' – gilt sofort.'); renderTeam(); }
+        catch (e) { toast(e.message); }
+      }));
+    }
     admin.append(h('b', {}, 'Verwalten'),
       h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Neue PIN', pin), h('button', { class: 'btn ghost', type: 'button', onclick: () => { pin.value = genPin(); } }, 'PIN erzeugen'), h('button', { class: 'btn', id: 'savePin', onclick: async () => { if (!/^\d{4,}$/.test(pin.value)) return toast('Die PIN braucht mindestens 4 Ziffern.'); try { await api.updateUser(u.id, { pin: pin.value }); close(); if (u.id === me.id) toast('Deine PIN wurde geändert.'); else accessSheet(u.name, pin.value, true); } catch (e) { toast(e.message); } } }, 'PIN speichern')));
     if (u.id !== me.id) {
@@ -883,21 +909,32 @@ function personSheet(u, count) {
   s = sheet(h('div', { class: 'row' }, av(u), h('div', { style: 'flex:1' }, h('h2', {}, u.name), h('div', { class: 'muted' }, (u.active ? (u.admin ? 'Administrator' : 'Mitarbeiter') : 'Blockiert') + (count !== null ? ' · ' + count + ' Verträge diesen Monat' : ''))), h('button', { class: 'icon-btn', 'aria-label': 'Schließen', onclick: () => close() }, svg(I.x))),
     actions.childNodes.length ? actions : null, me.admin ? admin : null);
 }
+/* Zugriffsberechtigung: Nur Academy / Vollzugriff */
+function accessPicker(idp, value, onChange) {
+  const mk = (val, label, sub) => { const r = h('input', { type: 'radio', name: idp, id: idp + '-' + val, value: val }); r.checked = value === val; r.onchange = () => onChange && onChange(val); return h('label', { class: 'accopt' }, r, h('span', {}, h('b', {}, label), h('small', {}, sub))); };
+  return h('fieldset', { class: 'accpick', id: idp }, h('legend', {}, 'Zugriffsberechtigung'),
+    mk('academy', 'Nur Academy', 'sieht nur Schulungsunterlagen und Videos'),
+    mk('full', 'Vollzugriff', 'Hauskarte, Team-Chat, Mitarbeiter, Dashboard, Academy'));
+}
 function addUserSheet() {
   let s;
   const name = h('input', { id: 'addName', autocomplete: 'off', placeholder: 'z. B. Max Müller' });
   const pin = h('input', { id: 'addPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern', value: genPin() });
   const adm = h('input', { id: 'addAdmin', type: 'checkbox' });
+  const accBox = accessPicker('addAccess', 'full');
+  adm.onchange = () => { if (adm.checked) accBox.querySelector('[value=full]').checked = true; };
+  accBox.addEventListener('change', () => { if (accBox.querySelector('[value=academy]').checked) adm.checked = false; });
   const err = h('p', { class: 'muted', role: 'alert' });
   const form = h('form', { style: 'display:flex;flex-direction:column;gap:10px' }, h('h2', {}, 'Mitarbeiter hinzufügen'),
     h('label', { class: 'f' }, 'Name (damit meldet er sich an)', name), h('div', { class: 'row', style: 'align-items:flex-end' }, h('label', { class: 'f' }, 'Persönliche PIN', pin), h('button', { class: 'btn ghost', type: 'button', onclick: () => { pin.value = genPin(); } }, 'Neue PIN erzeugen')), h('label', { class: 'chk' }, adm, 'Administrator (darf selbst Mitarbeiter verwalten)'),
+    accBox,
     err, h('div', { class: 'row' }, h('button', { class: 'btn green', type: 'submit' }, 'Hinzufügen'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Abbrechen')),
     h('p', { class: 'muted' }, 'Der Zugang ist sofort aktiv. Das Tablet muss mit Tailscale im Team-Netzwerk verbunden sein.'));
   form.onsubmit = async e => {
     e.preventDefault();
     if (!name.value.trim()) return err.textContent = 'Bitte einen Namen eingeben.';
     if (!/^\d{4,}$/.test(pin.value)) return err.textContent = 'Die PIN braucht mindestens 4 Ziffern (nur Zahlen).';
-    try { const nm = name.value.trim(); await api.addUser({ name: nm, pin: pin.value, admin: adm.checked }); s.remove(); renderTeam(); accessSheet(nm, pin.value, false); }
+    try { const nm = name.value.trim(); await api.addUser({ name: nm, pin: pin.value, admin: adm.checked, access: accBox.querySelector('input:checked').value }); s.remove(); renderTeam(); accessSheet(nm, pin.value, false); }
     catch (x) { err.textContent = x.message; }
   };
   s = sheet(form);

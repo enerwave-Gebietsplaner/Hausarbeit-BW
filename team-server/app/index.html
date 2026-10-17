@@ -857,6 +857,19 @@ body.sun #teamNav{background:#000}
     } catch (e) {}
   }
   setTimeout(check, 3000); setInterval(check, 5 * 60000);  // Stromsparen: alle 5 Minuten (und sofort beim Öffnen)
+  // „Nur Academy“: Wer nur die Academy freigegeben hat, wird von der Karte direkt dorthin geleitet.
+  // Geprüft wird beim Öffnen und nach jeder Anmeldung (nur lokaler Vergleich, alle 2 s, kostet keinen Strom).
+  let lastUid = null;
+  const acad = async () => {
+    try {
+      const a = JSON.parse(localStorage.getItem('hauskarte-bw-sync-auth') || 'null');
+      if (!a || !a.access || a.uid === lastUid) return;
+      lastUid = a.uid;
+      const r = await fetch('/api/me', { headers: { Authorization: 'Bearer ' + a.access } });
+      if (r.ok && (await r.json()).access === 'academy') location.replace('team.html#academy');
+    } catch (e) { lastUid = null; }
+  };
+  acad(); setInterval(acad, 2000);
   document.addEventListener('visibilitychange', check);
 })();
 </script>
