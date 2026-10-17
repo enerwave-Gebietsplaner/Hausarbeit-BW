@@ -21,6 +21,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   CREATE TABLE IF NOT EXISTS day_goals (uid TEXT NOT NULL, day TEXT NOT NULL, goal INTEGER NOT NULL, PRIMARY KEY (uid, day));
   CREATE TABLE IF NOT EXISTS projects (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE COLLATE NOCASE, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
   CREATE TABLE IF NOT EXISTS project_members (pid INTEGER NOT NULL, uid TEXT NOT NULL, PRIMARY KEY (pid, uid));
+  CREATE TABLE IF NOT EXISTS day_status (uid TEXT NOT NULL, day TEXT NOT NULL, status TEXT NOT NULL, PRIMARY KEY (uid, day));
   CREATE TABLE IF NOT EXISTS reads (uid TEXT NOT NULL, key TEXT NOT NULL, val INTEGER NOT NULL, PRIMARY KEY (uid, key));
   `);
   const now = () => new Date().toISOString();
@@ -218,10 +219,22 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
         for (const c of curList) { monCnt[c.uid] = (monCnt[c.uid] || 0) + 1; if (dayOf(c.at) === day) dayCnt[c.uid] = (dayCnt[c.uid] || 0) + 1; }
         const goals = Object.fromEntries(db.prepare('SELECT uid, goal FROM day_goals WHERE day = ?').all(day).map(r => [r.uid, r.goal]));
         const lastGoal = (db.prepare('SELECT goal FROM day_goals WHERE uid = ? ORDER BY day DESC LIMIT 1').get(me.uid) || {}).goal || 0;
-        const team = db.prepare('SELECT id, name FROM users WHERE active = 1').all().map(u => ({ id: u.id, name: u.name, today: dayCnt[u.id] || 0, goal: goals[u.id] || 0, month: monCnt[u.id] || 0 }));
-        return { day, count: dayCnt[me.uid] || 0, goal: goals[me.uid] || 0, lastGoal, team };
+        // Aktiv-Status nur für heute (keine Uhrzeiten, keine Historie): '' = noch nicht gestartet, 'active', 'ended'
+        const stat = Object.fromEntries(db.prepare('SELECT uid, status FROM day_status WHERE day = ?').all(day).map(r => [r.uid, r.status]));
+        const team = db.prepare('SELECT id, name FROM users WHERE active = 1').all().map(u => ({ id: u.id, name: u.name, today: dayCnt[u.id] || 0, goal: goals[u.id] || 0, month: monCnt[u.id] || 0, status: stat[u.id] || '' }));
+        return { day, count: dayCnt[me.uid] || 0, goal: goals[me.uid] || 0, lastGoal, team, status: stat[me.uid] || '' };
       })();
       return send(res, 200, { month, total: list.length, goal, myCount: mine.length, mine: mine.map(c => ({ id: c.id, at: c.at, note: c.note || '' })), users, first, months: [...new Set([...months, curMonth()])].sort(), today });
+    }
+    // Aktiv-Status (START/ENDE): nur der eigene, nur für heute; ältere Tage werden gelöscht (keine Zeiterfassung)
+    if (p === 'daystatus' && M === 'POST') {
+      const b = await readBody(req) || {}, st = String(b.status || '');
+      if (!['active', 'ended', ''].includes(st)) return err(res, 400, 'Unbekannter Status.');
+      const day = curDay();
+      db.prepare('DELETE FROM day_status WHERE day != ?').run(day);
+      if (!st) db.prepare('DELETE FROM day_status WHERE uid = ? AND day = ?').run(me.uid, day);
+      else db.prepare('INSERT INTO day_status (uid, day, status) VALUES (?, ?, ?) ON CONFLICT(uid, day) DO UPDATE SET status = excluded.status').run(me.uid, day, st);
+      return send(res, 200, { ok: true, status: st });
     }
     // Persönliches Tagesziel: nur für sich selbst und nur für heute
     if (p === 'daygoal' && M === 'POST') {

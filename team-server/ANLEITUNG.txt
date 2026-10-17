@@ -68,6 +68,8 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   waehlt die Mitarbeiter aus (ein Mitarbeiter kann in mehreren Projekten sein), aktiviert/deaktiviert
   und loescht sie. Mitarbeiter sehen nur ihre eigenen Projekte. Vertragszahlen werden dadurch nicht
   veraendert; die Projektkarte zeigt nur die Summe ihrer Mitarbeiter (heute / Monat).
+- Aktiv-Status: Im Tagesziel 'START' (gruen = heute aktiv) und 'ENDE' (rot = beendet). Im Teamvergleich
+  sieht jeder den Status aller. Nur fuer den aktuellen Tag, keine Uhrzeiten, keine Zeiterfassung.
 - Motivation: persoenliche Begruessung einmal pro Arbeitstag, kurze Nachrichten bei eigenen
   Vertrags-Meilensteinen (1., 2., 3., jeder 5., persoenlicher Monatsrekord).
 - Chat-Anhaenge liegen in C:\Hauskarte\daten\anhaenge (bitte bei der externen Sicherung mitsichern).

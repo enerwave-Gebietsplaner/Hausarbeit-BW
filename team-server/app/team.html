@@ -192,6 +192,15 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 .mlist { display: flex; flex-direction: column; max-height: 46vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px }
 .mlist label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); cursor: pointer } .mlist label:first-child { border-top: 0 }
 .mlist input { width: 20px; height: 20px; accent-color: var(--accent-ink) }
+.dstat { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 10px }
+.dst-l { flex: 1; min-width: 150px; font-weight: 700; font-size: 15px } .dst-l.active { color: var(--accent-ink) } .dst-l.ended { color: var(--danger) } .dst-l.none { color: var(--muted); font-weight: 600 }
+.dst-b { border: 1.5px solid var(--line); background: var(--card); color: var(--fg); border-radius: 10px; padding: 8px 12px; font: inherit; font-weight: 750; font-size: 14px; cursor: pointer }
+.dst-b.start.on { background: #1f9d50; border-color: #1f9d50; color: #fff } .dst-b.end.on { background: var(--danger); border-color: var(--danger); color: #fff }
+.who .wn { display: flex; flex-direction: column; min-width: 0 } .who .wn b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.who .ws { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600 }
+div.daygoal { width: auto; box-sizing: border-box }
+@media (max-width: 520px) { .dstat { display: grid; grid-template-columns: 1fr 1fr } .dst-l { grid-column: 1 / -1; min-width: 0 } .dst-b { padding: 10px 8px } .who .ws { white-space: normal; overflow: visible; line-height: 1.2 } } .who .ws.active { color: var(--accent-ink) } .who .ws.ended { color: var(--danger) }
+.who.st-active .av { box-shadow: 0 0 0 2.5px #22ba57 } .who.st-ended .av { box-shadow: 0 0 0 2.5px #f24747 }
 .dg-body { display: flex; gap: 16px; align-items: center } .dg-left { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0 } .dg-right { display: flex; flex-direction: column; align-items: center }
 .dg-goal { font-size: 16px } .dg-goal strong { font-weight: 750 }
 .daygoal .dg-edit { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 10px; padding: 7px 12px; color: var(--fg) } .daygoal .dg-edit svg { width: 18px; height: 18px }
@@ -356,6 +365,7 @@ const realApi = {
   addContract: note => call('POST', 'contracts', { note }),
   delContract: id => call('POST', 'contracts/' + id + '/delete'),
   setDayGoal: goal => call('POST', 'daygoal', { goal }),
+  setDayStatus: status => call('POST', 'daystatus', { status }),
   projects: () => call('GET', 'projects'),
   addProject: d => call('POST', 'projects', d),
   updateProject: (id, d) => call('POST', 'projects/' + id, d),
@@ -427,6 +437,7 @@ const demoApi = (() => {
     },
     addContract: note => { contracts.push({ id: ++cseq, uid: meId, month: cur, at: new Date().toISOString(), note }); return wait({ ok: true }); },
     setDayGoal: () => wait({ ok: true }),
+    setDayStatus: () => wait({ ok: true }),
     projects: () => wait([]), addProject: () => wait({}), updateProject: () => wait({}), delProject: () => wait({ ok: true }),
     delContract: id => { const i = contracts.findIndex(c => c.id === id && c.uid === meId); if (i >= 0) contracts.splice(i, 1); return wait({ ok: true }); },
     setGoal: (month, goal) => { goals[month] = goal; return wait({ ok: true }); },
@@ -913,7 +924,7 @@ async function renderDashboard() {
     const t = d.today;
     if (t.goal) {
       const pct = Math.min(100, Math.round(t.count / t.goal * 100)), done = t.count >= t.goal;
-      goalCard = h('button', { class: 'card dcard daygoal' + (done ? ' done' : ''), id: 'dayGoal', onclick: () => dayGoalEditor(t) },
+      goalCard = h('div', { class: 'card dcard daygoal' + (done ? ' done' : ''), id: 'dayGoal', role: 'button', tabindex: '0', onclick: e => { if (!e.target.closest('.dstat')) dayGoalEditor(t); } },
         dhead('target', 'Mein Tagesziel', 'Dein persönliches Ziel für heute.', h('span', { class: 'dg-edit' }, svg(I.pen), 'Ändern')),
         h('div', { class: 'dg-body' },
           h('div', { class: 'dg-left' }, h('span', { class: 'dg-goal' }, 'Tagesziel: ', h('strong', {}, t.goal + ' ' + (t.goal === 1 ? 'Vertrag' : 'Verträge'))),
@@ -921,8 +932,17 @@ async function renderDashboard() {
             h('span', { class: 'muted' }, done ? (t.count > t.goal ? '🏆 Ziel übertroffen – ' + (t.count - t.goal) + ' mehr als geplant!' : '🏆 Tagesziel erreicht!') : 'Noch ' + (t.goal - t.count) + ' bis zum Ziel')),
           h('div', { class: 'dg-right' }, h('span', { class: 'dg-num', id: 'dayProgress' }, String(t.count), h('small', {}, ' / ' + t.goal)), h('span', { class: 'muted' }, 'Verträge'))));
     } else {
-      goalCard = h('button', { class: 'card dcard daygoal', id: 'dayGoal', onclick: () => dayGoalEditor(t) },
+      goalCard = h('div', { class: 'card dcard daygoal', id: 'dayGoal', role: 'button', tabindex: '0', onclick: e => { if (!e.target.closest('.dstat')) dayGoalEditor(t); } },
         dhead('target', 'Mein Tagesziel', 'Heute ' + t.count + ' ' + (t.count === 1 ? 'Vertrag' : 'Verträge') + ' – tippe hier, um dein Ziel festzulegen.', h('span', { class: 'dg-edit' }, svg(I.pen), 'Festlegen')));
+    }
+    // Aktiv-Status für heute (keine Zeiterfassung): START = aktiv, ENDE = beendet
+    {
+      const st = t.status || '';
+      const setSt = async v => { try { if (st === v) return; await api.setDayStatus(v); renderDashboard(); } catch (e) { toast(e.message); } };
+      goalCard.append(h('div', { class: 'dstat' },
+        h('span', { class: 'dst-l ' + (st || 'none'), id: 'myStatus' }, st === 'active' ? '🟢 Aktiv' : st === 'ended' ? '🔴 Ende' : '⚪ Noch nicht gestartet'),
+        h('button', { type: 'button', class: 'dst-b start' + (st === 'active' ? ' on' : ''), id: 'btnStart', 'aria-pressed': st === 'active' ? 'true' : 'false', onclick: () => setSt('active') }, '🟢 START'),
+        h('button', { type: 'button', class: 'dst-b end' + (st === 'ended' ? ' on' : ''), id: 'btnEnd', 'aria-pressed': st === 'ended' ? 'true' : 'false', onclick: () => setSt('ended') }, '🔴 ENDE')));
     }
     const rows = [...t.team].sort((a, b) => b.today - a.today || b.month - a.month || a.name.localeCompare(b.name, 'de'));
     const leader = rows.length && rows[0].today > 0 ? rows[0].id : null;
@@ -933,7 +953,7 @@ async function renderDashboard() {
           const mine = u.id === me.id, hit = u.goal && u.today >= u.goal, pct = u.goal ? Math.min(100, Math.round(u.today / u.goal * 100)) : 0;
           return h('div', { class: 'tcr' + (mine ? ' me' : '') + (hit ? ' hit' : ''), 'data-name': u.name },
             h('span', { class: 'rk' }, String(i + 1), u.id === leader ? h('span', { class: 'crown', title: 'Heute vorne' }, svg(I.crown)) : null),
-            h('span', { class: 'who' }, av(u), h('b', {}, u.name + (mine ? ' (du)' : '') + (hit ? ' 🏆' : ''))),
+            h('span', { class: 'who' + (u.status ? ' st-' + u.status : '') }, av(u), h('span', { class: 'wn' }, h('b', {}, u.name + (mine ? ' (du)' : '') + (hit ? ' 🏆' : '')), h('span', { class: 'ws ' + (u.status || 'none') }, u.status === 'active' ? '🟢 Aktiv' : u.status === 'ended' ? '🔴 Ende' : '⚪ Noch nicht gestartet'))),
             h('span', { class: 'c goal' }, u.goal ? String(u.goal) : '–'),
             h('span', { class: 'today' }, h('span', { class: 'tv2' }, h('strong', {}, String(u.today)), u.goal ? ' / ' + u.goal : ''), u.goal ? h('span', { class: 'tcb' }, h('i', { style: 'width:' + pct + '%' })) : null),
             h('span', { class: 'c month' }, h('strong', {}, String(u.month))));
