@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Hauskarte BW Team</title>
+<title>ENERWAVE Connect</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -231,7 +231,7 @@ label.chk { display: flex; gap: 8px; align-items: center; font-size: 14px }
 <body>
 <header class="top">
   <div class="wrap">
-    <span class="title">Hauskarte BW <small>Team</small></span>
+    <span class="title">ENERWAVE Connect <small>Team</small></span>
     <span class="me" id="me"></span>
   </div>
   <nav class="tabs" aria-label="Hauptnavigation">
@@ -487,7 +487,7 @@ function showLogin(msg) {
   const v = $('view-login'); v.hidden = false;
   const name = h('input', { id: 'lgName', autocomplete: 'username' }), pin = h('input', { id: 'lgPin', type: 'password', inputmode: 'numeric', autocomplete: 'current-password' });
   const err = h('p', { class: 'muted', role: 'alert' }, msg || '');
-  const form = h('form', { class: 'card' }, h('h2', {}, 'Anmelden'), h('p', { class: 'muted' }, 'Mit demselben Namen und derselben PIN wie in der Hauskarte.'),
+  const form = h('form', { class: 'card' }, h('h2', {}, 'Anmelden'), h('p', { class: 'muted' }, 'Mit demselben Namen und derselben PIN wie in ENERWAVE Connect.'),
     h('label', { class: 'f' }, 'Dein Name', name), h('label', { class: 'f' }, 'PIN', pin), err, h('button', { class: 'btn big green', type: 'submit' }, 'Anmelden'));
   form.onsubmit = async e => {
     e.preventDefault();
@@ -781,7 +781,7 @@ async function renderTeam() {
       u.admin ? h('span', { class: 'pill' }, 'Admin') : null)),
     blocked.length ? h('h2', { style: 'font-size:16px;margin-top:8px' }, 'Blockiert · ' + blocked.length) : null,
     ...blocked.map(u => h('button', { class: 'person', style: 'opacity:.75', onclick: () => personSheet(u, countOf(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name), h('div', { class: 'muted' }, 'Zugang gesperrt')), h('span', { class: 'pill off' }, 'Blockiert'))),
-    me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet die Hauskarte öffnen und mit Name und PIN anmelden – fertig.'))) : null
+    me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet ENERWAVE Connect öffnen und mit Name und PIN anmelden – fertig.'))) : null
   );
 }
 function sheet(...content) {
@@ -849,11 +849,11 @@ function genPin() {
 /* Zugangsdaten zum Weitergeben an den Mitarbeiter */
 function accessSheet(name, pin, changed) {
   let s;
-  const text = 'Hauskarte BW – deine Anmeldung\nName: ' + name + '\nPIN: ' + pin + '\n\nTailscale auf dem Tablet einschalten, die Hauskarte öffnen und mit Name und PIN anmelden.';
+  const text = 'ENERWAVE Connect – deine Anmeldung\nName: ' + name + '\nPIN: ' + pin + '\n\nTailscale auf dem Tablet einschalten, ENERWAVE Connect öffnen und mit Name und PIN anmelden.';
   s = sheet(h('div', { style: 'display:flex;flex-direction:column;gap:12px' },
     h('h2', {}, changed ? 'Neue PIN für ' + name : name + ' ist angelegt'),
     h('div', { class: 'card access' }, h('div', {}, h('span', { class: 'muted' }, 'Name'), h('b', { id: 'accName' }, name)), h('div', {}, h('span', { class: 'muted' }, 'PIN'), h('b', { id: 'accPin', class: 'pinbig' }, pin))),
-    h('p', { class: 'muted', style: 'margin:0' }, changed ? 'Die alte PIN gilt ab sofort nicht mehr. ' + name + ' muss sich auf seinem Tablet einmal neu anmelden.' : 'Auf dem Tablet von ' + name + ': Tailscale einschalten, die Hauskarte öffnen und mit diesem Namen und dieser PIN anmelden. Vertragszahlen, private Nachrichten und Motivation gehören dann automatisch zu seinem Profil.'),
+    h('p', { class: 'muted', style: 'margin:0' }, changed ? 'Die alte PIN gilt ab sofort nicht mehr. ' + name + ' muss sich auf seinem Tablet einmal neu anmelden.' : 'Auf dem Tablet von ' + name + ': Tailscale einschalten, ENERWAVE Connect öffnen und mit diesem Namen und dieser PIN anmelden. Vertragszahlen, private Nachrichten und Motivation gehören dann automatisch zu seinem Profil.'),
     h('p', { class: 'muted', style: 'margin:0' }, 'Die PIN wird nur jetzt angezeigt – bitte notieren oder direkt weitergeben.'),
     h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: async () => { try { await navigator.clipboard.writeText(text); toast('Zugangsdaten kopiert.'); } catch (e) { toast('Kopieren nicht möglich – bitte abschreiben.'); } } }, 'Kopieren'), h('button', { class: 'btn green', type: 'button', onclick: () => s.remove() }, 'Fertig'))));
 }

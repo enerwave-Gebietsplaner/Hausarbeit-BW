@@ -1,19 +1,19 @@
 {
- "version": 17,
- "created": "2026-10-16T20:02:22.181Z",
+ "version": 18,
+ "created": "2026-10-17T06:07:47.180Z",
  "files": {
   "server.js": "c476be080643ff2029f0a1a86356b7a08b6e896ccf90c052760fcd7f9089e4a7",
   "team.js": "0750c6ba1b7cb913d4d2f2b9bef5b139f39324d08de305409e150672f235c9a4",
   "start-server.cmd": "6ddaaf4a03e46a5a433e74c3b2723b57cb4192e1a1a9ce663215e9d539d07562",
-  "mitarbeiter.ps1": "67d4a497216d2ffba5f5c857941fb47443a01a354db12dd7afacd8eb86f35fdb",
+  "mitarbeiter.ps1": "c557ae11531feafbf7f29d94e84683524afe71bec5ecc00af7342cdebe80e02e",
   "Mitarbeiter verwalten.bat": "ce672017ca6eb6a372cdf15fff098b599fcb8faa1429b4a1ac2f607b78a8d65e",
-  "ANLEITUNG.txt": "8406948c203547c7383eac1161b48194877b3214330e6c3cf7400ecd00034000",
-  "app/index.html": "da9dbcf8b7a9765f5dc9b1f93b16e3d0cea9d58ca7d29d6c4de97993aefbc1bf",
-  "app/team.html": "1eaff4c62f24201632d4705e1bcba244a52a4a1e471f46933b0685ac4fd3f09d",
+  "ANLEITUNG.txt": "15252afa988512080bac070f98a920dee35cd05d60a98b119b9093f79d8cc3b7",
+  "app/index.html": "251a7db091ebffb9931d8671a42769ea8a0a5ff0403a088bd3d9a486d700eea6",
+  "app/team.html": "ff5b146debe992952c411199d91c279922c62200bafe1f43770e9b5357f3b32f",
   "app/motivation.js": "c67ade4e896659fa9f0a3cfc1dec65b6df3d1b7e2513d9da5d7897fe9d6780ed",
-  "app/sw.js": "d82b2c5422ada488fc2b94599e5edb28fa19883a93e49dc5d7a39e961e713b45",
+  "app/sw.js": "0b921877b00980106086e98837ef3d1f714b2f85891318ab8233629085af056f",
   "app/sync-config.js": "0512bd7379e56ab866c319bb04b993a4cb7cb55bf84f9e45b564e372814eadfc",
-  "app/manifest.webmanifest": "0eeb10c00d2451c139160aac043ee5041209ac08beb98948b7aaa17bc09241e3",
+  "app/manifest.webmanifest": "d74c9a120efe38ac1236ce71b5607a8f9db99140ca55ff90ccb9d5bfa5d19637",
   "app/icon.svg": "272502d983dcb735d20080788de896bba7231bde081fcef53f21fd4d95fb7711",
   "app/v16.html": "ec2b400fd0d7b6abc36cf3e74e6ac830bb04f806f09d31999a6e499de520d830"
  }

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#173a34">
-<title>Hauskarte BW Team</title>
+<title>ENERWAVE Connect</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
@@ -763,7 +763,7 @@ button.danger{background:#a33}
 <div id="lock" role="dialog" aria-modal="true" aria-label="App-Sperre">
   <div class="lk-box">
     <div class="lk-icon">🔒</div>
-    <div class="lk-title">Hauskarte BW</div>
+    <div class="lk-title">ENERWAVE Connect</div>
     <div class="lk-sub" id="lkSub">Bitte Code eingeben</div>
     <div class="lk-dots" id="lkDots"><i></i><i></i><i></i><i></i></div>
     <div class="lk-pad" id="lkPad">
@@ -799,7 +799,7 @@ window.hauskarteUnlocked = Promise.resolve();
 document.getElementById('lock')?.remove();
 </script>
 <header>
-  <span class="title">Hauskarte BW <small class="key" id="ver"></small></span>
+  <span class="title">ENERWAVE Connect <small class="key" id="ver"></small></span>
   <div id="stats" aria-label="Übersicht"></div>
 </header>
 <!-- Team-Leiste: nur Navigation zu den Team-Bereichen, die Karte selbst bleibt unverändert -->
@@ -931,7 +931,7 @@ body.sun #teamNav{background:#000}
     <button class="secondary" id="shareSave">⬇ Nur als Datei speichern</button>
     <button class="secondary" id="shareCancel">Abbrechen</button>
   </div>
-  <p><b>Link:</b> Der Kollege tippt in WhatsApp oder der E-Mail einfach auf den Link – die Hauskarte öffnet sich mit dem Gebiet, er bestätigt mit „Zusammenführen“. Fertig.</p>
+  <p><b>Link:</b> Der Kollege tippt in WhatsApp oder der E-Mail einfach auf den Link – ENERWAVE Connect öffnet sich mit dem Gebiet, er bestätigt mit „Zusammenführen“. Fertig.</p>
 </div></dialog>
 
 <script>
@@ -1038,7 +1038,7 @@ const idb = (() => {
 })();
 
 /* ================= Karte ================= */
-const bw = L.latLngBounds([47.45, 7.45], [49.85, 10.65]);
+const bw = L.latLngBounds([47.2, 5.8], [55.1, 15.1]);  // Kartengebiet: ganz Deutschland (früher nur Baden-Württemberg)
 const renderer = L.canvas({ padding: 0.5, tolerance: 5 });
 /* Flüssiges Drehen: Während der Zwei-Finger-Geste wird die Karte nur per Grafikkarte (CSS) gedreht.
    Häuser und Beschriftungen werden erst 0,12 s nach der letzten Bewegung neu gezeichnet. */
@@ -1613,7 +1613,7 @@ locBtn.onclick = () => {
     }
     if (firstFix) {
       firstFix = false;
-      if (!bw.contains(ll)) { follow = false; locUi(); say('Standort liegt außerhalb von Baden-Württemberg.', true); return; }
+      if (!bw.contains(ll)) { follow = false; locUi(); say('Standort liegt außerhalb von Deutschland.', true); return; }
       map.setView(ll, 18);
       say(autoMode ? 'Standort gefunden. Häuser werden automatisch gesucht.' : 'Standort gefunden. Jetzt „Häuser finden“ tippen.');
     } else if (follow) { const pt = map.latLngToContainerPoint(ll), sz = map.getSize(); if (Math.abs(pt.x - sz.x / 2) > sz.x * 0.15 || Math.abs(pt.y - sz.y / 2) > sz.y * 0.15) map.panTo(ll); }  // nur nachführen, wenn der Punkt aus der Mitte wandert
@@ -1712,7 +1712,7 @@ function localHits(q) {
   return hits;
 }
 function goTo(lat, lng, zoom, label, bbox) {
-  if (!bw.pad(0.15).contains([lat, lng])) { say('Dieser Ort liegt außerhalb von Baden-Württemberg.', true); return; }
+  if (!bw.pad(0.15).contains([lat, lng])) { say('Dieser Ort liegt außerhalb von Deutschland.', true); return; }
   if (follow) { follow = false; locUi(); }
   if (bbox && zoom < 17) map.fitBounds(bbox, { maxZoom: zoom });
   else map.setView([lat, lng], zoom);
@@ -1739,7 +1739,7 @@ sInput.addEventListener('input', () => {
   const q = sInput.value.trim();
   if (q.length < 2) { sList.replaceChildren(); return; }
   const rows = showLocal(q);
-  sList.replaceChildren(...rows, item('↵ „Suchen“ tippen, um überall in Baden-Württemberg zu suchen', '', null, 'info'));
+  sList.replaceChildren(...rows, item('↵ „Suchen“ tippen, um in ganz Deutschland zu suchen', '', null, 'info'));
 });
 function shortName(r) {
   const a = r.address || {};
@@ -1765,7 +1765,7 @@ $('searchForm').onsubmit = async e => {
   try {
     const url = 'https://nominatim.openstreetmap.org/search?' + new URLSearchParams({
       q, format: 'jsonv2', addressdetails: '1', limit: '8', countrycodes: 'de', 'accept-language': 'de',
-      viewbox: '7.45,49.85,10.65,47.45', bounded: '1'
+      viewbox: '5.8,55.1,15.1,47.2', bounded: '1'
     });
     const res = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!res.ok) throw Error(res.status === 429 ? 'zu viele Anfragen, bitte kurz warten' : 'HTTP ' + res.status);
@@ -1870,8 +1870,8 @@ function exportExcel(withOpen) {
   }
   if (!rows.length) { say('Noch keine Daten für die Excel-Liste vorhanden.', true); return; }
   rows.sort((a, b) => (a[0] || '~').localeCompare(b[0] || '~', 'de') || String(a[1]).localeCompare(String(b[1]), 'de', { numeric: true }));
-  const blob = buildXlsx([head, ...rows], [26, 9, 16, 20, 30, 34, 18, 9, 18, 12, 12, 16], 'Hauskarte');
-  download(new File([blob], 'hauskarte-bw-liste-' + new Date().toISOString().slice(0, 10) + '.xlsx', { type: blob.type }));
+  const blob = buildXlsx([head, ...rows], [26, 9, 16, 20, 30, 34, 18, 9, 18, 12, 12, 16], 'ENERWAVE Connect');
+  download(new File([blob], 'enerwave-connect-liste-' + new Date().toISOString().slice(0, 10) + '.xlsx', { type: blob.type }));
   $('menu').close();
   say(`Excel-Liste mit ${rows.length} Zeilen wurde zum Download angeboten.`);
 }
@@ -1897,7 +1897,7 @@ function buildBackup(withNames = true, area = 'all') {
   return { app: 'Hauskarte BW', version: VERSION, createdAt: new Date().toISOString(), view: { c: [r6(c.lat), r6(c.lng)], z: map.getZoom() }, records: recs, buildings, sketches: sketchData() };
 }
 function backupFile(withNames) {
-  const name = 'hauskarte-bw-' + (withNames ? 'sicherung' : 'team') + '-' + new Date().toISOString().slice(0, 10) + '.json';
+  const name = 'enerwave-connect-' + (withNames ? 'sicherung' : 'team') + '-' + new Date().toISOString().slice(0, 10) + '.json';
   return new File([JSON.stringify(buildBackup(withNames, 'all'))], name, { type: 'application/json' });
 }
 function download(file) {
@@ -1925,7 +1925,7 @@ async function renderSnapshots() {
   box.replaceChildren(...list.map(b => {
     const dl = el('button', { type: 'button', className: 'secondary', textContent: '⬇ Datei' });
     const rs = el('button', { type: 'button', textContent: '↺ Öffnen' });
-    dl.onclick = () => download(new File([JSON.stringify(b.data)], 'hauskarte-bw-auto-' + b.day + '.json', { type: 'application/json' }));
+    dl.onclick = () => download(new File([JSON.stringify(b.data)], 'enerwave-connect-auto-' + b.day + '.json', { type: 'application/json' }));
     rs.onclick = () => {
       pendingImport = b.data;
       $('menu').close();
@@ -2043,7 +2043,7 @@ $('shareLink').onclick = async () => {
   say('Link wird erstellt …');
   try {
     const { url, info } = await buildLink(withNames);
-    const text = 'Hauskarte-Gebiet (' + info + '): ' + url;
+    const text = 'ENERWAVE Connect – Gebiet (' + info + '): ' + url;
     if (navigator.share) { await navigator.share({ text }); say('Link geteilt (' + info + '). Der Kollege tippt einfach auf den Link.'); }
     else { await navigator.clipboard.writeText(url); say('Link kopiert (' + info + '). In WhatsApp oder E-Mail einfügen und senden.'); }
   } catch (e) {

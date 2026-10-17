@@ -12,7 +12,7 @@ function Fehler($t) { Write-Host "  [X]  $t" -ForegroundColor Red; Read-Host "`n
 
 $Ziel = 'C:\Hauskarte'
 $Quelle = $PSScriptRoot
-Write-Host "`n=== Hauskarte BW - Server einrichten ===`n" -ForegroundColor Cyan
+Write-Host "`n=== ENERWAVE Connect - Server einrichten ===`n" -ForegroundColor Cyan
 
 # 1. Node.js
 $node = (Get-Command node -ErrorAction SilentlyContinue).Source
@@ -77,7 +77,7 @@ else {
   if (-not $self) { Warn 'Tailscale-Name nicht gefunden. Ist Tailscale angemeldet?' }
   if ($self) {
     $url = "https://$self/"
-    Set-Content "$Ziel\ADRESSE.txt" "Hauskarte Team-App: $url"
+    Set-Content "$Ziel\ADRESSE.txt" "ENERWAVE Connect: $url"
     Write-Host "`n  Adresse der Team-App fuer die Tablets:`n" -ForegroundColor Cyan
     Write-Host "      $url`n" -ForegroundColor White
   }

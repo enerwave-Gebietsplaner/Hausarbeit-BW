@@ -1,5 +1,5 @@
-HAUSKARTE BW - TEAM-SERVER
-==========================
+ENERWAVE CONNECT - TEAM-SERVER
+==============================
 
 EINRICHTEN (einmalig, auf dem Buero-Laptop)
 1. Voraussetzungen: Node.js (LTS, nodejs.org) und Tailscale installiert und angemeldet,
@@ -38,7 +38,8 @@ IM BETRIEB
   Daten und Mitarbeiter bleiben dabei unveraendert.
 
 TEAM-BEREICH (Team-Chat, Team, Dashboard)
-- Oben in der Hauskarte: Hauskarte | Team-Chat | Mitarbeiter | Dashboard.
+- Oben in ENERWAVE Connect: Hauskarte | Team-Chat | Mitarbeiter | Dashboard.
+- Die Karte ist fuer ganz Deutschland freigegeben (Suche, Standort, Haeuser finden).
 - Administrator: Neki bekommt die Admin-Rechte automatisch, solange es noch keinen Admin gibt.
   Nur der Administrator kann unter 'Mitarbeiter' neue Mitarbeiter anlegen, eine persoenliche PIN
   vergeben oder erzeugen, PIN aendern, Admin-Rechte vergeben, Mitarbeiter blockieren,
