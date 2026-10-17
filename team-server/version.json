@@ -1,6 +1,6 @@
 {
- "version": 18,
- "created": "2026-10-17T06:07:47.180Z",
+ "version": 19,
+ "created": "2026-10-17T06:36:15.518Z",
  "files": {
   "server.js": "c476be080643ff2029f0a1a86356b7a08b6e896ccf90c052760fcd7f9089e4a7",
   "team.js": "0750c6ba1b7cb913d4d2f2b9bef5b139f39324d08de305409e150672f235c9a4",
@@ -8,10 +8,10 @@
   "mitarbeiter.ps1": "c557ae11531feafbf7f29d94e84683524afe71bec5ecc00af7342cdebe80e02e",
   "Mitarbeiter verwalten.bat": "ce672017ca6eb6a372cdf15fff098b599fcb8faa1429b4a1ac2f607b78a8d65e",
   "ANLEITUNG.txt": "15252afa988512080bac070f98a920dee35cd05d60a98b119b9093f79d8cc3b7",
-  "app/index.html": "251a7db091ebffb9931d8671a42769ea8a0a5ff0403a088bd3d9a486d700eea6",
+  "app/index.html": "15a9eb3ab1a0e4ba2fb330c3563321c6c4a362e87e3dee21daa5d6de12c030ef",
   "app/team.html": "ff5b146debe992952c411199d91c279922c62200bafe1f43770e9b5357f3b32f",
   "app/motivation.js": "c67ade4e896659fa9f0a3cfc1dec65b6df3d1b7e2513d9da5d7897fe9d6780ed",
-  "app/sw.js": "0b921877b00980106086e98837ef3d1f714b2f85891318ab8233629085af056f",
+  "app/sw.js": "6ad1ee6990a6256955550b5b75549af40a2b9d6c1d585f150756bfa42107b36c",
   "app/sync-config.js": "0512bd7379e56ab866c319bb04b993a4cb7cb55bf84f9e45b564e372814eadfc",
   "app/manifest.webmanifest": "d74c9a120efe38ac1236ce71b5607a8f9db99140ca55ff90ccb9d5bfa5d19637",
   "app/icon.svg": "272502d983dcb735d20080788de896bba7231bde081fcef53f21fd4d95fb7711",

@@ -683,6 +683,16 @@ header .title{font-weight:700;white-space:nowrap}
 #stats span{background:rgba(255,255,255,.14);border-radius:12px;padding:2px 7px;white-space:nowrap}
 #stats i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;font-style:normal}
 #map{flex:1 1 auto;min-height:240px}
+/* Kompakter Kopfbereich (nur Anordnung): Name + Abgleich in einer Zeile, Statuszähler nebeneinander darunter */
+@media (max-width:640px){
+header{flex-wrap:wrap;min-height:0;gap:3px 8px;padding:4px 10px 3px;padding-top:max(4px,env(safe-area-inset-top))}
+header .title{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+header .title .key{font-size:10.5px}
+#syncBadge{padding:2px 8px;font-size:11.5px}
+#stats{flex:1 1 100%;justify-content:flex-start;gap:4px;font-size:11.5px}
+#stats span{padding:1px 6px;line-height:16px}
+#stats i{width:8px;height:8px;margin-right:3px}
+}
 #searchBox{display:none;flex:0 0 auto;background:#fff;border-bottom:1px solid #c9d3cf;padding:8px;position:relative;z-index:1001}
 #searchBox.show{display:block}
 #searchBox form{display:flex;gap:6px}
@@ -817,6 +827,10 @@ body.sun #teamNav{background:#000}
 @media (max-width:420px){#teamNav a{font-size:12px;gap:4px}#teamNav svg{display:none}}
 </style>
 <script src="motivation.js" defer></script>
+<script>
+/* Wenn sich die Höhe des Kopfbereichs ändert, passt sich die Karte an (Leaflet reagiert auf das resize-Ereignis) */
+(() => { if (!window.ResizeObserver) return; let t = 0, last = 0; const ro = new ResizeObserver(es => { const h = Math.round(es[0].contentRect.height); if (h === last) return; last = h; clearTimeout(t); t = setTimeout(() => window.dispatchEvent(new Event('resize')), 60); }); addEventListener('DOMContentLoaded', () => { const m = document.getElementById('map'); if (m) ro.observe(m); }); })();
+</script>
 <nav id="teamNav" aria-label="Bereiche">
   <a href="./" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Hauskarte</a>
   <a href="team.html#chat" id="teamNavChat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>Team-Chat<span class="b" id="teamNavN" hidden></span></a>
