@@ -114,13 +114,30 @@ function issue(u) {
   db.prepare('DELETE FROM sessions WHERE expires < ?').run(Date.now());
   return { access_token: access, refresh_token: refresh, expires_in: ACCESS_MS / 1000, user: { id: u.id, email: '', user_metadata: { name: u.name } } };
 }
+// Abspiel-Links für Academy-Videos: gelten nur für eine Datei, einen Benutzer und begrenzte Zeit
+const STREAM_KEY = crypto.randomBytes(32);
+function signStream(fileId, uid, ms) {
+  const body = Buffer.from(fileId + '.' + uid + '.' + (Date.now() + ms)).toString('base64url');
+  return body + '.' + crypto.createHmac('sha256', STREAM_KEY).update(body).digest('base64url');
+}
 function userFromToken(req) {
-  let tok = String(req.headers.authorization || '').replace(/^Bearer /, '');
+  const u = new URL(req.url, 'http://x'), fileM = /^\/api\/files\/([0-9a-f]{32})$/.exec(u.pathname);
+  let tok = String(req.headers.authorization || '').replace(/^Bearer /, ''), via = 'header';
+  if (!tok && fileM && u.searchParams.get('s')) {
+    const [body, sig] = String(u.searchParams.get('s')).split('.');
+    if (!body || !sig) return null;
+    const good = crypto.createHmac('sha256', STREAM_KEY).update(body).digest('base64url');
+    if (sig.length !== good.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(good))) return null;
+    const [fid, uid, exp] = Buffer.from(body, 'base64url').toString().split('.');
+    if (fid !== fileM[1] || !(+exp > Date.now())) return null;
+    const usr = db.prepare('SELECT id AS uid, name FROM users WHERE id = ? AND active = 1').get(uid);
+    return usr ? { ...usr, via: 'stream', fid } : null;
+  }
   // Bilder, Videos und Sprachnachrichten im Chat werden direkt per Adresse geladen (Schlüssel in ?t=)
-  if (!tok && /^\/api\/files\/[0-9a-f]{32}$/.test(String(req.url).split('?')[0])) tok = new URL(req.url, 'http://x').searchParams.get('t') || '';
+  if (!tok && fileM) { tok = u.searchParams.get('t') || ''; via = 'query'; }
   if (!tok) return null;
   const s = db.prepare("SELECT s.uid, u.name FROM sessions s JOIN users u ON u.id = s.uid WHERE s.token = ? AND s.kind = 'a' AND s.expires > ? AND u.active = 1").get(tok, Date.now());
-  return s || null;
+  return s ? { ...s, via } : null;
 }
 
 /* ---------- HTTP ---------- */
@@ -146,7 +163,7 @@ function serveFile(req, res, url) {
   fs.createReadStream(file).pipe(res);
 }
 
-const team = require('./team.js')({ db, DATA, readBody, send, userFromToken, hashPin, log });
+const team = require('./team.js')({ db, DATA, readBody, send, userFromToken, hashPin, log, signStream });
 
 const insertChange = db.prepare('INSERT OR IGNORE INTO changes (id, bid, f, v, t, uid, by_name, device, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
 const upsertBuilding = db.prepare('INSERT INTO buildings (id, data, updated_at) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at');

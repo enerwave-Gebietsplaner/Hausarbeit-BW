@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPin, log }) {
+module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPin, log, signStream }) {
   const FILES = path.join(DATA, 'anhaenge');
   fs.mkdirSync(FILES, { recursive: true });
   const MAX_FILE = 200 * 1048576;  // 200 MB (Videos)
@@ -89,7 +89,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     // „Nur Academy“: ausschließlich eigene Angaben, Academy-Liste und Academy-Dateien – alles andere gesperrt
     if (meRow.access === 'academy') {
       let fm;
-      const allowed = (p === 'me' && M === 'GET') || (p === 'academy' && M === 'GET') ||
+      const allowed = (p === 'me' && M === 'GET') || (p === 'academy' && M === 'GET') || (/^academy\/\d+\/stream$/.test(p) && M === 'GET') ||
         ((fm = /^files\/([0-9a-f]{32})$/.exec(p)) && M === 'GET' && !!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(fm[1], fm[1]));
       if (!allowed) return send(res, 403, { message: 'Für dich ist nur die Academy freigegeben.', code: 'academy' });
     }
@@ -213,8 +213,13 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       // Academy-Inhalte (PDFs, Videos, Vorschaubilder) dürfen alle angemeldeten Mitarbeiter sehen
       const ok = f.uid === me.uid || !!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(f.id, f.id) || db.prepare('SELECT channel FROM messages WHERE file_id = ?').all(f.id).some(r => canAccess(me, r.channel));
       if (!ok) return err(res, 403, 'Kein Zugriff auf diese Datei.');
+      if (me.via === 'stream' && me.fid !== f.id) return err(res, 403, 'Kein Zugriff auf diese Datei.');
+      const acMain = !!db.prepare('SELECT 1 FROM academy WHERE file_id = ?').get(f.id);
+      const viewOnly = acMain && !isAdmin;  // Academy-Original für normale Benutzer: nur ansehen, nicht herunterladen
+      if (viewOnly && me.via === 'query') return err(res, 403, 'Academy-Inhalte können nur in der App angesehen werden.');
+      if (viewOnly && me.via === 'stream' && !/^video\//.test(f.type)) return err(res, 403, 'Academy-Inhalte können nur in der App angesehen werden.');
       const inline = SAFE_INLINE.test(f.type);
-      const head = { 'Content-Type': inline ? f.type : 'application/octet-stream', 'Accept-Ranges': 'bytes', 'Content-Disposition': (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(f.name), 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'private, max-age=86400', 'Content-Security-Policy': "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox" };
+      const head = { 'Content-Type': inline ? f.type : 'application/octet-stream', 'Accept-Ranges': 'bytes', 'Content-Disposition': viewOnly ? 'inline' : (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(f.name), 'X-Content-Type-Options': 'nosniff', 'Cache-Control': viewOnly ? 'private, no-store' : 'private, max-age=86400', 'Content-Security-Policy': "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox" };
       const rg = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
       if (rg && (rg[1] || rg[2])) {
         let a = rg[1] ? +rg[1] : Math.max(0, f.size - +rg[2]), b = rg[1] && rg[2] ? Math.min(+rg[2], f.size - 1) : f.size - 1;
@@ -227,7 +232,12 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     }
 
     /* ---------- Academy (Schulungs-PDFs und -Videos; verwalten nur Admin, ansehen alle) ---------- */
-    const acOut = a => { const f = a.file_id ? db.prepare('SELECT id, name, type, size FROM files WHERE id = ?').get(a.file_id) : null; return { id: a.id, kind: a.kind, title: a.title, file: f || null, thumb: a.thumb_id || null, updated: a.updated_at }; };
+    const acOut = a => { const f = a.file_id ? db.prepare('SELECT id, name, type, size FROM files WHERE id = ?').get(a.file_id) : null; if (f && !isAdmin) delete f.name; return { id: a.id, kind: a.kind, title: a.title, file: f || null, thumb: a.thumb_id || null, updated: a.updated_at }; };
+    if ((m = /^academy\/(\d+)\/stream$/.exec(p)) && M === 'GET') {
+      const a = db.prepare('SELECT * FROM academy WHERE id = ?').get(Number(m[1]));
+      if (!a || !a.file_id || a.kind !== 'video') return err(res, 404, 'Video nicht gefunden.');
+      return send(res, 200, { url: '/api/files/' + a.file_id + '?s=' + signStream(a.file_id, me.uid, 6 * 3600e3) });
+    }
     const ownFile = (id, kindRe) => { if (!id) return null; const f = db.prepare('SELECT * FROM files WHERE id = ?').get(String(id)); if (!f || f.uid !== me.uid || (kindRe && !kindRe.test(f.type))) return undefined; return f.id; };
     const dropFile = id => {  // Datei entfernen, wenn sie nirgends sonst verwendet wird
       if (!id || db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(id, id) || db.prepare('SELECT 1 FROM messages WHERE file_id = ?').get(id)) return;

@@ -77,6 +77,9 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   laedt PDFs/Videos hoch (Videos bis 4 GB, am besten als MP4), benennt um, tauscht aus und loescht
   (Knopf mit den drei Punkten). Alle anderen lesen PDFs und spielen Videos direkt in der App ab.
   Die Dateien liegen in C:\Hauskarte\daten\anhaenge (bei der externen Sicherung mitsichern).
+  Mitarbeiter koennen PDFs und Videos nur in der App ansehen: kein Download, kein Direktlink, kein
+  Speichern per langem Druecken. Nur der Administrator kann Originale herunterladen (Knopf im Bearbeiten-
+  Fenster). Bildschirmfotos/-aufnahmen lassen sich technisch nicht verhindern.
 - Motivation: persoenliche Begruessung einmal pro Arbeitstag, kurze Nachrichten bei eigenen
   Vertrags-Meilensteinen (1., 2., 3., jeder 5., persoenlicher Monatsrekord).
 - Chat-Anhaenge liegen in C:\Hauskarte\daten\anhaenge (bitte bei der externen Sicherung mitsichern).
