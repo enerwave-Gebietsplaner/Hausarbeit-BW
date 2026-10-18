@@ -979,7 +979,7 @@ async function renderAcademy() {
   const pdfs = academyItems.filter(a => a.kind === 'pdf'), vids = academyItems.filter(a => a.kind === 'video');
   const hero = h('div', { class: 'ac-hero' }, h('span', { class: 'ac-hico' }, svg(I.cap)), h('div', {}, h('h2', {}, 'enerwave Academy'), h('p', {}, 'Schulungsunterlagen und Videos – direkt hier lesen und ansehen.')));
   const pdfCard = h('div', { class: 'card dcard', id: 'acPdfs' },
-    dhead('book', 'Schulungsunterlagen', 'Antippen zum Lesen – direkt in der App.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddPdf', onclick: () => academyEditor(null, 'pdf') }, svg(I.plus), 'PDF hinzufügen') : null),
+    dhead('book', 'enerwave Schulungsunterlagen', 'Antippen zum Lesen – direkt in der App.', me.admin ? h('button', { class: 'btn green small', id: 'btnAddPdf', onclick: () => academyEditor(null, 'pdf') }, svg(I.plus), 'PDF hinzufügen') : null),
     pdfs.length ? h('div', { class: 'ac-grid' }, pdfs.map(a => h('div', { class: 'ac-tile' + (a.file ? '' : ' empty'), 'data-title': a.title },
       h('button', { class: 'ac-open', type: 'button', onclick: () => a.file ? openPdf(a) : (me.admin ? academyEditor(a, 'pdf') : toast('Diese Unterlage ist noch nicht hochgeladen.')) },
         pdfCoverEl(a),
