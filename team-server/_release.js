@@ -1,7 +1,7 @@
 // Erzeugt version.json für die automatischen Updates des Team-Servers.
 // Aufruf (im Ordner team-server):  node _release.js
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
-const FILES = ['server.js', 'team.js', 'start-server.cmd', 'mitarbeiter.ps1', 'Mitarbeiter verwalten.bat', 'ANLEITUNG.txt',
+const FILES = ['server.js', 'team.js', 'video.js', 'start-server.cmd', 'mitarbeiter.ps1', 'Mitarbeiter verwalten.bat', 'ANLEITUNG.txt',
   'app/index.html', 'app/team.html', 'app/motivation.js', 'app/sw.js', 'app/sync-config.js', 'app/manifest.webmanifest', 'app/icon.svg', 'app/v16.html', 'app/pdfjs/pdf.min.js', 'app/pdfjs/pdf.worker.min.js', 'app/pdfjs/LICENSE.txt'];
 const old = fs.existsSync('version.json') ? JSON.parse(fs.readFileSync('version.json', 'utf8')) : { version: 0 };
 const files = {};

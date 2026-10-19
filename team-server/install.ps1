@@ -40,7 +40,7 @@ $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccou
 Stop-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue
 Unregister-ScheduledTask -TaskName $task -Confirm:$false -ErrorAction SilentlyContinue
 Register-ScheduledTask -TaskName $task -Action $action -Trigger $trigger -Settings $settings -Principal $principal | Out-Null
-Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'cmd.exe' -and $_.CommandLine -like '*start-server.cmd*') -or ($_.Name -eq 'node.exe' -and ($_.CommandLine -like '*server.js*') -and ($_.ExecutablePath -eq $node)) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'cmd.exe' -and $_.CommandLine -like '*start-server.cmd*') -or ($_.Name -eq 'node.exe' -and ($_.CommandLine -like '*server.js*') -and ($_.ExecutablePath -eq $node)) -or ($_.Name -eq 'ffmpeg.exe' -and $_.ExecutablePath -like "$Ziel\daten\tools\*") } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 Start-ScheduledTask -TaskName $task
 Ok 'Autostart eingerichtet und Server gestartet'
 

@@ -55,6 +55,8 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     db.prepare("INSERT INTO academy (kind, title, sort, created_at, updated_at) VALUES ('pdf', 'enerwave Workbook', 1, ?, ?)").run(now(), now());
     db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('academySeeded', '1')").run();
   }
+  // Academy-Videos: browserfreundliche Abspielfassung im Hintergrund (Original bleibt erhalten)
+  const video = require('./video.js')({ db, DATA, FILES, log });
 
   // Kanäle: "team" = alle; "dm:<id>~<id>" = privat zwischen genau zwei Personen
   function canAccess(me, ch) {
@@ -90,7 +92,7 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     if (meRow.access === 'academy') {
       let fm;
       const allowed = (p === 'me' && M === 'GET') || (p === 'academy' && M === 'GET') || (/^academy\/\d+\/stream$/.test(p) && M === 'GET') ||
-        ((fm = /^files\/([0-9a-f]{32})$/.exec(p)) && M === 'GET' && !!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(fm[1], fm[1]));
+        ((fm = /^files\/([0-9a-f]{32})$/.exec(p)) && M === 'GET' && (!!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(fm[1], fm[1]) || video.isPlay(fm[1])));
       if (!allowed) return send(res, 403, { message: 'Für dich ist nur die Academy freigegeben.', code: 'academy' });
     }
 
@@ -211,24 +213,25 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       const f = db.prepare('SELECT * FROM files WHERE id = ?').get(m[1]);
       if (!f) return err(res, 404, 'Datei nicht gefunden.');
       // Academy-Inhalte (PDFs, Videos, Vorschaubilder) dürfen alle angemeldeten Mitarbeiter sehen
-      const ok = f.uid === me.uid || !!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(f.id, f.id) || db.prepare('SELECT channel FROM messages WHERE file_id = ?').all(f.id).some(r => canAccess(me, r.channel));
+      const acPlay = video.isPlay(f.id);  // Abspielfassung eines Academy-Videos
+      const ok = f.uid === me.uid || acPlay || !!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(f.id, f.id) || db.prepare('SELECT channel FROM messages WHERE file_id = ?').all(f.id).some(r => canAccess(me, r.channel));
       if (!ok) return err(res, 403, 'Kein Zugriff auf diese Datei.');
       if (me.via === 'stream' && me.fid !== f.id) return err(res, 403, 'Kein Zugriff auf diese Datei.');
-      const acMain = !!db.prepare('SELECT 1 FROM academy WHERE file_id = ?').get(f.id);
+      const acMain = acPlay || !!db.prepare('SELECT 1 FROM academy WHERE file_id = ?').get(f.id);
       const viewOnly = acMain && !isAdmin;  // Academy-Original für normale Benutzer: nur ansehen, nicht herunterladen
       if (viewOnly && me.via === 'query') return err(res, 403, 'Academy-Inhalte können nur in der App angesehen werden.');
       if (viewOnly && me.via === 'stream' && !/^video\//.test(f.type)) return err(res, 403, 'Academy-Inhalte können nur in der App angesehen werden.');
       const inline = SAFE_INLINE.test(f.type);
-      const head = { 'Content-Type': inline ? f.type : 'application/octet-stream', 'Accept-Ranges': 'bytes', 'Content-Disposition': viewOnly ? 'inline' : (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(f.name), 'X-Content-Type-Options': 'nosniff', 'Cache-Control': viewOnly ? 'private, no-store' : 'private, max-age=86400', 'Content-Security-Policy': "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox" };
+      const head = { 'Content-Type': inline ? f.type : 'application/octet-stream', 'Accept-Ranges': 'bytes', 'Content-Disposition': viewOnly ? 'inline' : (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encodeURIComponent(f.name), 'X-Content-Type-Options': 'nosniff', 'Cache-Control': me.via === 'stream' ? 'private, max-age=21600' : viewOnly ? 'private, no-store' : 'private, max-age=86400', 'ETag': '"' + f.id + '-' + f.size + '"', 'Content-Security-Policy': "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox" };
       const rg = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
       if (rg && (rg[1] || rg[2])) {
         let a = rg[1] ? +rg[1] : Math.max(0, f.size - +rg[2]), b = rg[1] && rg[2] ? Math.min(+rg[2], f.size - 1) : f.size - 1;
         if (a > b || a >= f.size) { res.writeHead(416, { 'Content-Range': 'bytes */' + f.size }); return res.end(); }
         res.writeHead(206, { ...head, 'Content-Range': `bytes ${a}-${b}/${f.size}`, 'Content-Length': b - a + 1 });
-        return fs.createReadStream(path.join(FILES, f.id), { start: a, end: b }).pipe(res);
+        return fs.createReadStream(path.join(FILES, f.id), { start: a, end: b, highWaterMark: 1 << 20 }).pipe(res);
       }
       res.writeHead(200, { ...head, 'Content-Length': f.size });
-      return fs.createReadStream(path.join(FILES, f.id)).pipe(res);
+      return fs.createReadStream(path.join(FILES, f.id), { highWaterMark: 1 << 20 }).pipe(res);
     }
 
     /* ---------- Academy (Schulungs-PDFs und -Videos; verwalten nur Admin, ansehen alle) ---------- */
@@ -236,7 +239,8 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     if ((m = /^academy\/(\d+)\/stream$/.exec(p)) && M === 'GET') {
       const a = db.prepare('SELECT * FROM academy WHERE id = ?').get(Number(m[1]));
       if (!a || !a.file_id || a.kind !== 'video') return err(res, 404, 'Video nicht gefunden.');
-      return send(res, 200, { url: '/api/files/' + a.file_id + '?s=' + signStream(a.file_id, me.uid, 6 * 3600e3) });
+      const sid = video.playFor(a.file_id);
+      return send(res, 200, { url: '/api/files/' + sid + '?s=' + signStream(sid, me.uid, 6 * 3600e3) });
     }
     const ownFile = (id, kindRe) => { if (!id) return null; const f = db.prepare('SELECT * FROM files WHERE id = ?').get(String(id)); if (!f || f.uid !== me.uid || (kindRe && !kindRe.test(f.type))) return undefined; return f.id; };
     const dropFile = id => {  // Datei entfernen, wenn sie nirgends sonst verwendet wird
@@ -256,12 +260,13 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       const sort = (db.prepare('SELECT MAX(sort) m FROM academy WHERE kind = ?').get(kind).m || 0) + 1;
       const r = db.prepare('INSERT INTO academy (kind, title, file_id, thumb_id, sort, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run(kind, title, fid || null, tid === undefined ? null : tid, sort, now(), now());
       log('Academy:', kind, '„' + title + '“ hinzugefügt von', meRow.name);
+      if (kind === 'video') video.queue();
       return send(res, 200, acOut(db.prepare('SELECT * FROM academy WHERE id = ?').get(r.lastInsertRowid)));
     }
     if ((m = /^academy\/(\d+)\/delete$/.exec(p)) && M === 'POST') {
       if (!isAdmin) return err(res, 403, 'Nur der Administrator kann Academy-Inhalte verwalten.');
       const a = db.prepare('SELECT * FROM academy WHERE id = ?').get(Number(m[1])); if (!a) return err(res, 404, 'Nicht gefunden.');
-      db.prepare('DELETE FROM academy WHERE id = ?').run(a.id); dropFile(a.file_id); dropFile(a.thumb_id);
+      db.prepare('DELETE FROM academy WHERE id = ?').run(a.id); if (a.kind === 'video') video.drop(a.file_id); dropFile(a.file_id); dropFile(a.thumb_id);
       log('Academy: „' + a.title + '“ gelöscht von', meRow.name);
       return send(res, 200, { ok: true });
     }
@@ -272,7 +277,9 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
       if (b.title !== undefined) { const t = String(b.title).trim().slice(0, 120); if (!t) return err(res, 400, 'Bitte einen Titel eingeben.'); db.prepare('UPDATE academy SET title = ? WHERE id = ?').run(t, a.id); }
       if (b.file !== undefined) {  // Datei austauschen
         const fid = ownFile(b.file, KIND_RE[a.kind]); if (!fid) return err(res, 400, a.kind === 'pdf' ? 'Bitte eine PDF-Datei wählen.' : 'Bitte eine Videodatei wählen.');
-        db.prepare('UPDATE academy SET file_id = ? WHERE id = ?').run(fid, a.id); dropFile(a.file_id);
+        db.prepare('UPDATE academy SET file_id = ? WHERE id = ?').run(fid, a.id);
+        if (a.kind === 'video' && fid !== a.file_id) { video.drop(a.file_id); video.queue(); }
+        dropFile(a.file_id);
       }
       if (b.thumb !== undefined) { const tid = ownFile(b.thumb, /^image\//) || null; db.prepare('UPDATE academy SET thumb_id = ? WHERE id = ?').run(tid, a.id); dropFile(a.thumb_id); }
       db.prepare('UPDATE academy SET updated_at = ? WHERE id = ?').run(now(), a.id);

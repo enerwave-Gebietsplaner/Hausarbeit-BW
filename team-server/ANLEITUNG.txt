@@ -80,6 +80,11 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   Mitarbeiter koennen PDFs und Videos nur in der App ansehen: kein Download, kein Direktlink, kein
   Speichern per langem Druecken. Nur der Administrator kann Originale herunterladen (Knopf im Bearbeiten-
   Fenster). Bildschirmfotos/-aufnahmen lassen sich technisch nicht verhindern.
+  Video-Wiedergabe: Der Server erstellt von jedem Academy-Video im Hintergrund automatisch eine
+  schnell startende Abspielfassung (MP4 H.264/AAC mit Fast Start, hoechstens Full-HD, begrenzte
+  Datenrate). Bis sie fertig ist, laeuft das Original. Das Original bleibt unveraendert erhalten.
+  Dafuer laedt der Server einmalig das kostenlose Programm ffmpeg (ca. 90 MB, nach
+  C:\Hauskarte\daten\tools\ffmpeg). Bei grossen Videos kann das Umwandeln einige Minuten dauern.
 - Motivation: persoenliche Begruessung einmal pro Arbeitstag, kurze Nachrichten bei eigenen
   Vertrags-Meilensteinen (1., 2., 3., jeder 5., persoenlicher Monatsrekord).
 - Chat-Anhaenge liegen in C:\Hauskarte\daten\anhaenge (bitte bei der externen Sicherung mitsichern).
