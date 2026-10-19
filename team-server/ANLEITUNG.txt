@@ -85,6 +85,23 @@ TEAM-BEREICH (Team-Chat, Team, Dashboard)
   Datenrate). Bis sie fertig ist, laeuft das Original. Das Original bleibt unveraendert erhalten.
   Dafuer laedt der Server einmalig das kostenlose Programm ffmpeg (ca. 90 MB, nach
   C:\Hauskarte\daten\tools\ffmpeg). Bei grossen Videos kann das Umwandeln einige Minuten dauern.
+- Kundensimulator (Academy): Mitarbeiter trainieren freie Haustuergespraeche mit einem virtuellen
+  Kunden (per Sprache oder Text). Modi: Komplettes Gespraech, Schnelltraining, Fokus Pitch, Fokus
+  Einwaende, Fokus Vorabschluss, Pruefungsmodus. Nach jedem Gespraech gibt es eine Auswertung
+  (0-100 Punkte, Staerken, Potenzial, Verbesserungen, Timeline). Ab 80 Punkten ohne kritische
+  Fehler im Pruefungsmodus: PRAXISBEREIT. Alle Kunden-, Rechnungs- und Tarifdaten sind fiktiv.
+  EINRICHTUNG (einmalig, nur Admin): Academy > Kundensimulator > Einstellungen > API-Schluessel von
+  console.anthropic.com eintragen > Verbindung testen > Speichern. Der Schluessel liegt nur in der
+  Datenbank in C:\Hauskarte\daten (nicht in der App, nicht auf GitHub) und wird nie angezeigt.
+  Die KI-Nutzung wird von Anthropic nach Verbrauch abgerechnet (pro Training wenige Cent).
+  Dort auch: Verteilung der Kundentypen, Pruefungsgrenze, Rolle des Verkaeufers, Schulungstarife.
+  Die Texte der Academy-PDFs liest die App automatisch aus, wenn der Admin die Academy oeffnet,
+  und bereitet daraus einmalig die Wissensbasis fuer den Simulator auf.
+- Lernfortschritt: Jeder sieht unter Academy > "Mein Academy-Fortschritt" seinen eigenen Stand
+  (Unterlagen angesehen, Videos abgeschlossen ab 90 % tatsaechlich angesehen, Trainings,
+  Durchschnitt, Bestwert, Staerken/Schwaechen, Pruefungsstatus). Der Admin sieht unter
+  Mitarbeiter die "Academy-Uebersicht" aller Mitarbeiter und je Mitarbeiter "Academy-Fortschritt"
+  mit allen Trainings, Ergebnissen und Gespraechsprotokollen.
 - Motivation: persoenliche Begruessung einmal pro Arbeitstag, kurze Nachrichten bei eigenen
   Vertrags-Meilensteinen (1., 2., 3., jeder 5., persoenlicher Monatsrekord).
 - Chat-Anhaenge liegen in C:\Hauskarte\daten\anhaenge (bitte bei der externen Sicherung mitsichern).

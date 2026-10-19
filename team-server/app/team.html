@@ -281,6 +281,75 @@ div.daygoal { width: auto; box-sizing: border-box }
 .prog { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; flex: 1; min-width: 60px }
 .prog i { display: block; height: 100%; background: var(--accent); width: 0 }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none } }
+/* Academy: Kundensimulator */
+.sim-stats { display: flex; gap: 8px 18px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted) } .sim-stats b { color: var(--fg); font-variant-numeric: tabular-nums }
+.sim-modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px }
+.sim-mode { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 12px; padding: 12px; text-align: left; font: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 2px; min-height: 64px; justify-content: center }
+.sim-mode b { font-size: 15px } .sim-mode small { color: var(--muted); font-size: 12.5px; line-height: 1.3 }
+.sim-mode.main { background: var(--accent-ink); color: #fff; border-color: var(--accent-ink) } .sim-mode.main small { color: rgba(255,255,255,.85) }
+.sim-mode.exam { border-color: var(--brand-2); box-shadow: inset 0 0 0 1px var(--brand-2) }
+.sim-note { background: rgba(29,78,216,.08); border: 1px solid rgba(29,78,216,.25); border-radius: 10px; padding: 10px 12px; font-size: 14px }
+.sim-resume { background: rgba(34,186,87,.1); border: 1px solid var(--accent-ink); border-radius: 12px; padding: 10px 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px }
+.sim-resume span { flex: 1; min-width: 160px; font-weight: 650 }
+.fv.sim { background: var(--bg); color: var(--fg) } .fv.sim .fv-body { display: flex; flex-direction: column; overflow: hidden }
+.sim-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch } .sim-in { max-width: 760px; margin: 0 auto; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box }
+.sim-coach { background: linear-gradient(135deg, #173a34, #1f5246); color: #fff; border-radius: 16px; padding: 20px 18px; display: flex; flex-direction: column; gap: 10px }
+.sim-coach .lbl { font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #9fe3b8 }
+.sim-coach q { font-size: 18px; line-height: 1.45; quotes: "„" "“" }
+.sim-ring { width: 100%; border: 0; border-radius: 18px; padding: 22px; font-size: 22px; font-weight: 800; background: var(--accent-ink); color: #fff; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; box-shadow: 0 6px 18px rgba(8,123,53,.35) }
+.sim-ring svg { width: 30px; height: 30px }
+.sim-opts { display: flex; flex-direction: column; gap: 8px }
+.sim-chat { display: flex; flex-direction: column; gap: 8px; padding-bottom: 6px }
+.sim-b { max-width: 84%; padding: 10px 13px; border-radius: 16px; line-height: 1.45; font-size: 16px; white-space: pre-wrap; overflow-wrap: anywhere }
+.sim-b.k { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 16px 16px 16px 4px }
+.sim-b.v { align-self: flex-end; background: var(--bubble-me); border-radius: 16px 16px 4px 16px }
+.sim-b .w { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 2px }
+.sim-b.typing { color: var(--muted) } .sim-b.typing i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); margin: 0 2px; animation: blink 1s infinite } .sim-b.typing i:nth-child(2) { animation-delay: .2s } .sim-b.typing i:nth-child(3) { animation-delay: .4s }
+.sim-sys { align-self: center; font-size: 13px; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 12px; text-align: center }
+.sim-err { align-self: stretch; background: rgba(189,33,33,.08); border: 1px solid var(--danger); border-radius: 12px; padding: 10px 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 14px }
+.sim-err span { flex: 1; min-width: 160px }
+.sim-bar { flex: 0 0 auto; display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px 0; max-width: 760px; margin: 0 auto; width: 100%; box-sizing: border-box }
+.sim-chip { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 18px; padding: 7px 12px; font: inherit; font-size: 13.5px; font-weight: 650; cursor: pointer; display: inline-flex; gap: 6px; align-items: center }
+.sim-chip.on { background: var(--brand-2); color: #fff; border-color: var(--brand-2) } .sim-chip.new { box-shadow: 0 0 0 3px rgba(255,196,0,.7) }
+.sim-comp { flex: 0 0 auto; border-top: 1px solid var(--line); background: var(--card); padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)) }
+.sim-comp .in { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-end }
+.sim-comp textarea { flex: 1; min-width: 0; resize: none; border: 1px solid var(--line); border-radius: 22px; padding: 11px 15px; font-size: 16px; max-height: 120px; background: var(--bg); color: var(--fg) }
+.sim-mic { width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--accent-ink); color: #fff; display: grid; place-items: center; flex: 0 0 auto; cursor: pointer } .sim-mic svg { width: 28px; height: 28px }
+.sim-mic.rec { background: var(--danger); animation: pulse 1.2s infinite } .sim-mic:disabled { opacity: .45 }
+.sim-send { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--brand-2); color: #fff; display: grid; place-items: center; flex: 0 0 auto } .sim-send svg { width: 22px; height: 22px } .sim-send:disabled { opacity: .4 }
+.sim-hint { max-width: 760px; margin: 0 auto 6px; font-size: 12.5px; color: var(--muted); text-align: center; min-height: 16px }
+.sim-panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; font-size: 14px }
+.inv { background: #fffdf6; color: #1d2b27; border: 1px solid #e5dcc0; border-radius: 12px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; font-size: 14px }
+.inv .hd { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid #e5dcc0; padding-bottom: 8px }
+.inv .hd b { font-size: 16px } .inv .stamp { color: #b45309; font-weight: 800; font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; border: 1.5px solid #b45309; border-radius: 6px; padding: 1px 6px; align-self: center }
+.inv div > span { display: block; font-size: 11.5px; color: #6b746f; text-transform: uppercase; letter-spacing: .03em } .inv div > b { font-variant-numeric: tabular-nums; overflow-wrap: anywhere }
+.inv .full { grid-column: 1 / -1 } .inv .sum { background: #f4efdf; border-radius: 8px; padding: 8px 10px }
+@media (max-width: 420px) { .inv { grid-template-columns: 1fr 1fr; font-size: 13px } }
+.res-top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap }
+.res-ring { --p: 0; width: 112px; height: 112px; border-radius: 50%; background: conic-gradient(var(--accent-ink) calc(var(--p) * 1%), var(--line) 0); display: grid; place-items: center; flex: 0 0 auto }
+.res-ring div { width: 90px; height: 90px; border-radius: 50%; background: var(--card); display: flex; flex-direction: column; align-items: center; justify-content: center } .res-ring b { font-size: 32px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums } .res-ring small { color: var(--muted); font-size: 12px }
+.res-ring.mid { background: conic-gradient(#d99a12 calc(var(--p) * 1%), var(--line) 0) } .res-ring.low { background: conic-gradient(var(--danger) calc(var(--p) * 1%), var(--line) 0) }
+.res-lbl { font-size: 21px; font-weight: 750 } .res-badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 9px; padding: 4px 10px; font-weight: 750; font-size: 14px }
+.res-badge.ok { background: rgba(8,123,53,.14); color: var(--accent-ink) } .res-badge.no { background: rgba(189,33,33,.12); color: var(--danger) }
+.cats { display: flex; flex-direction: column; gap: 8px } .cat { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; align-items: center } .cat b { font-size: 14px; font-weight: 650 } .cat .v { font-variant-numeric: tabular-nums; font-weight: 750; font-size: 14px } .cat .bar { grid-column: 1 / -1; height: 8px } .cat .c { grid-column: 1 / -1; font-size: 13px; color: var(--muted) } .cat.na b, .cat.na .v { color: var(--muted); font-weight: 600 }
+.bar i.mid { background: #d99a12 } .bar i.low { background: var(--danger) }
+.res-list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; line-height: 1.4 }
+.imp { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.4 } .imp b { font-size: 15px } .imp dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px } .imp dt { color: var(--muted); font-weight: 650 } .imp dd { margin: 0 } .imp .ex { background: var(--bubble-me); border-radius: 10px; padding: 8px 10px; font-style: italic }
+.tl { display: flex; flex-direction: column; gap: 6px } .tl > div { display: grid; grid-template-columns: 48px 22px 1fr; gap: 6px; align-items: start; font-size: 14px } .tl time { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 650 } .tl .n b { display: block }
+.crit { background: rgba(189,33,33,.08); border: 1px solid var(--danger); border-radius: 12px; padding: 10px 12px; font-size: 14px; display: flex; flex-direction: column; gap: 4px }
+.res-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px } @media (max-width: 420px) { .res-acts { grid-template-columns: 1fr } }
+.spin { width: 42px; height: 42px; border-radius: 50%; border: 4px solid var(--line); border-top-color: var(--accent-ink); animation: spin 1s linear infinite; margin: 0 auto } @keyframes spin { to { transform: rotate(360deg) } }
+@media (prefers-reduced-motion: reduce) { .spin, .sim-mic.rec, .sim-b.typing i { animation: none } }
+/* Lernfortschritt */
+.pg-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px }
+.pg-kpi { background: var(--bg); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px } .pg-kpi span { font-size: 12.5px; color: var(--muted); font-weight: 650 } .pg-kpi b { font-size: 16px; line-height: 1.25; font-variant-numeric: tabular-nums } .pg-kpi b.ok { color: var(--accent-ink) }
+.spark { display: flex; align-items: flex-end; gap: 3px; height: 70px; padding-top: 4px } .spark i { flex: 1; min-width: 6px; max-width: 26px; background: #7fb8a0; border-radius: 4px 4px 0 0; position: relative } .spark i.ex { background: var(--brand-2) } .spark i:last-child { background: var(--accent-ink) }
+.pg-items { display: flex; flex-direction: column } .pg-it { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px } .pg-it:first-child { border-top: 0 } .pg-it .t { flex: 1; min-width: 0 } .pg-it .t b { display: block; font-weight: 650 } .pg-it .t small { color: var(--muted) }
+.st { font-size: 12px; font-weight: 750; border-radius: 8px; padding: 2px 8px; white-space: nowrap; background: var(--line); color: var(--muted) } .st.ok { background: rgba(8,123,53,.14); color: var(--accent-ink) } .st.mid { background: rgba(217,154,18,.16); color: #9a6a00 }
+.ov { display: flex; flex-direction: column; gap: 2px; font-size: 14px } .ovh, .ovr { display: grid; grid-template-columns: minmax(0, 1fr) 58px 46px 38px 92px; gap: 6px; align-items: center; padding: 7px 8px } .ovh { font-size: 12px; color: var(--muted); font-weight: 650 } .ovr { border-radius: 10px; border: 0; background: transparent; text-align: left; font: inherit; color: inherit; cursor: pointer } .ovr:nth-child(even) { background: var(--bg) } .ovr b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap } .ovr .c, .ovh .c { text-align: center; font-variant-numeric: tabular-nums }
+.ac-st { font-size: 12.5px; font-weight: 650; color: var(--accent-ink) } .ac-st.mid { color: #9a6a00 }
+.fv textarea, .fv input { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default }
+.sheet .panel textarea { font-size: 15px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--card); color: var(--fg); resize: vertical }
 </style>
 </head>
 <body>
@@ -443,7 +512,40 @@ const realApi = {
   setGoal: (month, goal) => call('POST', 'goals', { month, goal }),
   settings: () => call('GET', 'settings'),
   setZoom: zoom => call('POST', 'settings', { zoom }),
-  setCall: d => call('POST', 'settings', d)
+  setCall: d => call('POST', 'settings', d),
+  // Academy: Kundensimulator & Lernfortschritt
+  simConfig: () => call('GET', 'sim/config'),
+  simSetConfig: d => call('POST', 'sim/config', d),
+  simTest: () => call('POST', 'sim/test'),
+  simStart: d => call('POST', 'sim/start', d),
+  simActive: () => call('GET', 'sim/active'),
+  simAbort: id => call('POST', 'sim/' + id + '/abort'),
+  simFinish: id => call('POST', 'sim/' + id + '/finish'),
+  simResult: id => call('GET', 'sim/' + id + '/result'),
+  simHistory: uid => call('GET', 'sim/history' + (uid ? '?uid=' + encodeURIComponent(uid) : '')),
+  // eine Gesprächsrunde: Antwort des Kunden kommt Stück für Stück (Streaming)
+  simTurn: async (id, body, onChunk, signal) => {
+    let res;
+    try { res = await fetch('/api/sim/' + id + '/turn', { method: 'POST', signal, headers: { Authorization: 'Bearer ' + await token(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
+    catch (e) { if (e.auth) throw e; throw Object.assign(Error(e.name === 'AbortError' ? 'Die Antwort hat zu lange gedauert.' : 'Keine Verbindung zum Server. Ist Tailscale an?'), { retry: true }); }
+    if (!(res.headers.get('content-type') || '').includes('event-stream')) { const j = await res.json().catch(() => ({})); throw Object.assign(Error(j.message || 'Fehler ' + res.status), { retry: res.status >= 500 || res.status === 409 && /antwortet noch/.test(j.message || ''), status: res.status }); }
+    const rd = res.body.getReader(), dec = new TextDecoder(); let buf = '', done = null;
+    try {
+      for (;;) {
+        const { value, done: end } = await rd.read(); if (end) break;
+        buf += dec.decode(value, { stream: true }); let i;
+        while ((i = buf.indexOf('\n\n')) >= 0) { const ev = buf.slice(0, i); buf = buf.slice(i + 2); if (!ev.startsWith('data:')) continue; const d = JSON.parse(ev.slice(5)); if (d.d) onChunk(d.d); else if (d.error) throw Object.assign(Error(d.error), { retry: true }); else if (d.done) done = d; }
+      }
+    } catch (e) { if (e.retry) throw e; throw Object.assign(Error(e.name === 'AbortError' ? 'Die Antwort hat zu lange gedauert.' : 'Verbindung unterbrochen.'), { retry: true }); }
+    if (!done) throw Object.assign(Error('Verbindung unterbrochen.'), { retry: true });
+    return done;
+  },
+  progress: uid => call('GET', 'progress' + (uid ? '?uid=' + encodeURIComponent(uid) : '')),
+  progressOverview: () => call('GET', 'progress/overview'),
+  // Lernfortschritt im Hintergrund speichern (bremst nichts aus, Fehler werden ignoriert)
+  track: d => { (async () => { try { await fetch('/api/progress', { method: 'POST', keepalive: true, headers: { Authorization: 'Bearer ' + await token(), 'Content-Type': 'application/json' }, body: JSON.stringify(d) }); } catch (e) {} })(); },
+  academyTexts: () => call('GET', 'academy/texts'),
+  academyText: (id, text) => call('POST', 'academy/' + id + '/text', { text })
 };
 
 /* ---------- Vorschau-Daten ---------- */
@@ -515,6 +617,10 @@ const demoApi = (() => {
     settings: () => wait({ zoom, call: demoCall }),
     setCall: d => { if (d.zoom !== undefined) zoom = d.zoom; if (d.call !== undefined) demoCall = d.call; return wait({ ok: true }); },
     setZoom: z => { zoom = z; return wait({ ok: true }); },
+    simConfig: () => wait({ ready: false, modes: [], examPass: 80, role: '' }), simActive: () => wait(null), simHistory: () => wait([]),
+    simStart: () => Promise.reject(Error('In der Vorschau nicht möglich.')), simSetConfig: () => Promise.reject(Error('In der Vorschau nicht möglich.')), simTest: () => Promise.reject(Error('In der Vorschau nicht möglich.')),
+    progress: () => wait({ user: me(), items: [], pdf: { seen: 0, total: 0 }, video: { done: 0, started: 0, total: 0 }, pct: null, sim: { count: 0, avg: null, best: null, trend: null, scores: [], categories: [], strongest: null, focus: null, exams: [], ready: false }, lastActivity: null }),
+    progressOverview: () => wait([]), track: () => {}, academyTexts: () => wait([]), academyText: () => wait({}),
     dmId
   };
 })();
@@ -874,6 +980,7 @@ async function renderTeam() {
       u.admin ? h('span', { class: 'pill' }, 'Admin') : u.access === 'academy' ? h('span', { class: 'pill acad' }, 'Nur Academy') : null)),
     blocked.length ? h('h2', { style: 'font-size:16px;margin-top:8px' }, 'Blockiert · ' + blocked.length) : null,
     ...blocked.map(u => h('button', { class: 'person', style: 'opacity:.75', onclick: () => personSheet(u, countOf(u.id)) }, av(u), h('span', { class: 't' }, h('b', {}, u.name), h('div', { class: 'muted' }, 'Zugang gesperrt')), h('span', { class: 'pill off' }, 'Blockiert'))),
+    me.admin && !DEMO ? academyOverviewCard() : null,
     me.admin ? h('div', { class: 'card' }, h('b', {}, 'Neuen Mitarbeiter einrichten'), h('ol', { class: 'muted steps' }, h('li', {}, 'Auf seinem Tablet Tailscale installieren und mit eurem Team-Netzwerk verbinden.'), h('li', {}, 'Hier auf „Neuer Mitarbeiter“ tippen, Namen eingeben und PIN erzeugen.'), h('li', {}, 'Auf seinem Tablet enerwave Connect öffnen und mit Name und PIN anmelden – fertig.'))) : null
   );
 }
@@ -890,6 +997,7 @@ function personSheet(u, count) {
   const actions = h('div', { class: 'row' });
   if (u.id !== me.id && u.active && u.access !== 'academy') actions.append(h('button', { class: 'btn big green', onclick: () => { close(); location.hash = '#chat/' + encodeURIComponent(dmId(me.id, u.id)); } }, svg(I.msg), 'Nachricht senden'));
   const admin = h('div', { class: 'card' });
+  if (me.admin && !DEMO) actions.append(h('button', { class: 'btn big', id: 'btnAcProg', onclick: () => { close(); progressView(u.id); } }, svg(I.cap), 'Academy-Fortschritt'));
   if (me.admin) {
     const pin = h('input', { id: 'newPin', inputmode: 'numeric', autocomplete: 'off', placeholder: 'mind. 4 Ziffern' });
     if (u.id !== me.id && !u.admin) {
@@ -978,7 +1086,11 @@ let academyItems = [];
 async function renderAcademy() {
   const v = $('view-academy');
   if (!v.childNodes.length) v.append(h('div', { class: 'empty' }, 'Academy wird geladen …'));
-  try { academyItems = await api.academy(); } catch (e) { put(v, h('div', { class: 'empty' }, e.message)); return; }
+  let simCfg = null, prog = null, simAct = null;
+  try { [academyItems, simCfg, prog, simAct] = await Promise.all([api.academy(), api.simConfig().catch(() => null), api.progress().catch(() => null), api.simActive().catch(() => null)]); } catch (e) { put(v, h('div', { class: 'empty' }, e.message)); return; }
+  const pst = prog ? Object.fromEntries(prog.items.map(i => [i.id, i])) : {};
+  const pdfSt = a => { const x = pst[a.id]; return x && x.status !== 'neu' ? h('span', { class: 'ac-st' }, '✓ angesehen') : null; };
+  const vidSt = a => { const x = pst[a.id]; return !x || x.status === 'neu' ? null : x.status === 'fertig' ? h('span', { class: 'ac-st' }, '✓ vollständig angesehen') : h('span', { class: 'ac-st mid' }, (x.pct || 0) + ' % angesehen'); };
   const pdfs = academyItems.filter(a => a.kind === 'pdf'), vids = academyItems.filter(a => a.kind === 'video');
   const hero = h('div', { class: 'ac-hero' }, h('span', { class: 'ac-hico' }, svg(I.cap)), h('div', {}, h('h2', {}, 'enerwave Academy'), h('p', {}, 'Schulungsunterlagen und Videos – direkt hier lesen und ansehen.')));
   const pdfCard = h('div', { class: 'card dcard', id: 'acPdfs' },
@@ -987,7 +1099,7 @@ async function renderAcademy() {
       h('button', { class: 'ac-open', type: 'button', onclick: () => a.file ? openPdf(a) : (me.admin ? academyEditor(a, 'pdf') : toast('Diese Unterlage ist noch nicht hochgeladen.')) },
         pdfCoverEl(a),
         h('b', {}, a.title),
-        h('span', { class: 'muted' }, a.file ? fmtSize(a.file.size) + ' · Lesen' : (me.admin ? 'Noch keine PDF – tippen zum Hochladen' : 'Noch nicht verfügbar'))),
+        h('span', { class: 'muted' }, a.file ? fmtSize(a.file.size) + ' · Lesen' : (me.admin ? 'Noch keine PDF – tippen zum Hochladen' : 'Noch nicht verfügbar')), pdfSt(a)),
       me.admin ? h('button', { class: 'ac-edit', type: 'button', 'aria-label': a.title + ' bearbeiten', onclick: () => academyEditor(a, 'pdf') }, '⋮') : null)))
       : h('p', { class: 'muted', style: 'margin:0' }, 'Noch keine Schulungsunterlagen.'));
   const vidCard = h('div', { class: 'card dcard', id: 'acVideos' },
@@ -996,10 +1108,11 @@ async function renderAcademy() {
       h('button', { class: 'ac-thumb', type: 'button', 'aria-label': a.title + ' abspielen', onclick: () => playVideo(a) },
         a.thumb ? h('img', { src: api.mediaUrl({ id: a.thumb }), alt: '', loading: 'lazy' }) : h('span', { class: 'ac-noimg' }, svg(I.film)),
         h('span', { class: 'ac-play' }, svg(I.play))),
-      h('div', { class: 'ac-vmeta' }, h('b', {}, a.title), a.file ? h('span', { class: 'muted' }, fmtSize(a.file.size)) : null,
+      h('div', { class: 'ac-vmeta' }, h('b', {}, a.title), a.file ? h('span', { class: 'muted' }, fmtSize(a.file.size)) : null, vidSt(a),
         me.admin ? h('button', { class: 'ac-edit', type: 'button', 'aria-label': a.title + ' bearbeiten', onclick: () => academyEditor(a, 'video') }, '⋮') : null))))
       : h('p', { class: 'muted', style: 'margin:0' }, me.admin ? 'Noch keine Videos. Mit „Video hochladen“ fügst du das erste hinzu.' : 'Noch keine Schulungsvideos.'));
-  put(v, hero, pdfCard, vidCard);
+  put(v, hero, simCard(simCfg, prog, simAct), pdfCard, vidCard, progressCard(prog));
+  extractPdfTexts();
   v.classList.toggle('noexport', !me.admin);
   v.oncontextmenu = e => { if (!me.admin) e.preventDefault(); };
   v.querySelectorAll('img').forEach(i => { i.draggable = false; });
@@ -1121,6 +1234,7 @@ async function openPdf(a) {
   } catch (e) { v.body.replaceChildren(h('div', { class: 'fv-msg' }, 'Die PDF konnte nicht geöffnet werden: ' + e.message)); return; }
   if (!v.box.isConnected) return;
   const first = await doc.getPage(1), base = first.getViewport({ scale: 1 });
+  let maxPage = 1, sentPage = 1; api.track({ item: a.id, event: 'open', pages: doc.numPages, page: 1 });
   const pagesEl = h('div', { class: 'fv-pages' });
   v.body.replaceChildren(pagesEl);
   let zoom = 1;
@@ -1145,7 +1259,8 @@ async function openPdf(a) {
   }
   const io = new IntersectionObserver(es => { for (const e of es) { if (e.isIntersecting) draw(e.target); else if (e.target._key) { e.target.replaceChildren(); e.target._key = null; } } }, { root: v.body, rootMargin: '1200px 0px' });
   slots.forEach(el => io.observe(el));
-  const updPage = () => { const top = v.body.scrollTop + v.body.clientHeight / 3; let n = 1; for (const el of slots) { if (el.offsetTop <= top) n = +el.dataset.page; else break; } pageLbl.textContent = n + ' / ' + doc.numPages; };
+  const updPage = () => { const top = v.body.scrollTop + v.body.clientHeight / 3; let n = 1; for (const el of slots) { if (el.offsetTop <= top) n = +el.dataset.page; else break; } pageLbl.textContent = n + ' / ' + doc.numPages; if (n > maxPage) maxPage = n; };
+  const pgTimer = setInterval(() => { if (maxPage > sentPage) { sentPage = maxPage; api.track({ item: a.id, page: maxPage, pages: doc.numPages }); } }, 20000);
   v.body.addEventListener('scroll', updPage, { passive: true });
   const setZoom = z => { const rel = v.body.scrollTop / Math.max(1, v.body.scrollHeight); zoom = Math.max(0.5, Math.min(4, Math.round(z * 100) / 100)); size(); v.body.scrollTop = rel * v.body.scrollHeight; for (const el of slots) { const r = el.getBoundingClientRect(); if (r.bottom > -1200 && r.top < innerHeight + 1200) draw(el); } };
   zOut.onclick = () => setZoom(zoom / 1.25); zIn.onclick = () => setZoom(zoom * 1.25);
@@ -1155,9 +1270,11 @@ async function openPdf(a) {
   v.body.addEventListener('touchmove', e => { if (pinch && e.touches.length === 2) { e.preventDefault(); const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); pagesEl.style.transformOrigin = 'top center'; pagesEl.style.transform = 'scale(' + (d / pinch.d) + ')'; pinch.scale = d / pinch.d; } }, { passive: false });
   v.body.addEventListener('touchend', () => { if (pinch && pinch.scale) { pagesEl.style.transform = ''; setZoom(pinch.z * pinch.scale); } pinch = null; });
   const onResize = () => setZoom(zoom); window.addEventListener('resize', onResize);
-  v.box._cleanup = () => { io.disconnect(); window.removeEventListener('resize', onResize); doc.destroy(); };
+  v.box._cleanup = () => { io.disconnect(); window.removeEventListener('resize', onResize); clearInterval(pgTimer); if (maxPage > sentPage) api.track({ item: a.id, page: maxPage, pages: doc.numPages }); doc.destroy(); refreshAcademySoon(); };
   size(); updPage();
 }
+// Nach dem Schließen von PDF/Video: Fortschrittsanzeige der Academy dezent auffrischen
+const refreshAcademySoon = () => setTimeout(() => { if (view === 'academy' && !document.querySelector('.fv, .sheet')) renderAcademy(); }, 900);
 function playVideo(a) {
   if (!a.file) return toast('Dieses Video ist noch nicht verfügbar.');
   const v = fullscreenView(a.title);
@@ -1167,7 +1284,390 @@ function playVideo(a) {
   api.academyStream(a.id).then(r => { if (v.box.isConnected) vid.src = r.url; }).catch(e => v.body.append(h('div', { class: 'fv-msg' }, e.message)));
   vid.onerror = () => v.body.append(h('div', { class: 'fv-msg' }, 'Dieses Video kann auf diesem Gerät nicht abgespielt werden (Format ' + (a.file.type || 'unbekannt') + '). Tipp: Videos als MP4 aufnehmen bzw. hochladen.'));
   v.body.append(vid);
-  v.box._cleanup = () => { vid.pause(); vid.removeAttribute('src'); vid.load(); };
+  const played = () => { let t = 0; for (let i = 0; i < vid.played.length; i++) t += vid.played.end(i) - vid.played.start(i); return Math.round(t * 10) / 10; };
+  let lastSent = -1, opened = false;
+  const report = () => { const d = vid.duration; if (!isFinite(d) || !d) return; const p = played(); if (!opened) { opened = true; api.track({ item: a.id, event: 'open', dur: d, played: p }); lastSent = p; return; } if (p > lastSent + 1) { lastSent = p; api.track({ item: a.id, dur: d, played: p }); } };
+  vid.addEventListener('loadedmetadata', report); vid.addEventListener('pause', report); vid.addEventListener('ended', report);
+  const vt = setInterval(() => { if (!vid.paused) report(); }, 15000);
+  v.box._cleanup = () => { clearInterval(vt); report(); vid.pause(); vid.removeAttribute('src'); vid.load(); refreshAcademySoon(); };
+}
+
+/* ================= Academy: Kundensimulator ================= */
+I.sim = '<path d="M3 5h12v9H8l-5 4z"/><path d="M15 9h6v9l-4-3h-6v-1"/>';
+I.bell = '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>';
+I.gear = '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>';
+I.chart = '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>';
+const SIM_MODES = [
+  { key: 'komplett', label: 'Komplettes Gespräch', sub: 'Von der Tür bis zum Closing', main: true },
+  { key: 'schnell', label: 'Schnelltraining', sub: 'Kurz und knackig' },
+  { key: 'pitch', label: 'Fokus Pitch', sub: 'Begrüßung und Einstieg' },
+  { key: 'einwand', label: 'Fokus Einwände', sub: 'Kunden mit Einwänden' },
+  { key: 'vorabschluss', label: 'Fokus Vorabschluss', sub: 'Rechnung liegt schon vor' },
+  { key: 'pruefung', label: 'Prüfungsmodus', sub: 'Ohne Hilfe – ab 80 Punkten praxisbereit', exam: true }
+];
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const scoreCls = n => n >= 75 ? '' : n >= 55 ? 'mid' : 'low';
+const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
+const fmtDT = iso => iso ? new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–';
+const ctEur = n => Number(n).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const ct = n => String(n).replace('.', ',') + ' ct/kWh';
+
+// Simulator-Kachel in der Academy
+function simCard(cfg, prog, active) {
+  const card = h('div', { class: 'card dcard', id: 'acSim' },
+    dhead('sim', 'Kundensimulator', 'Trainiere echte Haustürsituationen mit einem virtuellen Kunden.', me.admin ? h('button', { class: 'btn ghost small', id: 'btnSimCfg', onclick: () => simSettings() }, svg(I.gear), 'Einstellungen') : null));
+  if (!cfg) { card.append(h('p', { class: 'muted', style: 'margin:0' }, 'Der Kundensimulator ist gerade nicht erreichbar.')); return card; }
+  if (!cfg.ready) {
+    card.append(h('div', { class: 'sim-note' }, me.admin ? 'Fast fertig: Hinterlege einmalig den KI-Zugang (Anthropic API-Schlüssel). Er wird nur auf eurem Server gespeichert – nie in der App oder auf GitHub.' : 'Der Kundensimulator wird gerade vom Administrator eingerichtet.'),
+      me.admin ? h('button', { class: 'btn green', onclick: () => simSettings() }, svg(I.gear), 'KI-Zugang einrichten') : null);
+    return card;
+  }
+  const sim = prog && prog.sim;
+  if (sim && sim.count) card.append(h('div', { class: 'sim-stats' }, h('span', {}, h('b', {}, sim.count), ' Trainings'), h('span', {}, 'Ø ', h('b', {}, sim.avg)), h('span', {}, 'Bestwert ', h('b', {}, sim.best)), h('span', {}, sim.ready ? h('b', { style: 'color:var(--accent-ink)' }, 'Praxisbereit ✓') : 'Prüfung: offen')));
+  if (active) card.append(h('div', { class: 'sim-resume', id: 'simResume' }, h('span', {}, 'Du hast ein laufendes Training.'),
+    h('button', { class: 'btn green small', onclick: () => simRun({ session: active }) }, 'Fortsetzen'),
+    h('button', { class: 'btn ghost small', onclick: async () => { await api.simAbort(active.id).catch(() => {}); renderAcademy(); } }, 'Verwerfen')));
+  card.append(h('div', { class: 'sim-modes' }, SIM_MODES.map(md => h('button', { class: 'sim-mode' + (md.main ? ' main' : '') + (md.exam ? ' exam' : ''), type: 'button', 'data-mode': md.key, onclick: () => simRun({ mode: md.key }) }, h('b', {}, md.label), h('small', {}, md.sub))),
+    sim && sim.count >= 2 && sim.focus ? h('button', { class: 'sim-mode', type: 'button', 'data-mode': 'weakness', onclick: () => simRun({ mode: 'komplett', weakness: true }) }, h('b', {}, 'Meine Schwäche trainieren'), h('small', {}, 'Fokus: ' + sim.focus.label)) : null));
+  if (sim && sim.count) card.append(h('button', { class: 'btn ghost small', style: 'align-self:flex-start', onclick: () => progressView(me.id, true) }, svg(I.chart), 'Meine Auswertungen'));
+  return card;
+}
+
+// Ein Training: Vorbereitung → Klingeln → Gespräch → Auswertung
+async function simRun(opts) {
+  const v = fullscreenView('Kundensimulator', h('div', { class: 'fv-tools' }));
+  v.box.classList.add('sim');
+  const tools = v.box.querySelector('.fv-tools');
+  const scroll = h('div', { class: 'sim-scroll' }), inner = h('div', { class: 'sim-in' }); scroll.append(inner);
+  v.body.append(scroll);
+  let S = null, seq = 0, t0 = 0, busy = false, ctrl = null, finished = false, recog = null, listening = false;
+  const voiceOK = !!SR, ttsOK = 'speechSynthesis' in window;
+  let speakOn = store.get('sim-tts', true) && ttsOK, micAuto = true;
+  const stopAll = () => { try { ctrl && ctrl.abort(); } catch (e) {} try { recog && recog.abort(); } catch (e) {} if (ttsOK) speechSynthesis.cancel(); };
+  v.box._cleanup = () => { stopAll(); document.removeEventListener('visibilitychange', onVis); };
+  const onVis = () => { if (document.visibilityState !== 'visible') { try { recog && recog.abort(); } catch (e) {} if (ttsOK) speechSynthesis.cancel(); } };
+  document.addEventListener('visibilitychange', onVis);
+  const loading = t => put(inner, h('div', { style: 'padding:40px 0;display:flex;flex-direction:column;gap:14px;text-align:center' }, h('div', { class: 'spin' }), h('div', { class: 'muted', style: 'font-size:15px' }, t)));
+  const fail = (t, retry) => put(inner, h('div', { class: 'card' }, h('b', {}, t), h('div', { class: 'row' }, retry ? h('button', { class: 'btn green', onclick: retry }, 'Erneut versuchen') : null, h('button', { class: 'btn ghost', onclick: () => v.close() }, 'Zurück zur Academy'))));
+
+  /* --- Sprachausgabe (Kunde spricht) – satzweise, sobald Text ankommt --- */
+  let voices = [];
+  const loadVoices = () => { voices = ttsOK ? speechSynthesis.getVoices().filter(x => /^de/i.test(x.lang)) : []; };
+  if (ttsOK) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+  const pickVoice = () => { if (!voices.length) return null; const fem = /anna|petra|helena|katja|marlene|vicki|female|frau|hedda|katharina|amala|seraphina|elke|louisa/i, mal = /markus|yannick|stefan|conrad|hans|male|mann|florian|killian|jonas|bernd|viktor/i; const g = S && S.voice && S.voice.gender === 'w' ? fem : mal; return voices.find(x => g.test(x.name)) || voices.find(x => x.localService) || voices[0]; };
+  let sayBuf = '';
+  const sayPart = (txt, flush) => {
+    if (!speakOn) return; sayBuf += txt;
+    const re = flush ? /^[\s\S]+$/ : /^[\s\S]*?[.!?…](\s|$)/; let m;
+    while ((m = re.exec(sayBuf)) && m[0].trim()) { const part = m[0].trim(); sayBuf = sayBuf.slice(m[0].length); const u = new SpeechSynthesisUtterance(part); u.lang = 'de-DE'; const vc = pickVoice(); if (vc) u.voice = vc; u.rate = S && S.voice && S.voice.age > 68 ? 0.95 : 1.05; u.pitch = S && S.voice && S.voice.gender === 'w' ? 1.08 : 0.92; speechSynthesis.speak(u); if (flush) break; }
+  };
+
+  /* --- Start --- */
+  async function begin() {
+    loading('Training wird vorbereitet …');
+    try {
+      if (opts.session) S = opts.session;
+      else S = await api.simStart({ mode: opts.mode, same: opts.same || undefined, weakness: !!opts.weakness });
+    } catch (e) { return fail(e.message, begin); }
+    if (!v.box.isConnected) { if (!opts.session) api.simAbort(S.id).catch(() => {}); return; }
+    try { store.set('sim-active-' + me.id, S.id); } catch (e) {}
+    if (opts.session && !S.transcript.length) return prepare();
+    if (opts.session) { seq = S.transcript.filter(x => x.who === 'v').length + 2; t0 = Date.now() - ((S.transcript.length ? S.transcript[S.transcript.length - 1].t : 0) * 1000); return talk(true); }
+    prepare();
+  }
+  function prepare() {
+    const mode = SIM_MODES.find(x => x.key === S.mode) || SIM_MODES[0];
+    const ttsBox = ttsOK ? h('input', { type: 'checkbox', id: 'simTts' }) : null; if (ttsBox) { ttsBox.checked = speakOn; ttsBox.onchange = () => { speakOn = ttsBox.checked; store.set('sim-tts', speakOn); }; }
+    put(inner,
+      h('div', { class: 'sim-coach' }, h('span', { class: 'lbl' }, mode.label + ' · Coach'), h('q', { id: 'simCoach' }, S.coach || 'Bereit?')),
+      h('div', { class: 'sim-panel' }, h('b', {}, 'Deine Rolle im Training'), h('span', {}, S.brief.role), h('span', { class: 'muted' }, 'Alle Kunden- und Rechnungsdaten sind fiktiv.')),
+      h('div', { class: 'sim-opts' },
+        h('div', { class: 'muted' }, voiceOK ? 'Sprich frei über das Mikrofon – oder tippe deine Antwort. Eigene Worte sind ausdrücklich erwünscht.' : 'Spracheingabe ist in diesem Browser nicht verfügbar – du schreibst deine Antworten. (Tipp: Chrome bzw. Safari unterstützen Sprache.)'),
+        ttsBox ? h('label', { class: 'chk' }, ttsBox, 'Kunde spricht laut (Ton an)') : null),
+      h('div', { style: 'text-align:center;font-size:20px;font-weight:750;margin-top:4px' }, 'Bereit?'),
+      h('button', { class: 'sim-ring', id: 'simRing', type: 'button', onclick: () => {
+        if (ttsOK && speakOn) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch (e) {} }  // Ton auf iPhone/iPad freischalten
+        t0 = Date.now(); seq = 1; talk(false);
+      } }, svg(I.bell), 'Klingeln'));
+  }
+
+  /* --- Gespräch --- */
+  let chat, ta, mic, send, hint, chips, invBtn, tarBtn, panelBox;
+  function talk(resumed) {
+    chat = h('div', { class: 'sim-chat', id: 'simChat', 'aria-live': 'polite' });
+    panelBox = h('div');
+    put(inner, panelBox, chat);
+    invBtn = h('button', { class: 'sim-chip', type: 'button', id: 'simInvBtn', hidden: !S.invoice, onclick: () => togglePanel('inv') }, svg(I.doc), 'Rechnung');
+    tarBtn = h('button', { class: 'sim-chip', type: 'button', id: 'simTarBtn', onclick: () => togglePanel('tar') }, svg(I.case), 'Schulungstarif');
+    const endBtn = h('button', { class: 'sim-chip', type: 'button', id: 'simEnd', style: 'margin-left:auto;color:var(--danger)', onclick: () => endTalk() }, 'Beenden');
+    chips = h('div', { class: 'sim-bar' }, invBtn, tarBtn, endBtn);
+    ta = h('textarea', { id: 'simText', rows: 1, placeholder: voiceOK ? 'Sprechen oder schreiben …' : 'Deine Antwort …', enterkeyhint: 'send', 'aria-label': 'Deine Antwort' });
+    ta.oninput = () => { ta.style.height = 'auto'; ta.style.height = Math.min(120, ta.scrollHeight) + 'px'; send.disabled = busy || !ta.value.trim(); };
+    ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!send.disabled) submit(); } };
+    send = h('button', { class: 'sim-send', id: 'simSend', type: 'button', 'aria-label': 'Senden', disabled: true, onclick: () => submit() }, svg(I.send));
+    mic = voiceOK ? h('button', { class: 'sim-mic', id: 'simMic', type: 'button', 'aria-label': 'Sprechen', onclick: () => toggleMic() }, svg(I.mic)) : null;
+    hint = h('div', { class: 'sim-hint', id: 'simHint' }, voiceOK ? 'Mikrofon antippen und sprechen – nach einer kurzen Pause wird gesendet.' : '');
+    const comp = h('div', { class: 'sim-comp' }, hint, h('div', { class: 'in' }, mic, ta, send));
+    v.body.insertBefore(chips, scroll); v.body.append(comp);
+    for (const t of S.transcript) bubble(t.who, t.text);
+    if (resumed) { sys('Training fortgesetzt.'); if (S.ended) customerEnded(); }
+    else ask({ ring: true });
+  }
+  function togglePanel(which) {
+    if (panelBox.dataset.open === which) { panelBox.replaceChildren(); panelBox.dataset.open = ''; invBtn.classList.remove('on'); tarBtn.classList.remove('on'); return; }
+    panelBox.dataset.open = which; invBtn.classList.toggle('on', which === 'inv'); tarBtn.classList.toggle('on', which === 'tar'); invBtn.classList.remove('new');
+    panelBox.replaceChildren(which === 'inv' ? invoiceEl(S.invoice) : tariffEl(S.brief.tariffs));
+    scroll.scrollTop = 0;
+  }
+  const bubble = (who, text) => { const b = h('div', { class: 'sim-b ' + who }, h('span', { class: 'w' }, who === 'k' ? 'Kunde' : 'Du'), h('span', { class: 'tx' }, text)); chat.append(b); scroll.scrollTop = scroll.scrollHeight; return b; };
+  const sys = t => { chat.append(h('div', { class: 'sim-sys' }, t)); scroll.scrollTop = scroll.scrollHeight; };
+  const setBusy = b => { busy = b; if (send) send.disabled = b || !ta.value.trim(); if (mic) mic.disabled = b && !listening; };
+
+  async function ask(body, retryBubble) {
+    if (busy) return;  // keine doppelten Anfragen
+    setBusy(true);
+    chat.querySelector('.sim-err')?.remove();
+    const typing = h('div', { class: 'sim-b k typing', id: 'simTyping' }, h('i'), h('i'), h('i'));
+    chat.append(typing); scroll.scrollTop = scroll.scrollHeight;
+    let b = null, txt = '';
+    ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 60000);
+    sayBuf = '';
+    try {
+      const d = await api.simTurn(S.id, { ...body, seq }, chunk => {
+        if (!b) { typing.remove(); b = bubble('k', ''); }
+        txt += chunk; b.querySelector('.tx').textContent = txt; scroll.scrollTop = scroll.scrollHeight; sayPart(chunk);
+      }, ctrl.signal);
+      clearTimeout(to); typing.remove();
+      if (!b) { b = bubble('k', d.reply); sayPart(d.reply, true); } else { b.querySelector('.tx').textContent = d.reply; sayPart('', true); }
+      seq++;
+      if (body.text) S.transcript.push({ who: 'v', text: body.text }); S.transcript.push({ who: 'k', text: d.reply });
+      if (d.invoice && !S.invoice) { S.invoice = d.invoice; invBtn.hidden = false; invBtn.classList.add('new'); sys('Der Kunde zeigt dir seine Rechnung – tippe oben auf „Rechnung“.'); }
+      setBusy(false);
+      if (d.ended) customerEnded();
+      else if (voiceOK && micAuto && lastWasVoice && document.visibilityState === 'visible') { if (speakOn && ttsOK) waitSpeechThen(() => startMic()); else setTimeout(startMic, 400); }  // Gespräch läuft per Sprache flüssig weiter
+    } catch (e) {
+      clearTimeout(to); typing.remove(); if (b) b.remove(); if (ttsOK) speechSynthesis.cancel();
+      setBusy(false);
+      if (!v.box.isConnected) return;
+      const box = h('div', { class: 'sim-err', id: 'simErr' }, h('span', {}, e.message + (e.retry ? ' Deine Nachricht ist nicht verloren.' : '')),
+        e.retry ? h('button', { class: 'btn small green', onclick: () => { box.remove(); ask(body); } }, 'Erneut senden') : null);
+      chat.append(box); scroll.scrollTop = scroll.scrollHeight;
+      if (!e.retry && body.text) { /* z. B. anderes Gerät */ }
+    }
+  }
+  let lastWasVoice = false;
+  function submit(fromVoice) {
+    const text = ta.value.trim(); if (!text || busy || finished) return;
+    lastWasVoice = !!fromVoice;
+    if (ttsOK) speechSynthesis.cancel();
+    ta.value = ''; ta.oninput();
+    bubble('v', text);
+    ask({ text, t: Math.round((Date.now() - t0) / 1000) });
+  }
+  // Spracheingabe (Speech-to-Text des Geräts)
+  function startMic() { if (!listening && !busy && !finished) toggleMic(); }
+  function waitSpeechThen(fn) { const tick = () => { if (!v.box.isConnected) return; if (speechSynthesis.speaking || speechSynthesis.pending) return setTimeout(tick, 250); fn(); }; setTimeout(tick, 300); }
+  function toggleMic() {
+    if (listening) { try { recog.stop(); } catch (e) {} return; }
+    if (ttsOK) speechSynthesis.cancel();  // Kunde unterbrechen
+    recog = new SR(); recog.lang = 'de-DE'; recog.interimResults = true; recog.continuous = false; recog.maxAlternatives = 1;
+    const base = ta.value ? ta.value.trim() + ' ' : ''; let finalTxt = '';
+    recog.onstart = () => { listening = true; mic.classList.add('rec'); mic.setAttribute('aria-label', 'Aufnahme beenden'); hint.textContent = 'Ich höre zu … (zum Beenden antippen)'; };
+    recog.onresult = e => { let interim = ''; finalTxt = ''; for (let i = 0; i < e.results.length; i++) { const r = e.results[i]; if (r.isFinal) finalTxt += r[0].transcript; else interim += r[0].transcript; } ta.value = base + finalTxt + interim; ta.oninput(); };
+    recog.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { hint.textContent = 'Mikrofon nicht erlaubt – bitte in den Einstellungen freigeben oder einfach schreiben.'; mic.disabled = true; micAuto = false; } else if (e.error === 'no-speech') hint.textContent = 'Nichts gehört – noch einmal antippen oder schreiben.'; else if (e.error === 'network') hint.textContent = 'Spracherkennung braucht Internet – bitte schreiben.'; else if (e.error !== 'aborted') hint.textContent = 'Spracheingabe nicht möglich (' + e.error + ') – bitte schreiben.'; };
+    recog.onend = () => { listening = false; mic.classList.remove('rec'); mic.setAttribute('aria-label', 'Sprechen'); if (/^Ich höre/.test(hint.textContent)) hint.textContent = 'Mikrofon antippen und sprechen – nach einer kurzen Pause wird gesendet.'; if ((base + finalTxt).trim() && ta.value.trim()) submit(true); };
+    try { recog.start(); } catch (e) { hint.textContent = 'Spracheingabe gerade nicht möglich – bitte schreiben.'; }
+  }
+  function customerEnded() {
+    if (finished) return;
+    sys('Die Tür ist zu – das Gespräch ist beendet.');
+    ta.disabled = true; if (mic) mic.disabled = true; send.disabled = true; finished = true;
+    chat.append(h('button', { class: 'btn big green', id: 'simEval', onclick: () => evaluate() }, 'Zur Auswertung'));
+    scroll.scrollTop = scroll.scrollHeight;
+  }
+  function endTalk() {
+    if (finished) return evaluate();
+    const c = h('div', { class: 'sim-err', style: 'border-color:var(--line);background:var(--card)' }, h('span', {}, 'Gespräch jetzt beenden und auswerten lassen?'),
+      h('button', { class: 'btn small green', id: 'simEndYes', onclick: () => { c.remove(); finished = true; evaluate(); } }, 'Ja, auswerten'), h('button', { class: 'btn small ghost', onclick: () => c.remove() }, 'Weiter sprechen'));
+    chat.append(c); scroll.scrollTop = scroll.scrollHeight;
+  }
+  async function evaluate() {
+    stopAll(); finished = true;
+    v.body.querySelector('.sim-comp')?.remove(); chips?.remove();
+    loading('Dein Coach wertet das Gespräch aus …');
+    try {
+      const r = await api.simFinish(S.id);
+      try { store.set('sim-active-' + me.id, null); } catch (e) {}
+      if (!v.box.isConnected) return;
+      showResult(r);
+    } catch (e) {
+      if (/nichts gesagt/.test(e.message)) { put(inner, h('div', { class: 'card' }, h('b', {}, e.message), h('button', { class: 'btn green', onclick: () => { v.close(); } }, 'Zurück'))); return; }
+      fail('Auswertung nicht möglich: ' + e.message, evaluate);
+    }
+  }
+  function showResult(r) {
+    tools.replaceChildren();
+    put(inner, ...resultEls(r),
+      h('div', { class: 'res-acts' },
+        h('button', { class: 'btn green', id: 'simNew', onclick: () => { v.close(); setTimeout(() => simRun({ mode: S.mode }), 50); } }, 'Neuen Kunden starten'),
+        h('button', { class: 'btn', id: 'simSame', onclick: () => { v.close(); setTimeout(() => simRun({ mode: S.mode, same: S.id }), 50); } }, 'Gleichen Kundentyp nochmal'),
+        h('button', { class: 'btn ghost', id: 'simWeak', onclick: () => { v.close(); setTimeout(() => simRun({ mode: 'komplett', weakness: true }), 50); } }, 'Meine Schwäche trainieren'),
+        h('button', { class: 'btn ghost', id: 'simAll', onclick: () => { v.close(); setTimeout(() => progressView(me.id, true), 50); } }, 'Auswertung ansehen')));
+    scroll.scrollTop = 0;
+    renderAcademy();
+  }
+  begin();
+}
+function invoiceEl(i) {
+  if (!i) return h('div');
+  const f = (l, val, cls) => h('div', { class: cls || '' }, h('span', {}, l), h('b', {}, val));
+  return h('div', { class: 'inv', id: 'simInvoice' },
+    h('div', { class: 'hd' }, h('div', {}, h('b', {}, i.anbieter), h('div', { style: 'font-size:13px' }, 'Jahresabrechnung ' + i.energie + ' · ' + i.tarif)), h('span', { class: 'stamp' }, 'Schulung · fiktiv')),
+    f('Kundennummer', i.kundennummer), f('Vertragskonto', i.vertragskonto), f('Zählernummer', i.zaehlernummer), f('MaLo-ID', i.malo),
+    f('Abrechnungszeitraum', i.zeitraum, 'full'), f('Zählerstand alt', String(i.zaehlerstand_alt) + (i.energie === 'Gas' ? ' m³' : '')), f('Zählerstand neu', String(i.zaehlerstand_neu) + (i.energie === 'Gas' ? ' m³' : '')),
+    f('Verbrauch', i.verbrauch_kwh.toLocaleString('de-DE') + ' kWh', 'sum'), f('Arbeitspreis', ct(i.arbeitspreis_ct), 'sum'),
+    f('Grundpreis', ctEur(i.grundpreis_monat) + ' / Monat'), f('Grundpreis / Jahr', ctEur(i.grundpreis_jahr)),
+    f('Jahreskosten', ctEur(i.jahreskosten)), f('Neuer Abschlag', i.abschlag + ' € / Monat'));
+}
+function tariffEl(ts) {
+  return h('div', { class: 'sim-panel', id: 'simTariff' }, h('b', {}, 'Dein Schulungstarif (fiktiv)'),
+    ...Object.entries(ts || {}).map(([k, t]) => h('div', {}, h('b', {}, k === 'gas' ? 'Gas: ' : 'Strom: '), t.name + ' – ' + ct(t.ap) + ', Grundpreis ' + ctEur(t.gp) + ' / Monat · ' + t.garantie + ' · ' + t.laufzeit)),
+    h('span', { class: 'muted' }, 'Vergleiche Jahreskosten: Verbrauch × Arbeitspreis + Jahresgrundpreis.'));
+}
+// Auswertungsseite (auch für Admin und Verlauf)
+function resultEls(r) {
+  const cls = scoreCls(r.total), c = h('div', { class: 'res-ring ' + cls, style: '--p:' + r.total }, h('div', {}, h('b', { id: 'resTotal' }, r.total), h('small', {}, 'von 100')));
+  const cats = r.categories.map(x => h('div', { class: 'cat' + (x.applicable ? '' : ' na') }, h('b', {}, x.label), h('span', { class: 'v' }, x.applicable ? String(x.points).replace('.', ',') + ' / ' + x.max : 'kam nicht vor'),
+    x.applicable ? h('div', { class: 'bar' }, h('i', { class: scoreCls(x.pct), style: 'width:' + x.pct + '%' })) : null, x.comment ? h('span', { class: 'c' }, x.comment) : null));
+  const dot = { gruen: '🟢', gelb: '🟡', rot: '🔴' };
+  const out = [
+    h('div', { class: 'card' }, h('div', { class: 'res-top' }, c, h('div', { style: 'flex:1;min-width:180px;display:flex;flex-direction:column;gap:6px' },
+      h('span', { class: 'muted' }, 'GESAMTERGEBNIS' + (r.modeLabel ? ' · ' + r.modeLabel : '') + (r.user ? ' · ' + r.user : '') + (r.at ? ' · ' + fmtDT(r.at) : '')), h('span', { class: 'res-lbl' }, '„' + (r.label || 'Auswertung') + '“'),
+      r.exam ? h('span', { class: 'res-badge ' + (r.passed ? 'ok' : 'no'), id: 'resExam' }, r.passed ? 'PRAXISBEREIT ✓' : 'Noch nicht praxisbereit (ab ' + r.examPass + ' Punkten, ohne kritische Fehler)') : null,
+      r.reveal ? h('span', { class: 'muted', id: 'resReveal' }, 'Kunde: ' + r.reveal.type + ' · ' + r.reveal.persona + (r.reveal.weakness ? ' · gezielt für deine Schwäche' : '')) : null)),
+      r.summary ? h('p', { style: 'margin:0;line-height:1.45' }, r.summary) : null),
+    r.critical && r.critical.length ? h('div', { class: 'crit', id: 'resCrit' }, h('b', {}, '🔴 Kritische Punkte'), ...r.critical.map(x => h('span', {}, h('b', {}, x.label + ': '), x.note))) : null,
+    h('div', { class: 'card' }, h('b', {}, 'Einzelbewertung'), h('div', { class: 'cats' }, cats)),
+    r.strengths && r.strengths.length ? h('div', { class: 'card' }, h('b', {}, 'DAS HAST DU STARK GEMACHT'), h('ul', { class: 'res-list' }, r.strengths.map(x => h('li', {}, x)))) : null,
+    r.potentials && r.potentials.length ? h('div', { class: 'card' }, h('b', {}, 'HIER HAST DU POTENZIAL'), h('ul', { class: 'res-list' }, r.potentials.map(x => h('li', {}, x)))) : null,
+    r.improvements && r.improvements.length ? h('div', { class: 'card' }, h('b', {}, 'SO KÖNNTEST DU ES BESSER MACHEN'), ...r.improvements.map(x => h('div', { class: 'imp' },
+      h('dl', {}, h('dt', {}, 'Was?'), h('dd', {}, x.what), h('dt', {}, 'Warum?'), h('dd', {}, x.why), h('dt', {}, 'Wirkung'), h('dd', {}, x.effect), h('dt', {}, 'Besser'), h('dd', {}, x.better)),
+      x.example ? h('div', { class: 'ex' }, x.example) : null)), h('span', { class: 'muted' }, 'Die Formulierungen sind Beispiele – deine eigenen Worte sind genauso richtig, wenn der Inhalt stimmt.')) : null,
+    r.timeline && r.timeline.length ? h('div', { class: 'card' }, h('b', {}, 'Gesprächs-Timeline'), h('div', { class: 'tl' }, r.timeline.map(x => h('div', {}, h('time', {}, x.t), h('span', {}, dot[x.rating] || '⚪'), h('span', { class: 'n' }, h('b', {}, x.topic), x.note))))) : null
+  ];
+  if (r.transcript && r.transcript.length) {
+    const box = h('div', { class: 'sim-chat', hidden: true }, r.transcript.map(t => h('div', { class: 'sim-b ' + t.who }, h('span', { class: 'w' }, (t.who === 'k' ? 'Kunde' : 'Verkäufer') + (t.t ? ' · ' + String(Math.floor(t.t / 60)).padStart(2, '0') + ':' + String(t.t % 60).padStart(2, '0') : '')), t.text)));
+    out.push(h('div', { class: 'card' }, h('button', { class: 'btn ghost small', style: 'align-self:flex-start', onclick: e => { box.hidden = !box.hidden; e.target.textContent = box.hidden ? 'Gesprächsprotokoll anzeigen' : 'Protokoll ausblenden'; } }, 'Gesprächsprotokoll anzeigen'), box, r.invoice ? invoiceEl(r.invoice) : null));
+  }
+  return out.filter(Boolean);
+}
+
+/* ---------- Simulator-Einstellungen (nur Admin) ---------- */
+async function simSettings() {
+  let cfg; try { cfg = await api.simConfig(); } catch (e) { return toast(e.message); }
+  const a = cfg.admin; if (!a) return toast('Nur für den Administrator.');
+  let s;
+  const key = h('input', { id: 'simKey', type: 'password', autocomplete: 'off', placeholder: a.keySet ? 'hinterlegt (' + a.keyHint + ') – zum Ändern neu eingeben' : 'sk-ant-…' });
+  const msg = h('p', { class: 'muted', role: 'status', style: 'margin:0' });
+  const num = (id, val, lbl) => h('label', { class: 'f', style: 'min-width:90px' }, lbl, h('input', { id, inputmode: 'numeric', value: val }));
+  const T = ['offen', 'normal', 'einwand', 'skeptisch', 'schwierig'], TL = { offen: 'Offen', normal: 'Normal', einwand: 'Einwand', skeptisch: 'Skeptisch', schwierig: 'Schwierig' };
+  const tf = (e, k, lbl) => h('label', { class: 'f' }, lbl, h('input', { id: 'tar-' + e + '-' + k, value: String(a.tariff[e][k]).replace('.', k === 'ap' || k === 'gp' ? ',' : '.') }));
+  const role = h('textarea', { id: 'simRole', rows: 3 }, a.role);
+  const kn = a.knowledge;
+  const form = h('form', { style: 'display:flex;flex-direction:column;gap:12px' },
+    h('h2', {}, 'Kundensimulator einstellen'),
+    h('div', { class: 'card' }, h('b', {}, 'KI-Zugang (Anthropic Claude)'), a.keyFromEnv ? h('span', { class: 'muted' }, 'Der Schlüssel ist auf dem Server-Laptop fest eingestellt.') : h('label', { class: 'f' }, 'API-Schlüssel', key),
+      h('span', { class: 'muted' }, 'Den Schlüssel bekommst du unter console.anthropic.com (API Keys). Er wird nur auf eurem Server gespeichert – nie in der App, nie auf GitHub – und hier nie wieder angezeigt.'),
+      h('div', { class: 'row' }, h('button', { class: 'btn ghost small', type: 'button', id: 'simTestBtn', onclick: async () => { msg.textContent = 'Teste Verbindung …'; try { if (key.value.trim()) { await api.simSetConfig({ key: key.value.trim() }); key.value = ''; } const r = await api.simTest(); msg.textContent = '✓ Verbindung funktioniert (' + r.ms + ' ms).'; } catch (e) { msg.textContent = '✗ ' + e.message; } } }, 'Verbindung testen'),
+        a.keySet && !a.keyFromEnv ? h('button', { class: 'btn ghost small', type: 'button', style: 'color:var(--danger)', onclick: async () => { try { await api.simSetConfig({ key: '' }); s.remove(); toast('KI-Schlüssel entfernt.'); renderAcademy(); } catch (e) { msg.textContent = e.message; } } }, 'Schlüssel entfernen') : null), msg),
+    h('div', { class: 'card' }, h('b', {}, 'Kundentypen (Verteilung in %)'), h('div', { class: 'row' }, T.map(t => num('dist-' + t, a.dist[t], TL[t]))), h('span', { class: 'muted' }, 'Der Mitarbeiter weiß vorher nicht, welcher Typ öffnet.')),
+    h('div', { class: 'card' }, h('b', {}, 'Prüfung'), h('div', { class: 'row' }, num('simPass', a.examPass, 'Praxisbereit ab Punkten')), h('span', { class: 'muted' }, 'Kritische Fehler (z. B. falsche Unternehmensrolle, erfundene Ersparnis) verhindern „Praxisbereit“ trotz hoher Punktzahl.')),
+    h('div', { class: 'card' }, h('b', {}, 'Rolle des Verkäufers im Training'), role, h('span', { class: 'muted' }, 'Aussagen wie „von den Stadtwerken“ werden nur positiv bewertet, wenn sie hier stimmen.')),
+    h('div', { class: 'card' }, h('b', {}, 'Schulungstarife (fiktiv)'), ...['strom', 'gas'].map(e => h('div', { style: 'display:flex;flex-direction:column;gap:6px' }, h('b', { style: 'font-size:14px' }, e === 'strom' ? 'Strom' : 'Gas'), tf(e, 'name', 'Name'), h('div', { class: 'row' }, tf(e, 'ap', 'Arbeitspreis ct/kWh'), tf(e, 'gp', 'Grundpreis €/Monat')), tf(e, 'garantie', 'Preisgarantie'), tf(e, 'laufzeit', 'Laufzeit')))),
+    h('div', { class: 'card' }, h('b', {}, 'Wissensbasis'), h('span', { class: 'muted', id: 'simKnow' }, kn.fromPdfs ? 'Aus ' + kn.texts + ' von ' + kn.pdfs + ' Schulungsunterlagen aufbereitet (' + fmtDT(kn.at) + '). Wird nur einmal erstellt und nicht bei jeder Gesprächsrunde neu geladen.' : kn.texts ? kn.texts + ' Unterlage(n) ausgelesen – Aufbereitung folgt, sobald der KI-Zugang steht.' : 'Noch keine Unterlagen ausgelesen. Das passiert automatisch, wenn du als Admin die Academy öffnest.'),
+      h('button', { class: 'btn ghost small', type: 'button', style: 'align-self:flex-start', onclick: async () => { try { await api.simSetConfig({ rebuild: true }); toast('Wissensbasis wird neu aufbereitet …'); } catch (e) { toast(e.message); } } }, 'Neu aufbereiten')),
+    h('div', { class: 'row' }, h('button', { class: 'btn green', type: 'submit', id: 'simCfgSave' }, 'Speichern'), h('button', { class: 'btn ghost', type: 'button', onclick: () => s.remove() }, 'Schließen')));
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const d = { dist: Object.fromEntries(T.map(t => [t, +($('dist-' + t).value || 0)])), examPass: +$('simPass').value, role: role.value, tariff: {} };
+    for (const en of ['strom', 'gas']) d.tariff[en] = Object.fromEntries(['name', 'ap', 'gp', 'garantie', 'laufzeit'].map(k => [k, $('tar-' + en + '-' + k).value]));
+    if (key.value.trim()) d.key = key.value.trim();
+    try { await api.simSetConfig(d); s.remove(); toast('Gespeichert.'); renderAcademy(); } catch (x) { msg.textContent = x.message; form.querySelector('.card').scrollIntoView(); }
+  };
+  s = sheet(form);
+}
+
+/* ---------- Lernfortschritt (eigener / für Admin je Mitarbeiter) ---------- */
+function progressCard(pr) {
+  if (!pr) return null;
+  const sim = pr.sim;
+  return h('div', { class: 'card dcard', id: 'acProgress' },
+    dhead('chart', 'Mein Academy-Fortschritt', pr.lastActivity ? 'Zuletzt aktiv: ' + fmtDate(pr.lastActivity) : 'Noch keine Aktivität', h('button', { class: 'btn ghost small', onclick: () => progressView(me.id) }, 'Details')),
+    kpis(pr));
+}
+function kpis(pr) {
+  const sim = pr.sim;
+  const k = (l, val, cls) => h('div', { class: 'pg-kpi' }, h('span', {}, l), h('b', { class: cls || '' }, val));
+  return h('div', { class: 'pg-kpis' },
+    k('Schulungsunterlagen', pr.pdf.seen + ' von ' + pr.pdf.total + ' angesehen'), k('Schulungsvideos', pr.video.done + ' von ' + pr.video.total + ' abgeschlossen'),
+    k('Kundensimulator', sim.count + ' Trainings'), k('Durchschnitt', sim.avg !== null ? sim.avg + ' Punkte' : '–'), k('Bestwert', sim.best !== null ? sim.best + ' Punkte' : '–'),
+    k('Stärkster Bereich', sim.strongest ? sim.strongest.label : '–'), k('Trainingsfokus', sim.focus ? sim.focus.label : '–'),
+    k('Prüfungsstatus', sim.ready ? 'PRAXISBEREIT ✓' : 'Noch nicht praxisbereit', sim.ready ? 'ok' : ''));
+}
+async function progressView(uid, scrollToSims) {
+  const v = fullscreenView('Academy-Fortschritt');
+  v.box.classList.add('sim');
+  const scroll = h('div', { class: 'sim-scroll' }), inner = h('div', { class: 'sim-in' }); scroll.append(inner); v.body.append(scroll);
+  put(inner, h('div', { style: 'padding:40px 0' }, h('div', { class: 'spin' })));
+  let pr, hist;
+  try { [pr, hist] = await Promise.all([api.progress(uid === me.id ? undefined : uid), api.simHistory(uid === me.id ? undefined : uid)]); } catch (e) { put(inner, h('div', { class: 'card' }, e.message)); return; }
+  const sim = pr.sim, own = uid === me.id;
+  const pdfs = pr.items.filter(i => i.kind === 'pdf'), vids = pr.items.filter(i => i.kind === 'video');
+  const stPdf = i => i.status === 'neu' ? h('span', { class: 'st' }, 'noch nicht geöffnet') : h('span', { class: 'st ok' }, 'geöffnet');
+  const stVid = i => i.status === 'neu' ? h('span', { class: 'st' }, 'noch nicht gestartet') : i.status === 'fertig' ? h('span', { class: 'st ok' }, '✓ vollständig') : h('span', { class: 'st mid' }, (i.pct || 0) + ' % angesehen');
+  const trend = sim.trend ? (sim.trend.to > sim.trend.from ? (own ? 'Du hast dich' : pr.user.name + ' hat sich') + ' in den letzten ' + sim.trend.n + ' Trainings von durchschnittlich ' + sim.trend.from + ' auf ' + sim.trend.to + ' Punkte verbessert.' : sim.trend.to < sim.trend.from ? 'In den letzten ' + sim.trend.n + ' Trainings von durchschnittlich ' + sim.trend.from + ' auf ' + sim.trend.to + ' Punkte gesunken.' : 'In den letzten ' + sim.trend.n + ' Trainings stabil bei ' + sim.trend.to + ' Punkten.') : null;
+  const sec = (title, ...k) => h('div', { class: 'card' }, h('b', {}, title), ...k);
+  put(inner,
+    h('div', { class: 'row' }, av(pr.user), h('div', { style: 'flex:1' }, h('h2', {}, pr.user.name), h('span', { class: 'muted' }, 'Letzte Academy-Aktivität: ' + fmtDT(pr.lastActivity)))),
+    kpis(pr),
+    sec('Entwicklung über Zeit', sim.scores.length ? h('div', { class: 'spark', id: 'pgSpark', title: 'Ergebnisse der letzten Trainings' }, sim.scores.map(x => h('i', { class: x.exam ? 'ex' : '', style: 'height:' + Math.max(4, x.score) + '%', title: fmtDate(x.at) + ': ' + x.score + ' Punkte' }))) : null,
+      h('span', { class: 'muted' }, trend || (sim.scores.length ? 'Ab 4 Trainings wird die Entwicklung ausgewertet.' : 'Noch keine Trainings im Kundensimulator.')),
+      sim.scores.length ? h('span', { class: 'muted' }, 'Verlauf: ' + sim.scores.slice(-8).map(x => x.score).join(' → ')) : null),
+    sec('Stärken und Schwächen', h('div', { class: 'cats' }, sim.categories.map(c => h('div', { class: 'cat' + (c.pct === null ? ' na' : '') }, h('b', {}, c.label), h('span', { class: 'v' }, c.pct === null ? '–' : c.pct + ' %'), c.pct !== null ? h('div', { class: 'bar' }, h('i', { class: scoreCls(c.pct), style: 'width:' + c.pct + '%' })) : null))),
+      sim.focus ? h('span', { class: 'muted' }, 'Empfohlener Trainingsbereich: ' + sim.focus.label + ' (z. B. „Meine Schwäche trainieren“).') : null),
+    sec('Prüfungen', sim.exams.length ? h('div', { class: 'pg-items' }, sim.exams.slice().reverse().map(x => h('div', { class: 'pg-it' }, h('span', { class: 't' }, h('b', {}, fmtDT(x.at)), h('small', {}, x.score + ' Punkte')), h('span', { class: 'st ' + (x.passed ? 'ok' : '') }, x.passed ? 'praxisbereit' : 'nicht bestanden')))) : h('span', { class: 'muted' }, 'Noch keine Prüfung abgelegt.')),
+    sec('Schulungsunterlagen', pdfs.length ? h('div', { class: 'pg-items' }, pdfs.map(i => h('div', { class: 'pg-it' }, h('span', { class: 't' }, h('b', {}, i.title), h('small', {}, i.last ? 'zuletzt angesehen ' + fmtDT(i.last) + (i.maxPage && i.pages ? ' · bis Seite ' + i.maxPage + ' von ' + i.pages + ' geblättert' : '') : '')), stPdf(i)))) : h('span', { class: 'muted' }, 'Keine Unterlagen.'), h('span', { class: 'muted' }, '„Geöffnet“ heißt angesehen – nicht automatisch verstanden.')),
+    sec('Schulungsvideos', vids.length ? h('div', { class: 'pg-items' }, vids.map(i => h('div', { class: 'pg-it' }, h('span', { class: 't' }, h('b', {}, i.title), h('small', {}, i.last ? 'zuletzt ' + fmtDT(i.last) : '')), stVid(i)))) : h('span', { class: 'muted' }, 'Keine Videos.'), h('span', { class: 'muted' }, '„Vollständig“ erst ab 90 % tatsächlich abgespielter Zeit – Vorspulen zählt nicht.')),
+    sec('Trainings im Kundensimulator', hist.length ? h('div', { class: 'pg-items', id: 'pgSims' }, hist.map(x => h('button', { class: 'pg-it', style: 'width:100%;background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit;text-align:left;cursor:pointer', onclick: async () => { try { const r = await api.simResult(x.id); const rv = fullscreenView('Auswertung'); rv.box.classList.add('sim'); const sc = h('div', { class: 'sim-scroll' }), inn = h('div', { class: 'sim-in' }); sc.append(inn); rv.body.append(sc); put(inn, ...resultEls(r)); } catch (e) { toast(e.message); } } },
+      h('span', { class: 't' }, h('b', {}, fmtDT(x.at) + ' · ' + x.modeLabel), h('small', {}, x.type + (x.label ? ' · „' + x.label + '“' : ''))), x.passed !== null ? h('span', { class: 'st ' + (x.passed ? 'ok' : '') }, x.passed ? 'praxisbereit' : 'Prüfung') : null, h('b', { style: 'font-variant-numeric:tabular-nums;min-width:30px;text-align:right' }, x.score)))) : h('span', { class: 'muted' }, 'Noch keine Trainings.')));
+  if (scrollToSims) setTimeout(() => $('pgSims')?.scrollIntoView({ block: 'start' }), 50);
+}
+// Admin: kompakte Übersicht aller Mitarbeiter (im Bereich „Mitarbeiter“)
+function academyOverviewCard() {
+  const card = h('div', { class: 'card', id: 'acOverview' }, dhead('cap', 'Academy-Übersicht', 'Lernfortschritt und Kundensimulator aller Mitarbeiter'), h('div', { class: 'muted' }, 'Wird geladen …'));
+  api.progressOverview().then(rows => {
+    card.lastChild.replaceWith(rows.length ? h('div', { class: 'ov' }, h('div', { class: 'ovh' }, h('span', {}, 'Mitarbeiter'), h('span', { class: 'c' }, 'Academy'), h('span', { class: 'c' }, 'Simul.'), h('span', { class: 'c' }, 'Ø'), h('span', {}, 'Prüfung')),
+      rows.map(r => h('button', { class: 'ovr', type: 'button', onclick: () => progressView(r.id) }, h('b', {}, r.name), h('span', { class: 'c' }, r.pct === null ? '–' : r.pct + ' %'), h('span', { class: 'c' }, r.sims), h('span', { class: 'c' }, r.avg === null ? '–' : r.avg), h('span', { class: 'st ' + (r.ready ? 'ok' : '') }, r.ready ? 'Praxisbereit' : 'Offen')))) : h('span', { class: 'muted' }, 'Noch keine Mitarbeiter.'));
+  }).catch(e => { card.lastChild.textContent = e.message; });
+  return card;
+}
+// Admin: PDF-Texte im Hintergrund auslesen (Wissensbasis für den Simulator) – nur neue/ausgetauschte PDFs
+let textJob = null;
+function extractPdfTexts() {
+  if (!me.admin || DEMO || textJob) return;
+  textJob = (async () => {
+    try {
+      const list = await api.academyTexts();
+      for (const it of list.filter(x => !x.chars)) {
+        const pdfjs = await loadPdfjs();
+        const buf = await fetch('/api/files/' + it.file_id, { headers: { Authorization: 'Bearer ' + await token() } }).then(r => r.ok ? r.arrayBuffer() : null); if (!buf) continue;
+        const doc = await pdfjs.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise;
+        let text = '';
+        try { for (let i = 1; i <= Math.min(doc.numPages, 400); i++) { const pg = await doc.getPage(i); const tc = await pg.getTextContent(); text += tc.items.map(x => x.str + (x.hasEOL ? '\n' : ' ')).join('') + '\n\n'; await new Promise(r => setTimeout(r, 0)); } } finally { doc.destroy(); }
+        await api.academyText(it.id, text.trim() || '(keine lesbaren Texte – evtl. gescannte PDF)');
+      }
+    } catch (e) { /* später erneut */ } finally { textJob = null; }
+  })();
 }
 
 /* ================= Dashboard ================= */

@@ -57,6 +57,9 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
   }
   // Academy-Videos: browserfreundliche Abspielfassung im Hintergrund (Original bleibt erhalten)
   const video = require('./video.js')({ db, DATA, FILES, log });
+  // Academy: Kundensimulator, Lernfortschritt und Coaching (KI nur serverseitig)
+  const sim = require('./sim.js')({ db, send, readBody, log, now });
+  const SIM_PATH = /^(sim\/.+|progress|progress\/overview|academy\/\d+\/text|academy\/texts)$/;
 
   // Kanäle: "team" = alle; "dm:<id>~<id>" = privat zwischen genau zwei Personen
   function canAccess(me, ch) {
@@ -91,10 +94,13 @@ module.exports = function team({ db, DATA, readBody, send, userFromToken, hashPi
     // „Nur Academy“: ausschließlich eigene Angaben, Academy-Liste und Academy-Dateien – alles andere gesperrt
     if (meRow.access === 'academy') {
       let fm;
-      const allowed = (p === 'me' && M === 'GET') || (p === 'academy' && M === 'GET') || (/^academy\/\d+\/stream$/.test(p) && M === 'GET') ||
+      const allowed = (p === 'me' && M === 'GET') || (p === 'academy' && M === 'GET') || (/^academy\/\d+\/stream$/.test(p) && M === 'GET') || /^(sim\/.+|progress)$/.test(p) ||
         ((fm = /^files\/([0-9a-f]{32})$/.exec(p)) && M === 'GET' && (!!db.prepare('SELECT 1 FROM academy WHERE file_id = ? OR thumb_id = ?').get(fm[1], fm[1]) || video.isPlay(fm[1])));
       if (!allowed) return send(res, 403, { message: 'Für dich ist nur die Academy freigegeben.', code: 'academy' });
     }
+
+    /* ---------- Academy: Kundensimulator & Lernfortschritt (eigenes Modul sim.js) ---------- */
+    if (SIM_PATH.test(p)) { const r = await sim.handle(req, res, p, M, me, meRow, isAdmin); if (r !== false) return; }
 
     /* ---------- Ich & Team ---------- */
     if (p === 'me' && M === 'GET') return send(res, 200, pub(meRow));
